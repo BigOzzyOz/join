@@ -325,6 +325,7 @@ function capitalize(str) {
  * Logs out the current user and redirects to the login page.
  */
 function logOut() {
+  firebaseLogout();
   sessionStorage.removeItem('currentUser');
   localStorage.removeItem('currentUser');
   window.location.href = '../index.html';

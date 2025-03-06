@@ -1,9 +1,7 @@
-import { getAuth, signInWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+import { signInWithEmailAndPassword, deleteUser, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+import { ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+import { auth, database } from "./firebase-init.js";
 
-
-const auth = getAuth();
-const database = getDatabase();
 const passwordInput = document.getElementById('passwordInput');
 let isPasswordVisible = false;
 let clickCount = -1;
@@ -175,10 +173,18 @@ function showError(error) {
  * Handles the guest login functionality by setting a guest user and redirecting to the summary page.
  */
 function handleGuestLogin() {
-    const guestUser = { name: "Guest", firstLetters: "G" };
-    sessionStorage.setItem('currentUser', JSON.stringify(guestUser));
-    localStorage.clear();
-    continueToSummary();
+    signInAnonymously(auth)
+        .then(() => {
+            const guestUser = { name: "Guest", firstLetters: "G" };
+            sessionStorage.setItem('currentUser', JSON.stringify(guestUser));
+            localStorage.clear();
+            continueToSummary();
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // ...
+        });
 }
 
 
