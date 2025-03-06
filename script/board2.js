@@ -1,3 +1,7 @@
+import { BASE_URL, tasks, changeActive, updatePrioActiveBtn, updateData } from "../script.js";
+import { assignedContacts, renderAssignedContacts } from "./addTask.js";
+import { currentTaskStatus, createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter } from "./board.js";
+import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 
 /**
  * The function `updateNoTasksFoundVisibility` toggles the visibility of an element based on the
@@ -6,7 +10,7 @@
  * there are any visible tasks on the page. If there are visible tasks (`anyVisibleTask` is `true`),
  * the function will hide the element with the id 'noTasksFound'. If there are no visible tasks (`any
  */
-function updateNoTasksFoundVisibility(anyVisibleTask) {
+export function updateNoTasksFoundVisibility(anyVisibleTask) {
   const noTasksFound = document.getElementById('noTasksFound');
   if (anyVisibleTask) {
     noTasksFound.classList.add('dNone');
@@ -74,7 +78,7 @@ function openOverlay(elementId) {
  * The function closeModal hides the overlay and addTaskOverlay elements and removes the "modalOpen"
  * class from the body.
  */
-function closeModal() {
+export function closeModal() {
   const overlay = document.getElementById("overlay");
   const addTaskOverlay = document.getElementById("addTaskOverlay");
   if (overlay || addTaskOverlay) {

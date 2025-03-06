@@ -1,8 +1,7 @@
+import { currentUser, init, loadData } from "../script.js";
+import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
+
 let numberOfBoard = [];
-let numberOfTodos = 0;
-let numberOfInProgress = 0;
-let numberOfAwaitFeedback = 0;
-let numberOfDone = 0;
 let urgentTasks = [];
 let counts = {
   toDo: 0,
@@ -194,3 +193,5 @@ function nextPage() {
   window.location.href = 'board.html';
   sessionStorage.setItem('activeTab', 'board');
 }
+
+document.addEventListener('DOMContentLoaded', () => { initSummary(); });

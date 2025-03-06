@@ -1,16 +1,21 @@
-let BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
-let activeTab = sessionStorage.getItem('activeTab') || '';
-let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
-let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
-let currentPrio = 'medium';
+import { firebaseLogout } from "./script/firebase-init.js";
+import { initCheckData, initDragDrop } from "./script/board.js";
+import { closeModal } from "./script/board2.js";
+import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
+
+export const BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
+export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
+export let activeTab = sessionStorage.getItem('activeTab') || '';
+export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
+export let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
+export let currentPrio = 'medium';
 
 
 /**
  * Initializes the application by including HTML, setting the active tab, and checking the current user.
  * If 'taskCategory' isn't set in session storage, it'll get set to 'toDo'.
  */
-async function init() {
+export async function init() {
   await includeHTML();
   setActive();
   checkCurrentUser();
@@ -37,7 +42,7 @@ async function includeHTML() {
   let includeElements = document.querySelectorAll('[w3-include-html]');
   for (let i = 0; i < includeElements.length; i++) {
     const element = includeElements[i];
-    file = element.getAttribute("w3-include-html");
+    let file = element.getAttribute("w3-include-html");
     let resp = await fetch(file);
     if (resp.ok) {
       element.innerHTML = await resp.text();
@@ -53,7 +58,7 @@ async function includeHTML() {
  * 
  * @param {Element} link - The link element that was clicked.
  */
-function changeActive(link) {
+export function changeActive(link) {
   let linkBtn = document.querySelectorAll(".menuBtn");
   linkBtn.forEach(btn => btn.classList.remove("menuBtnActive"));
   activeTab = link.innerText.toLowerCase();
@@ -96,7 +101,7 @@ function removeActiveTab() {
  * 
  * @param {string} link - The selector for the link element to set as active.
  */
-function setActiveTab(link) {
+export function setActiveTab(link) {
   const activeTab = document.querySelector(link);
   if (activeTab) {
     changeActive(activeTab);
@@ -109,7 +114,7 @@ function setActiveTab(link) {
  * 
  * @param {string} prio - The priority level to set as active.
  */
-function updatePrioActiveBtn(prio) {
+export function updatePrioActiveBtn(prio) {
   const buttons = document.querySelectorAll('.prioBtn');
   buttons.forEach(button => {
     button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
@@ -192,7 +197,7 @@ function userContent(forbiddenContent, menuUserContainer, headerUserContainer) {
  * @param {string} className1 - The first class to toggle.
  * @param {string} className2 - The second class to toggle.
  */
-function toggleClass(menu, className1, className2) {
+export function toggleClass(menu, className1, className2) {
   let edit = document.getElementById(menu);
   edit.classList.toggle(className1);
   edit.classList.toggle(className2);
@@ -205,7 +210,7 @@ function toggleClass(menu, className1, className2) {
  * @param {string} id - The ID of the element to get the value from.
  * @returns {string} The value of the element.
  */
-function getId(id) {
+export function getId(id) {
   return document.getElementById(id).value;
 }
 
@@ -216,7 +221,7 @@ function getId(id) {
  * @param {string} [path=''] - The path to load data from.
  * @returns {Promise<Object>} The loaded data.
  */
-async function loadData(path = '') {
+export async function loadData(path = '') {
   try {
     let response = await fetch(BASE_URL + path + ".json");
     let responseAsJson = await response.json();
@@ -233,7 +238,7 @@ async function loadData(path = '') {
  * @param {string} [path=''] - The path to delete data from.
  * @returns {Promise<Object>} The response from the delete request.
  */
-async function deleteData(path = '') {
+export async function deleteData(path = '') {
   let response = await fetch(BASE_URL + path + '.json', {
     method: 'DELETE',
   });
@@ -248,7 +253,7 @@ async function deleteData(path = '') {
  * @param {Object} [data={}] - The data to post.
  * @returns {Promise<Object>} The response from the post request.
  */
-async function postData(path = "", data = {}) {
+export async function postData(path = "", data = {}) {
   try {
     let response = await fetch(BASE_URL + path + ".json", {
       method: "POST",
@@ -269,7 +274,7 @@ async function postData(path = "", data = {}) {
  * @param {Object} data - The data to update.
  * @returns {Promise<Object>} The response from the update request.
  */
-async function updateData(url, data) {
+export async function updateData(url, data) {
   try {
     const response = await fetch(url, {
       method: 'PUT',
@@ -324,7 +329,7 @@ function capitalize(str) {
 /**
  * Logs out the current user and redirects to the login page.
  */
-function logOut() {
+export function logOut() {
   firebaseLogout();
   sessionStorage.removeItem('currentUser');
   localStorage.removeItem('currentUser');
@@ -341,7 +346,7 @@ function logOut() {
  * @param {string} class1 - The class to check if the modal has.
  * @param {string} class2 - The class to toggle if the modal should be hidden.
  */
-function activateOutsideCheck(modalName, class1, class2) {
+export function activateOutsideCheck(modalName, class1, class2) {
   document.addEventListener('mousedown', function () { checkOutsideModal(modalName, class1, class2); });
 }
 
@@ -363,3 +368,5 @@ function checkOutsideModal(modalName, class1, class2) {
     document.removeEventListener('click', function () { checkOutsideModal(modalName); });
   };
 }
+
+document.addEventListener('DOMContentLoaded', () => { initDragDrop(); });

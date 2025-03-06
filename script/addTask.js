@@ -1,4 +1,11 @@
-let assignedContacts = [];
+import { activeTab, contacts, setActiveTab, updatePrioActiveBtn, toggleClass, getId, postData, init } from "../script.js";
+import { initCheckData, updateAllTaskCategories, initDragDrop } from "./board.js";
+import { closeModal } from "./board2.js";
+import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
+import { getContactsData } from "./contacts.js";
+import { svgProfilePic } from "./contactsTemplate.js";
+
+export let assignedContacts = [];
 
 
 /**
@@ -99,7 +106,7 @@ function contactAssign(id, event) {
  * The function `renderAssignedContacts` renders assigned contacts in a container, displaying profile
  * pictures for the first 6 contacts and a placeholder for any additional contacts.
  */
-function renderAssignedContacts() {
+export function renderAssignedContacts() {
   let assignedContactsContainer = document.getElementById('contactsAssigned');
   assignedContactsContainer.innerHTML = '';
   for (let i = 0; i < assignedContacts.length; i++) {
@@ -271,7 +278,7 @@ function getSubtasks() {
  */
 async function pushNewTask(event) {
   event.preventDefault();
-  let newTask = createNewtask();
+  let newTask = createNewTask();
   await postData("tasks", newTask);
   closeAddTaskModal();
 }
@@ -282,7 +289,7 @@ async function pushNewTask(event) {
  * 
  * @returns {Object} The new task object.
  */
-function createNewtask() {
+function createNewTask() {
   return {
     title: getId('taskTitle'),
     description: getId('taskDescription'),
@@ -417,3 +424,5 @@ function clearAddTaskForm() {
   document.getElementById('subtaskInput').value = '';
   clearSubtaskList();
 }
+
+document.addEventListener("DOMContentLoaded", () => { init(); });

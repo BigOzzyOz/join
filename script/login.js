@@ -1,6 +1,5 @@
-import { signInWithEmailAndPassword, deleteUser, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
-import { auth, database } from "./firebase-init.js";
+import { auth, database, ref, child, get, signInWithEmailAndPassword, signInAnonymously, deleteUser } from "./firebase-init.js";
+import { currentUser } from "../script.js";
 
 const passwordInput = document.getElementById('passwordInput');
 let isPasswordVisible = false;
@@ -183,7 +182,6 @@ function handleGuestLogin() {
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
-            // ...
         });
 }
 

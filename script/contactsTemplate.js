@@ -1,9 +1,12 @@
+import { currentUser, contacts } from "../script.js";
+import { getContactsData, filterFirstLetters, generateSvgCircleWithInitials } from "./contacts.js";
+
 /**
  * Returns HTML for adding a new contact.
  * 
  * @returns {string} - HTML string for adding a new contact.
  */
-function htmlRenderAddContact() {
+export function htmlRenderAddContact() {
   return /*html*/`
     <div class="moreIcon" onclick="openAddContacts()">
       <p>Add new contact</p>
@@ -19,7 +22,7 @@ function htmlRenderAddContact() {
  * @param {string} letter - The letter to render.
  * @returns {string} - HTML string for the contact letter section.
  */
-function htmlRenderContactLetter(letter) {
+export function htmlRenderContactLetter(letter) {
   return /*html*/`
     <div class="contactLetter">
       <p class="fs20">${letter}</p>
@@ -42,7 +45,7 @@ function htmlRenderContactLetter(letter) {
  * for the current user), and email address wrapped in list item (`<li>`) tags. The list item has an
  * `id` attribute based on the contact's `id` and an `onclick` event that triggers a function
  */
-function htmlRenderGeneral(contact) {
+export function htmlRenderGeneral(contact) {
   return /*html*/`
     <li id="contact${contact.id}" onclick="toggleClass('contactsDetail', 'tt0', 'ttx100'); renderContactsDetails(${contact.id})">
       <div class="contactSmall">
@@ -62,7 +65,7 @@ function htmlRenderGeneral(contact) {
  * 
  * @returns {string} - HTML string for the empty contact details section.
  */
-function htmlRenderContactDetailsEmpty() {
+export function htmlRenderContactDetailsEmpty() {
   return /*html*/`
     <div id="contactsDetail" class="ttx100">
       <div class="contactsHeader">
@@ -80,7 +83,7 @@ function htmlRenderContactDetailsEmpty() {
  * @param {number|string} id - The ID of the contact.
  * @returns {string} - HTML string for the contact details.
  */
-function htmlRenderContactDetails(id) {
+export function htmlRenderContactDetails(id) {
   return /*html*/`
     <div class="moreIcon" onclick="toggleClass('editMenu', 'ts0', 'ts1'),  activateOutsideCheck('editMenu', 'ts1', 'ts0')">
       <img src="../assets/icons/more_vert.svg" alt="3 points vert">
@@ -130,7 +133,7 @@ function htmlRenderContactDetails(id) {
  * @param {number} width - The width of the SVG.
  * @returns {string} - SVG string for the profile picture.
  */
-function svgProfilePic(color, initials, height, width) {
+export function svgProfilePic(color, initials, height, width) {
   return /*html*/`
     <svg class="profilePic" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 2 - 5}" stroke="white" stroke-width="3" fill="${color}"/>
@@ -168,7 +171,7 @@ function svgProfilePic(color, initials, height, width) {
  * //   profilePic: '<svg>...</svg>'
  * // }
  */
-async function createContact(id, name, email, phone, profilePic, isUser) {
+export async function createContact(id, name, email, phone, profilePic, isUser) {
   return {
     'firstLetters': filterFirstLetters(name),
     'id': id ? id : contacts.length == 0 ? await getContactsData().then(contacts => contacts[contacts.length - 1].id + 1) : contacts[contacts.length - 1].id + 1,

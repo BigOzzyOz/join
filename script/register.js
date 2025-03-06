@@ -1,11 +1,8 @@
-/* These import statements are used to bring in specific functions and modules from the Firebase
-JavaScript SDK version 10.12.4. */
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+import { BASE_URL, contacts, updateData } from "../script.js";
+import { pushToContacts } from "./contacts.js";
+import { createContact } from "./contactsTemplate.js";
+import { auth, database, ref, child, get, createUserWithEmailAndPassword } from "./firebase-init.js";
 
-
-const auth = getAuth();
-const database = getDatabase();
 let clickCount1 = 0;
 let clickCount2 = 0;
 

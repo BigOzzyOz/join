@@ -1,7 +1,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 import { firebaseConfig } from "../assets/environments/firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -20,12 +20,10 @@ onAuthStateChanged(auth, (user) => {
 
 function firebaseLogout() {
   signOut(auth).then(() => {
-    // Sign-out successful.
+
   }).catch((error) => {
-    // An error happened.
+
   });
 }
 
-window.firebaseLogout = firebaseLogout;
-
-export { auth, database, signOut };
+export { auth, database, ref, child, get, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, deleteUser, firebaseLogout };

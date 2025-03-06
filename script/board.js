@@ -1,6 +1,11 @@
+import { BASE_URL, contacts, tasks, init, loadData, updateData } from "../script.js";
+import { updateNoTasksFoundVisibility } from "./board2.js";
+import { getContactsData } from "./contacts.js";
+import { generateTodoHTML } from "./boardtemplate.js";
+
 let currentDraggedElement;
 let currentSearchInput = '';
-let currentTaskStatus;
+export let currentTaskStatus;
 
 
 
@@ -26,7 +31,7 @@ async function initBoard() {
  * checking for deleted users, or pushes data to an array if no tasks exist, and toggles the loader
  * again.
  */
-async function initCheckData() {
+export async function initCheckData() {
   document.querySelector('.loader').classList.toggle('dNone');
   if (tasks.length > 0) {
     for (let i = 0; i < tasks.length; i++) {
@@ -137,7 +142,7 @@ function compareContact(contact) {
 /**
  * Updates all task categories by calling updateTaskCategories for each status.
  */
-function updateAllTaskCategories() {
+export function updateAllTaskCategories() {
   updateTaskCategories("toDo", "toDo", "No tasks to do");
   updateTaskCategories("inProgress", "inProgress", "No tasks in progress");
   updateTaskCategories("awaitFeedback", "awaitFeedback", "No tasks await feedback");
@@ -153,7 +158,7 @@ function updateAllTaskCategories() {
  * @param {Object} singleTask - The task data.
  * @returns {Promise<Object>} The created task object.
  */
-async function createTaskArray(key, singleTask) {
+export async function createTaskArray(key, singleTask) {
   let task = {
     "id": key,
     "assignedTo": singleTask.assignedTo,
@@ -179,7 +184,7 @@ async function createTaskArray(key, singleTask) {
 function updateTaskCategories(status, categoryId, noTaskMessage) {
   let taskForSection = tasks.filter((task) => task.status === status);
   let categoryElement = document.getElementById(categoryId);
-  categoryElement.innerHTML = "";
+  if (categoryElement) categoryElement.innerHTML = "";
   if (taskForSection.length > 0) {
     taskForSection.forEach((element) => {
       categoryElement.innerHTML += generateTodoHTML(element);
@@ -188,7 +193,7 @@ function updateTaskCategories(status, categoryId, noTaskMessage) {
       }
     });
   } else {
-    categoryElement.innerHTML = `<div class="noTaskPlaceholder">${noTaskMessage}</div>`;
+    if (categoryElement) categoryElement.innerHTML = `<div class="noTaskPlaceholder">${noTaskMessage}</div>`;
   }
 }
 
@@ -199,7 +204,7 @@ function updateTaskCategories(status, categoryId, noTaskMessage) {
  * @param {Object[]} subtasks - The list of subtasks.
  * @param {string} taskId - The ID of the task.
  */
-function updateSubtasksProgressBar(subtasks, taskId) {
+export function updateSubtasksProgressBar(subtasks, taskId) {
   let checkedAmt = subtasks.filter(
     (subtask) => subtask.status === "checked"
   ).length;
@@ -217,7 +222,7 @@ function updateSubtasksProgressBar(subtasks, taskId) {
  * Initializes the drag and drop functionality by updating all task categories 
  * and setting up the drag and drop handlers.
  */
-function initDragDrop() {
+export function initDragDrop() {
   updateAllTaskCategories();
   dragDrop();
 }
@@ -315,7 +320,7 @@ function dragEnd() {
 /**
  * Applies the current search filter to update the visibility of tasks.
  */
-function applyCurrentSearchFilter() {
+export function applyCurrentSearchFilter() {
   if (currentSearchInput) {
     searchTasks(currentSearchInput);
   }

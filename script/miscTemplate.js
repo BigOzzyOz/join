@@ -5,7 +5,7 @@
  * @param {string} greetingName - The name of the person being greeted.
  * @returns {string} The HTML string for the mobile greeting section.
  */
-function greetingMobileHTML(greetingTime, greetingName) {
+export function greetingMobileHTML(greetingTime, greetingName) {
   return /*html*/`    
     <div class="summ-greeting-mobile">
       <h3 class="summ-day-greeting">${greetingTime}</h3>
@@ -30,7 +30,7 @@ function greetingMobileHTML(greetingTime, greetingName) {
  * @param {string} task.title - The title of the task.
  * @returns {Object} The task object template.
  */
-function objectTemplateNumberOfBoard(key, task) {
+export function objectTemplateNumberOfBoard(key, task) {
   return {
     "id": key,
     "assignedTo": task.assignedTo,

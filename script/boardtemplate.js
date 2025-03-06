@@ -1,3 +1,5 @@
+import { assignedContacts } from "./addTask.js";
+
 /**
  * Generates the HTML for a todo item.
  * 
@@ -11,7 +13,7 @@
  * @param {string} element.prio - The priority of the todo item.
  * @returns {string} The generated HTML string for the todo item.
  */
-function generateTodoHTML(element) {
+export function generateTodoHTML(element) {
     let categoryHTML = generateCategoryHTML(element.category);
     let titleHTML = generateTitleHTML(element.title);
     let descriptionHTML = generateDescriptionHTML(element.description);
@@ -157,7 +159,7 @@ function generatePrioHTML(prio) {
  * 
  * @returns {Promise<string>} A promise that resolves to the HTML string for the add task template.
  */
-async function fetchAddTaskTemplate() {
+export async function fetchAddTaskTemplate() {
     let response = await fetch("../assets/templates/html/addtasktemplate.html");
     let html = await response.text();
     return `
@@ -247,7 +249,7 @@ function generateModalSubtasksHTML(element) {
  * @param {string} element.date - The due date of the todo item.
  * @returns {string} The generated HTML string for the todo item overlay.
  */
-function generateOpenOverlayHTML(element) {
+export function generateOpenOverlayHTML(element) {
     let modalCategoryHTML = generateModalCategoryHTML(element.category);
     let priority = element.prio.charAt(0).toUpperCase() + element.prio.slice(1);
     let modalAssignedToHTML = generateModalAssignedToHTML(element.assignedTo);
@@ -306,7 +308,7 @@ function generateOpenOverlayHTML(element) {
  * @param {string} taskId - The ID of the task to be edited.
  * @returns {string} The generated HTML string for editing the task.
  */
-function generateTaskEditHTML(taskId) {
+export function generateTaskEditHTML(taskId) {
     let task = tasks.find(task => task.id === taskId);
     let subtaskHTML = '';
     assignedContacts = !task.assignedTo ? [] : task.assignedTo.forEach(t => assignedContacts.push(t));
@@ -415,7 +417,7 @@ function generateTaskEditHTML(taskId) {
  * @param {string} id - The ID of the task to be deleted.
  * @returns {string} The generated HTML string for the delete confirmation dialog.
  */
-function openDeleteTaskSureHtml(id) {
+export function openDeleteTaskSureHtml(id) {
     return /*html*/`
         <div class="deleteQuestion">
             <p>Do you really want to delete this entry?</p>

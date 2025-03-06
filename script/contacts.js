@@ -1,3 +1,6 @@
+import { BASE_URL, currentUser, contacts, init, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck } from "../script.js";
+import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
+
 let currentLetter = '';
 let currentLetterId = '';
 let editId = -1;
@@ -18,7 +21,7 @@ async function initContacts() {
  * 
  * @returns {Promise<Array>} - A promise that resolves to the array of contacts.
  */
-async function getContactsData() {
+export async function getContactsData() {
   contacts = [];
   let loadItem = await loadData('contacts');
   setContactsArray(loadItem);
@@ -187,7 +190,7 @@ function checkAlreadyExists(contact) {
  * @property {string} profilePic - The profile picture of the contact. If not provided, a new one is generated.
  * @property {string} phone - The phone number of the contact.
  */
-function pushToContacts(contact) {
+export function pushToContacts(contact) {
   return {
     'email': contact.mail,
     'firstLetters': filterFirstLetters(contact.name),
@@ -288,7 +291,7 @@ async function deleteContacts(id = editId) {
  * @param {string} name - The name to filter.
  * @returns {string} - The initials created from the name.
  */
-function filterFirstLetters(name) {
+export function filterFirstLetters(name) {
   return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
 }
 
@@ -301,7 +304,7 @@ function filterFirstLetters(name) {
  * @param {number} height - The height of the SVG.
  * @returns {string} - The SVG profile picture as a string.
  */
-function generateSvgCircleWithInitials(name, width, height) {
+export function generateSvgCircleWithInitials(name, width, height) {
   const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
   const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
