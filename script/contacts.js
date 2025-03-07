@@ -22,7 +22,6 @@ async function initContacts() {
  * @returns {Promise<Array>} - A promise that resolves to the array of contacts.
  */
 export async function getContactsData() {
-  contacts = [];
   let loadItem = await loadData('contacts');
   setContactsArray(loadItem);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
@@ -37,6 +36,7 @@ export async function getContactsData() {
  * @returns {void}
  */
 function setContactsArray(loadItem) {
+  contacts.length = 0;
   for (let i = 0; i < loadItem.length; i++) {
     const element = loadItem[i];
     if (!element) continue;

@@ -1,7 +1,7 @@
 import { BASE_URL, contacts, updateData } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
-import { auth, database, ref, child, get, createUserWithEmailAndPassword } from "./firebase-init.js";
+import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "./firebase-init.js";
 
 let clickCount1 = 0;
 let clickCount2 = 0;
@@ -245,11 +245,20 @@ async function emailExists(email) {
  * enters when signing up for an account. It is used to create a new user account with the provided
  * email address and password using the `createUserWithEmailAndPassword` function.
  */
-async function signUp(name, email, password) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await createNewContact(name, email);
-    showSuccessPopup();
-    setTimeout(() => window.location.href = "../index.html", 1500);
+function signUp(name, email, password) {
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    createNewContact(name, email)
+                        .then(() => {
+                            showSuccessPopup();
+                            setTimeout(() => { window.location.href = "../index.html"; signOut(auth); }, 1500);
+                        });
+                });
+        }).catch((err) => {
+            submitDataErrorHandling(err);
+        });
 }
 
 
@@ -328,4 +337,5 @@ is clicked, the function checkBoxClicked will be called. Additionally, the code 
 event listener to the 'DOMContentLoaded' event, which will call the function initRegister when the
 DOM content has finished loading. */
 document.getElementById('privacy-policy').addEventListener('click', checkBoxClicked);
+document.getElementById('back-btn').addEventListener('click', () => { window.location.href = '../index.html'; });
 document.addEventListener('DOMContentLoaded', initRegister);

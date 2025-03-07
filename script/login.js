@@ -117,7 +117,7 @@ async function setCurrentUser(email, userCredential) {
         for (const key in users) {
             if (!users[key]) continue;
             if (users[key].mail.toLowerCase() === email && users[key].isUser) {
-                currentUser = users[key];
+                sessionStorage.setItem('currentUser', JSON.stringify(users[key]));
                 return true;
             }
         }

@@ -8,21 +8,21 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log(user);
-    const uid = user.uid;
-    // ...
-  } else {
-    console.log('No user logged in');
-  }
-});
+// onAuthStateChanged(auth, (user) => {
+//   if (user) {
+//     console.log(user);
+//     const uid = user.uid;
+
+//   } else {
+//     console.log('No user logged in');
+//   }
+// });
 
 function firebaseLogout() {
   signOut(auth).then(() => {
-
-  }).catch((error) => {
-
+    sessionStorage.removeItem('currentUser');
+    localStorage.removeItem('currentUser');
+    window.location.href = '../index.html';
   });
 }
 

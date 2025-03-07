@@ -20,7 +20,6 @@ export async function init() {
   setActive();
   checkCurrentUser();
   if (!sessionStorage.getItem('taskCategory')) sessionStorage.setItem('taskCategory', 'toDo');
-  console.log(document.getElementById('backArrow'));
   if (document.getElementById('backArrow')) document.getElementById('backArrow').addEventListener('click', () => { window.history.back(); });
 }
 
@@ -150,13 +149,9 @@ function checkCurrentUser() {
   const menuUserContainer = document.getElementById('menuUserContainer');
   const headerUserContainer = document.getElementById('headerUserContainer');
   const headerUserBadge = document.querySelectorAll('.headerUserBadge');
-  console.log(window.location.href);
-  if (!forbiddenContent || !menuUserContainer || !headerUserContainer) {
-    return;
-  }
-  if (!currentUser) {
-    noUserContent(forbiddenContent, menuUserContainer, headerUserContainer);
-  } else if (currentUser && currentUser.name === 'Guest') {
+  if (!forbiddenContent || !menuUserContainer || !headerUserContainer) return;
+  if (!currentUser) noUserContent(forbiddenContent, menuUserContainer, headerUserContainer);
+  else if (currentUser && currentUser.name === 'Guest') {
     userContent(forbiddenContent, menuUserContainer, headerUserContainer);
     headerUserBadge.innerHTML = currentUser.firstLetters;
   } else if (currentUser) {
@@ -335,9 +330,6 @@ function capitalize(str) {
  */
 export function logOut() {
   firebaseLogout();
-  sessionStorage.removeItem('currentUser');
-  localStorage.removeItem('currentUser');
-  window.location.href = '../index.html';
 }
 
 

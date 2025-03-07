@@ -22,7 +22,7 @@
     <div class="main-wrapper">
         <div class="main signup-form">
             <div class="form-header">
-                <button class="back-btn" onclick="window.location.href='../index.html';">
+                <button id="back-btn" class="back-btn">
                     <img class="blue-back-button" src="../assets/icons/arrow-left-line.svg">
                 </button>
                 <div class="signup-headline">
@@ -44,9 +44,7 @@
                         <input type="checkbox" id="privacy-policy" name="privacy-policy" style="display:none;" />
                         <img src="../assets/icons/checkbox.svg" id="checkbox" class="checkbox-img" />
                         I accept the
-                        <a href="privacy.html"
-                            onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase())"
-                            target="_blank">Privacy Policy</a>
+                        <a href="privacy.html" target="_blank">Privacy Policy</a>
                     </label>
                 </div>
                 <span id="privacyCheck" class="error">You have to accept the privacy policy to sign up</span>
@@ -70,18 +68,12 @@
     </div>
 
     <div class="footer">
-        <a href="privacy.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase())"
-            target="_blank">Privacy
-            Policy</a>
-        <a href="imprint.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase())"
-            target="_blank">Legal
-            Notice</a>
+        <a href="privacy.html" target="_blank">Privacy Policy</a>
+        <a href="imprint.html" target="_blank">Legal Notice</a>
     </div>
 
     <script type="module" src="../script/firebase-init.js"> </script>
     <script type="module" src="../script/register.js"></script>
-    <script type="module" src="../script/contacts.js"></script>
-    <script type="module" src="../script/contactsTemplate.js"></script>
     <script type="module" src="../script.js"></script>
 
 </body>
