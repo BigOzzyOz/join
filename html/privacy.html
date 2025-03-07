@@ -7,13 +7,13 @@
     <title>Privacy</title>
     <link rel="icon" href="../assets/icons/logoBlue.svg" />
 
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/fonts.css">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/rightsandhelp.css">
 
 </head>
 
-<body onload="init()">
+<body>
 
     <header w3-include-html="../assets/templates/html/header.html" class="header"></header>
 
@@ -903,8 +903,9 @@
                     rel="noopener noreferrer nofollow">Created with the free Privacy Policy Generator by Dr. Thomas
                     Schwenke</a></p>
             <p><em>Translated from German. In case of doubt, the German privacy policy shall prevail.</em></p>
-            <a class="backArrow" href="#" onclick="window.history.back()"><img src="../assets/icons/arrow-left-line.svg"
-                    alt="arrow left line"></a>
+            <a id="backArrow" class="backArrow">
+                <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
+            </a>
         </div>
     </main>
 

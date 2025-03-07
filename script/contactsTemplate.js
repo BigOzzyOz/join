@@ -88,7 +88,7 @@ export function htmlRenderContactDetails(id) {
     <div class="moreIcon" onclick="toggleClass('editMenu', 'ts0', 'ts1'),  activateOutsideCheck('editMenu', 'ts1', 'ts0')">
       <img src="../assets/icons/more_vert.svg" alt="3 points vert">
     </div>
-    <a class="backArrow" onclick="toggleClass('contactsDetail', 'tt0', 'ttx100')">
+    <a id="backArrow-contacts" class="backArrow" onclick="toggleClass('contactsDetail', 'tt0', 'ttx100')">
       <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
     </a>
     <div class="contactsHeader">

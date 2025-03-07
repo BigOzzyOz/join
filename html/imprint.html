@@ -7,13 +7,13 @@
     <title>Imprint</title>
     <link rel="icon" href="../assets/icons/logoBlue.svg" />
 
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/fonts.css">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/rightsandhelp.css">
 
 </head>
 
-<body onload="init()">
+<body>
 
     <header w3-include-html="../assets/templates/html/header.html" class="header"></header>
 
@@ -89,8 +89,9 @@
                     href="mailto:jholtschke@gmx,de">JHoltschke@gmx.de</a>.</p>
             <br>
             <p>Date: July 26, 2023</p>
-            <a class="backArrow" href="#" onclick="window.history.back()"><img src="../assets/icons/arrow-left-line.svg"
-                    alt="arrow left line"></a>
+            <a id="backArrow" class="backArrow">
+                <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
+            </a>
         </div>
 
 

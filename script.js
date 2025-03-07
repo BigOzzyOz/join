@@ -19,9 +19,9 @@ export async function init() {
   await includeHTML();
   setActive();
   checkCurrentUser();
-  if (!sessionStorage.getItem('taskCategory')) {
-    sessionStorage.setItem('taskCategory', 'toDo');
-  }
+  if (!sessionStorage.getItem('taskCategory')) sessionStorage.setItem('taskCategory', 'toDo');
+  console.log(document.getElementById('backArrow'));
+  if (document.getElementById('backArrow')) document.getElementById('backArrow').addEventListener('click', () => { window.history.back(); });
 }
 
 
