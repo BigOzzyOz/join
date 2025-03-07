@@ -194,4 +194,9 @@ function nextPage() {
   sessionStorage.setItem('activeTab', 'board');
 }
 
+document.querySelectorAll('.summ-info-field').forEach(btn => {
+  btn.addEventListener('click', function () {
+    nextPage();
+  });
+});
 document.addEventListener('DOMContentLoaded', () => { initSummary(); });

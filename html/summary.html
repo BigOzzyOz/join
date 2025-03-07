@@ -7,8 +7,8 @@
     <title>Summary</title>
     <link rel="icon" href="../assets/icons/logoBlue.svg" />
 
-    <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../style/fonts.css">
+    <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../style/summary.css">
 
 </head>
@@ -29,7 +29,7 @@
             <div class="summ-2">
                 <div class="summ-stats">
                     <div class="topContainer">
-                        <div class="summ-toDO-info summ-info-field" onclick="nextPage()">
+                        <div class="summ-toDO-info summ-info-field">
                             <img class="summ-pencil-toDO" src="../assets/icons/summary-pencil.png">
                             <img class="summ-pencil-unvisible" src="..//assets/icons/summary-pencil-unvisiable.png">
 
@@ -38,7 +38,7 @@
                                 <span class="how-many-done">To-do</span>
                             </div>
                         </div>
-                        <div class="summ-done-info summ-info-field" onclick="nextPage()">
+                        <div class="summ-done-info summ-info-field">
                             <img class="summ-todo-cheking" src="..//assets/icons/summary-check.png">
                             <img class="summ-todo-hover-cheking" src="..//assets/icons/summary-hover-check.png">
                             <div class="summ-open-info">
@@ -48,7 +48,7 @@
                         </div>
                     </div>
 
-                    <div class="summ-stats-urgent summ-info-field" onclick="nextPage()">
+                    <div class="summ-stats-urgent summ-info-field">
                         <div class="summ-info-urgent">
                             <img src="../assets/icons/summary-urgent-logo.png">
                             <div class="summ-info">
@@ -64,15 +64,15 @@
                         </div>
                     </div>
                     <div class="summ-stats-under-container">
-                        <div class="summ-info-field under-container" onclick="nextPage()">
+                        <div class="summ-info-field under-container">
                             <span id="howManyTaskInBoard" class="summ-stats-under-howmany">0</span>
                             <span class="summ-stats-under-tasks">Tasks in board</span>
                         </div>
-                        <div class="summ-info-field under-container" onclick="nextPage()">
+                        <div class="summ-info-field under-container">
                             <span id="howManyInProgress" class="summ-stats-under-howmany">0</span>
                             <span class="summ-stats-under-tasks">Tasks in Progress</span>
                         </div>
-                        <div class="summ-info-field under-container" onclick="nextPage()">
+                        <div class="summ-info-field under-container">
                             <span id="howManyAwaitFeedback" class="summ-stats-under-howmany">0</span>
                             <span class="summ-stats-under-tasks">Awaiting Feedback</span>
                         </div>
@@ -89,11 +89,6 @@
     <nav w3-include-html="../assets/templates/html/menu.html" class="menu"></nav>
 
     <script type="module" src="../script/firebase-init.js"></script>
-    <script type="module" src="../script/board.js"></script>
-    <script type="module" src="../script/board2.js"></script>
-    <script type="module" src="../script/boardtemplate.js"></script>
-    <script type="module" src="../script/addTask.js"></script>
-    <script type="module" src="../script/miscTemplate.js"></script>
     <script type="module" src="../script/summary.js"></script>
     <script type="module" src="../script.js"></script>
 
