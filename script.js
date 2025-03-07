@@ -16,6 +16,7 @@ export let currentPrio = 'medium';
  * If 'taskCategory' isn't set in session storage, it'll get set to 'toDo'.
  */
 export async function init() {
+  console.log('init');
   await includeHTML();
   setActive();
   checkCurrentUser();
@@ -49,6 +50,30 @@ async function includeHTML() {
       element.innerHTML = 'Page not found';
     }
   }
+  if (includeElements.length > 0) activateListener();
+}
+
+function activateListener() {
+  const headerUserBadge = document.getElementById('headerUserBadge');
+  const headerUserBadgeMobile = document.getElementById('headerUserBadgeMobile');
+  const headerLogout = document.getElementById('header-logout');
+  const headerLegal = document.getElementById('header-legal');
+  const headerPrivacy = document.getElementById('header-privacy');
+  const menuBtns = document.querySelectorAll('.menuBtn');
+
+  headerUserBadge.addEventListener('click', (event) => {
+    toggleClass('headerMenuContainer', 'ts0', 'ts1');
+    activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
+  });
+  headerUserBadgeMobile.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleClass('headerMenuContainer', 'ts0', 'ts1');
+    activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
+  });
+  headerLogout.addEventListener('click', logOut);
+  headerLegal.addEventListener('click', () => setActiveTab('.menuBtn[href=\'../html/imprint.html\']'));
+  headerPrivacy.addEventListener('click', () => setActiveTab('.menuBtn[href=\'../html/privacy.html\']'));
+  menuBtns.forEach(btn => btn.addEventListener('click', () => changeActive(btn)));
 }
 
 
@@ -149,6 +174,8 @@ function checkCurrentUser() {
   const menuUserContainer = document.getElementById('menuUserContainer');
   const headerUserContainer = document.getElementById('headerUserContainer');
   const headerUserBadge = document.querySelectorAll('.headerUserBadge');
+  console.log('checkCurrentUser');
+  console.log(currentUser);
   if (!forbiddenContent || !menuUserContainer || !headerUserContainer) return;
   if (!currentUser) noUserContent(forbiddenContent, menuUserContainer, headerUserContainer);
   else if (currentUser && currentUser.name === 'Guest') {
@@ -197,6 +224,7 @@ function userContent(forbiddenContent, menuUserContainer, headerUserContainer) {
  * @param {string} className2 - The second class to toggle.
  */
 export function toggleClass(menu, className1, className2) {
+  console.log(menu, className1, className2);
   let edit = document.getElementById(menu);
   edit.classList.toggle(className1);
   edit.classList.toggle(className2);
@@ -342,8 +370,11 @@ export function logOut() {
  * @param {string} class1 - The class to check if the modal has.
  * @param {string} class2 - The class to toggle if the modal should be hidden.
  */
-export function activateOutsideCheck(modalName, class1, class2) {
-  document.addEventListener('mousedown', function () { checkOutsideModal(modalName, class1, class2); });
+export function activateOutsideCheck(event, modalName, class1, class2) {
+  event.stopPropagation();
+  document.addEventListener('click', function () {
+    checkOutsideModal(event, modalName, class1, class2);
+  });
 }
 
 
@@ -357,17 +388,16 @@ export function activateOutsideCheck(modalName, class1, class2) {
  * @param {string} class1 - The class to check if the modal has.
  * @param {string} class2 - The class to toggle if the modal should be hidden.
  */
-function checkOutsideModal(modalName, class1, class2) {
+function checkOutsideModal(event, modalName, class1, class2) {
   let modal = document.getElementById(modalName);
+  console.log(modal);
   if (modal.classList.contains(class1) && !modal.contains(event.target)) {
     toggleClass(modalName, class1, class2);
     document.removeEventListener('click', function () { checkOutsideModal(modalName); });
   };
 }
 
+
 document.addEventListener('DOMContentLoaded', () => { init(); });
-document.querySelectorAll('.menuBtn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    changeActive(this);
-  });
-});
+
+

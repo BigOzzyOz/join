@@ -1,4 +1,4 @@
-import { currentUser, init, loadData } from "../script.js";
+import { currentUser, loadData } from "../script.js";
 import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
 
 let numberOfBoard = [];
@@ -16,7 +16,6 @@ let counts = {
  * tasks asynchronously.
  */
 async function initSummary() {
-  init();
   greetingSummary();
   await loadCategory();
   taskAssignment();

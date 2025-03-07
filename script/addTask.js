@@ -425,4 +425,3 @@ function clearAddTaskForm() {
   clearSubtaskList();
 }
 
-document.addEventListener("DOMContentLoaded", () => { init(); });

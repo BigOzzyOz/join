@@ -1,4 +1,4 @@
-import { BASE_URL, currentUser, contacts, init, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck } from "../script.js";
+import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
 
 let currentLetter = '';
@@ -10,7 +10,6 @@ let editId = -1;
  * Initializes the contacts page by setting up necessary data and rendering contacts.
  */
 async function initContacts() {
-  init();
   await getContactsData();
   renderContactsGeneral();
 }

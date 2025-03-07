@@ -14,7 +14,6 @@ export let currentTaskStatus;
  * session storage, enabling drag and drop functionality, and applying search filters.
  */
 async function initBoard() {
-  init();
   try {
     await initCheckData();
     sessionStorage.setItem("tasks", JSON.stringify(tasks));
@@ -32,7 +31,8 @@ async function initBoard() {
  * again.
  */
 export async function initCheckData() {
-  document.querySelector('.loader').classList.toggle('dNone');
+  let loader = document.querySelector('.loader');
+  if (loader) loader.classList.toggle('dNone');
   if (tasks.length > 0) {
     for (let i = 0; i < tasks.length; i++) {
       tasks[i] = await checkDeletedUser(tasks[i]);
@@ -40,7 +40,7 @@ export async function initCheckData() {
   } else {
     await pushDataToArray();
   }
-  document.querySelector('.loader').classList.toggle('dNone');
+  if (loader) loader.classList.toggle('dNone');
 }
 
 
@@ -52,7 +52,7 @@ export async function initCheckData() {
 async function pushDataToArray() {
   try {
     let tasksData = await loadData("tasks");
-    tasks = [];
+    tasks.length = 0;
     for (const key in tasksData) {
       let singleTask = tasksData[key];
       if (!singleTask) continue;
@@ -184,7 +184,8 @@ export async function createTaskArray(key, singleTask) {
 function updateTaskCategories(status, categoryId, noTaskMessage) {
   let taskForSection = tasks.filter((task) => task.status === status);
   let categoryElement = document.getElementById(categoryId);
-  if (categoryElement) categoryElement.innerHTML = "";
+  if (!categoryElement) return;
+  categoryElement.innerHTML = "";
   if (taskForSection.length > 0) {
     taskForSection.forEach((element) => {
       categoryElement.innerHTML += generateTodoHTML(element);
@@ -392,3 +393,7 @@ function emptyDragAreaWhileSearching(searchValue) {
     });
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  initBoard();
+});
