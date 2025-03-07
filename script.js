@@ -150,6 +150,10 @@ function checkCurrentUser() {
   const menuUserContainer = document.getElementById('menuUserContainer');
   const headerUserContainer = document.getElementById('headerUserContainer');
   const headerUserBadge = document.querySelectorAll('.headerUserBadge');
+  console.log(window.location.href);
+  if (!forbiddenContent || !menuUserContainer || !headerUserContainer) {
+    return;
+  }
   if (!currentUser) {
     noUserContent(forbiddenContent, menuUserContainer, headerUserContainer);
   } else if (currentUser && currentUser.name === 'Guest') {
@@ -369,4 +373,9 @@ function checkOutsideModal(modalName, class1, class2) {
   };
 }
 
-document.addEventListener('DOMContentLoaded', () => { initDragDrop(); });
+document.addEventListener('DOMContentLoaded', () => { init(); });
+document.querySelectorAll('.menuBtn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    changeActive(this);
+  });
+});

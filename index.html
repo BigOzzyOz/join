@@ -19,7 +19,7 @@
         <img id="logo" src="assets/icons/logoBlue.svg">
         <header>
             <span>Not a Join user?</span>
-            <button class="signup-button" onclick="window.location.href='html/register.html';">
+            <button id="signup-btn" class="signup-button">
                 Sign Up
             </button>
         </header>
@@ -61,18 +61,14 @@
 
 
         <footer>
-            <a href="html/privacy.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase());"
-                target="_blank">Privacy Policy</a>
-            <a href="html/imprint.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase())"
-                target="_blank">Legal Notice</a>
+            <a id="privacy-policy" href="html/privacy.html" target="_blank">Privacy Policy</a>
+            <a id="legal-notice" href="html/imprint.html" target="_blank">Legal Notice</a>
         </footer>
 
     </div>
 
     <script type="module" src="script/firebase-init.js"></script>
     <script type="module" src="script/login.js"></script>
-    <script type="module" src="script/contacts.js"></script>
-    <script type="module" src="script/contactsTemplate.js"></script>
     <script type="module" src="script.js"></script>
 
 </body>

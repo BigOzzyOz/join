@@ -198,4 +198,7 @@ function checkBoxClicked() {
 document.getElementById('rememberMe').addEventListener('click', checkBoxClicked);
 document.getElementById('loginButton').addEventListener('click', loginButtonClick);
 document.getElementById('guestLogin').addEventListener('click', handleGuestLogin);
+document.getElementById('signup-btn').addEventListener('click', () => { window.location.href = 'html/register.html'; });
+document.getElementById('privacy-policy').addEventListener('click', () => { sessionStorage.setItem('activeTab', "privacy policy"); });
+document.getElementById('legal-notice').addEventListener('click', () => { sessionStorage.setItem('activeTab', "legal notice"); });
 document.addEventListener("DOMContentLoaded", initLogin);
