@@ -12,8 +12,160 @@ let editId = -1;
 async function initContacts() {
   await getContactsData();
   renderContactsGeneral();
+  activateListeners();
 }
 
+export function deactivateAllListenersContacts() {
+  deactivateListeners();
+  deactivateListenersDetails();
+  deactivateListenersEdit();
+  deactivateListenersDelete();
+  deactivateListenersAdd();
+}
+
+function activateListeners() {
+  const moreContactsButton = document.getElementById('moreContactsButton');
+  const contactsListItem = document.querySelectorAll('.contactListItem');
+  moreContactsButton.addEventListener('click', openAddContacts);
+  contactsListItem.forEach(item => item.addEventListener('click', openContactDetails));
+}
+
+function deactivateListeners() {
+  const moreContactsButton = document.getElementById('moreContactsButton');
+  const contactsListItem = document.querySelectorAll('.contactListItem');
+  moreContactsButton?.removeEventListener('click', openAddContacts);
+  contactsListItem.forEach(item => item?.removeEventListener('click', openContactDetails));
+}
+
+function openContactDetails(event) {
+  const listItem = event.target.closest('li.contactListItem');
+  toggleClass('contactsDetail', 'tt0', 'ttx100');
+  renderContactsDetails(listItem.dataset.id);
+}
+
+function activateListenersDetails() {
+  const backArrowContacts = document.getElementById('backArrow-contacts');
+  const editContactBtn = document.getElementById('editContactBtn');
+  const deleteContactBtn = document.getElementById('deleteContactBtn');
+  const contactsDetailMore = document.getElementById('contactsDetailMore');
+  backArrowContacts.addEventListener('click', closeDetails);
+  editContactBtn.addEventListener('click', openEditContactsButton);
+  deleteContactBtn.addEventListener('click', openDeleteContactsButton);
+  contactsDetailMore.addEventListener('click', contactsDetailsMore);
+}
+
+function deactivateListenersDetails() {
+  const backArrowContacts = document.getElementById('backArrow-contacts');
+  const editContactBtn = document.getElementById('editContactBtn');
+  const deleteContactBtn = document.getElementById('deleteContactBtn');
+  const contactDetailsMore = document.getElementById('contactDetailsMore');
+  backArrowContacts?.removeEventListener('click', closeDetails);
+  editContactBtn?.removeEventListener('click', openEditContactsButton);
+  deleteContactBtn?.removeEventListener('click', openDeleteContactsButton);
+  contactDetailsMore?.removeEventListener('click', contactsDetailsMore);
+}
+
+function closeDetails() {
+  toggleClass('contactsDetail', 'tt0', 'ttx100');
+}
+
+function openDeleteContactsButton(event) {
+  const target = event.target.closest('#deleteContactBtn');
+  openDeleteContacts(target.dataset.id);
+}
+
+function openEditContactsButton(event) {
+  const target = event.target.closest('#editContactBtn');
+  openEditContacts(event, target.dataset.id);
+}
+
+function contactsDetailsMore(event) {
+  toggleClass('editMenu', 'ts0', 'ts1');
+  activateOutsideCheck(event, 'editMenu', 'ts1', 'ts0');
+}
+
+function activateListenersAdd() {
+  const addContactX = document.querySelectorAll('#addContact .closeX');
+  const addContact = document.querySelector('#addContact form');
+  const addContactCancel = document.getElementById('cancelAddContact');
+  addContactX.forEach(b => b.addEventListener('click', closeAddContact));
+  addContact.addEventListener('submit', submitAddContact);
+  addContactCancel.addEventListener('click', closeAddContact);
+}
+
+function deactivateListenersAdd() {
+  const addContactX = document.querySelectorAll('#addContact .closeX');
+  const addContact = document.querySelector('#addContact form');
+  const addContactCancel = document.getElementById('cancelAddContact');
+  addContactX.forEach(b => b?.removeEventListener('click', closeAddContact));
+  addContact?.removeEventListener('submit', submitAddContact);
+  addContactCancel?.removeEventListener('click', closeAddContact);
+}
+
+function closeAddContact() {
+  toggleClass('addContact', 'tt0', 'tty100');
+  deactivateListenersAdd();
+}
+
+function submitAddContact(event) {
+  event.preventDefault();
+  closeAddContact();
+  addContacts();
+}
+
+function activateListenersEdit() {
+  const workContactX = document.querySelectorAll('#editContact .closeX');
+  const editContact = document.querySelector('#editContact form');
+  const editContactDelete = document.getElementById('editContactDelete');
+  workContactX.forEach(b => b.addEventListener('click', closeEditContact));
+  editContactDelete.addEventListener('click', openDeleteContacts);
+  editContact.addEventListener('submit', submitEditContact);
+}
+
+function deactivateListenersEdit() {
+  const workContactX = document.querySelectorAll('#editContact .closeX');
+  const editContact = document.querySelector('#editContact form');
+  const editContactDelete = document.getElementById('editContactDelete');
+  workContactX.forEach(b => b?.removeEventListener('click', closeEditContact));
+  editContactDelete?.removeEventListener('click', openDeleteContacts);
+  editContact?.removeEventListener('submit', submitEditContact);
+}
+
+function closeEditContact() {
+  toggleClass('editContact', 'tt0', 'tty100');
+  deactivateListenersEdit();
+}
+
+function submitEditContact(event) {
+  event.preventDefault();
+  closeEditContact();
+  editContacts();
+}
+
+function activateListenersDelete() {
+  const deleteResponse = document.querySelector('#deleteResponse form');
+  const closeDeleteResponse = document.getElementById('closeDeleteResponse');
+  deleteResponse.addEventListener('submit', submitDeleteContact);
+  closeDeleteResponse.addEventListener('click', closeDeleteResponse);
+}
+
+function deactivateListenersDelete() {
+  const deleteResponse = document.querySelector('#deleteResponse form');
+  const closeDeleteResponse = document.getElementById('closeDeleteResponse');
+  deleteResponse?.removeEventListener('submit', submitDeleteContact);
+  closeDeleteResponse?.removeEventListener('click', closeDeleteResponse);
+}
+
+function submitDeleteContact(event) {
+  event.preventDefault();
+  closeDeleteResponse();
+  deleteContacts();
+}
+
+function closeDeleteResponse() {
+  toggleClass('deleteResponse', 'ts0', 'ts1');
+  deactivateListenersDelete();
+}
 
 /**
  * Fetches contact data from storage and sets it in the contacts array.
@@ -97,6 +249,7 @@ function renderContactsDetails(id = '') {
   editId = id;
   details.innerHTML = contacts.find(c => (c.id == editId)) && (editId != -1) ? htmlRenderContactDetails(editId) : htmlRenderContactDetailsEmpty();
   makeContactActive(id);
+  activateListenersDetails();
 }
 
 
@@ -117,7 +270,7 @@ function makeContactActive(id = editId) {
 /**
  * Opens the add contact modal with empty input fields.
  */
-function openAddContacts() {
+function openAddContacts(event) {
   editId = contacts[contacts.length - 1].id + 1;
   let name = document.getElementById('addName');
   let email = document.getElementById('addMail');
@@ -126,7 +279,8 @@ function openAddContacts() {
   email.value = '';
   tel.value = '';
   toggleClass('addContact', 'tt0', 'tty100');
-  activateOutsideCheck('addContact', 'tt0', 'tty100');
+  activateListenersAdd();
+  activateOutsideCheck(event, 'addContact', 'tt0', 'tty100');
 }
 
 
@@ -144,7 +298,6 @@ async function addContacts(id = editId) {
     await updateData(`${BASE_URL}contacts/${id}.json`, newContact);
     contacts.push(pushToContacts(newContact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
-    toggleClass('addContact', 'tt0', 'tty100');
     refreshPage();
   }
 }
@@ -207,7 +360,7 @@ export function pushToContacts(contact) {
  * 
  * @param {number|string} id - The ID of the contact to edit.
  */
-function openEditContacts(id) {
+function openEditContacts(event, id) {
   editId = id;
   let name = document.getElementById('editName');
   let email = document.getElementById('editMail');
@@ -218,7 +371,8 @@ function openEditContacts(id) {
   tel.value = contacts[contacts.findIndex(c => c.id == id)].phone;
   profilePic.innerHTML = contacts[contacts.findIndex(c => c.id == id)].profilePic;
   toggleClass('editContact', 'tt0', 'tty100');
-  activateOutsideCheck('editContact', 'tt0', 'tty100');
+  activateOutsideCheck(event, 'editContact', 'tt0', 'tty100');
+  activateListenersEdit();
 }
 
 
@@ -240,7 +394,6 @@ async function editContacts(id = editId) {
     let editContact = await createContact(contact.id, editName, editEmail, editTel, nameChange ? false : contact.profilePic, contact.isUser);
     contacts[contacts.findIndex(c => c.id == id)].profilePic = editContact.profilePic;
     await updateData(`${BASE_URL}contacts/${id}.json`, editContact);
-    toggleClass('editContact', 'tt0', 'tty100');
     refreshPage();
   }
 }
@@ -253,7 +406,7 @@ async function editContacts(id = editId) {
  * the contact that you want to delete. If no `id` is provided when calling the function, it will
  * default to the value of `editId`.
  */
-function openDeleteContacts(id = editId) {
+function openDeleteContacts(event, id = editId) {
   editId = id;
   let response = document.querySelector('#deleteResponse>.deleteQuestion>p');
   if (id === currentUser.id) {
@@ -279,7 +432,6 @@ async function deleteContacts(id = editId) {
   contacts.splice(contacts.findIndex(c => c.id == id), 1);
   await deleteData(`contacts/${id}`);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
-  toggleClass('deleteResponse', 'ts0', 'ts1');
   id === currentUser.id ? logOut() : refreshPage();
 }
 
@@ -309,3 +461,7 @@ export function generateSvgCircleWithInitials(name, width, height) {
   const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
   return svgProfilePic(randomColor, initials, height, width);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.href.includes('contacts.html')) initContacts();
+});

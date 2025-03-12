@@ -77,7 +77,7 @@ function closeAssignDropdown() {
   searchInput.value = 'Select contacts to assign';
   searchInput.setAttribute('readonly', true);
   searchInput.setAttribute('onclick', 'toggleDropdown()');
-  document.removeEventListener('click', checkOutsideAssign);
+  document?.removeEventListener('click', checkOutsideAssign);
 };
 
 

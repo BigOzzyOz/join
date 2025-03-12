@@ -8,7 +8,7 @@ import { getContactsData, filterFirstLetters, generateSvgCircleWithInitials } fr
  */
 export function htmlRenderAddContact() {
   return /*html*/`
-    <div class="moreIcon" onclick="openAddContacts()">
+    <div id="moreContactsButton" class="moreIcon">
       <p>Add new contact</p>
       <img src="../assets/icons/person_add.svg" alt="person add">
     </div>
@@ -47,7 +47,7 @@ export function htmlRenderContactLetter(letter) {
  */
 export function htmlRenderGeneral(contact) {
   return /*html*/`
-    <li id="contact${contact.id}" onclick="toggleClass('contactsDetail', 'tt0', 'ttx100'); renderContactsDetails(${contact.id})">
+    <li id="contact${contact.id}" class="contactListItem" data-id="${contact.id}">
       <div class="contactSmall">
         ${contact.profilePic}
       </div>
@@ -85,10 +85,10 @@ export function htmlRenderContactDetailsEmpty() {
  */
 export function htmlRenderContactDetails(id) {
   return /*html*/`
-    <div class="moreIcon" onclick="toggleClass('editMenu', 'ts0', 'ts1'),  activateOutsideCheck('editMenu', 'ts1', 'ts0')">
+    <div id="contactsDetailMore" class="moreIcon">
       <img src="../assets/icons/more_vert.svg" alt="3 points vert">
     </div>
-    <a id="backArrow-contacts" class="backArrow" onclick="toggleClass('contactsDetail', 'tt0', 'ttx100')">
+    <a id="backArrow-contacts" class="backArrow">
       <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
     </a>
     <div class="contactsHeader">
@@ -102,12 +102,12 @@ export function htmlRenderContactDetails(id) {
       <div>
         <h2>${contacts[contacts.findIndex(c => c.id == id)].name}</h2>
         <div id="editMenu" class="editMenu ts0">
-          <div class="editMenuItem" onclick="openEditContacts(${id})">
+          <div id="editContactBtn" class="editMenuItem" data-id="${id}">
             <img class="editMenuButton" src="../assets/icons/edit.svg" alt="pencil">
             <img class="editMenuButton hoverEffectIcon" src="../assets/icons/editBlue.svg" alt="blue pencil">
             <p>Edit</p>
           </div>
-          <div class="editMenuItem" onclick="openDeleteContacts(${id})">
+          <div id="deleteContactBtn" class="editMenuItem" data-id="${id}">
             <img class="editMenuButton" src="../assets/icons/delete.svg" alt="trashcan">
             <img class="editMenuButton hoverEffectIcon" src="../assets/icons/deleteBlue.svg" alt="blue trashcan">
             <p>Delete</p>

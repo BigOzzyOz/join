@@ -14,7 +14,7 @@
 
 </head>
 
-<body onload="initContacts()">
+<body>
 
     <header w3-include-html="../assets/templates/html/header.html" class="header"></header>
 
@@ -28,10 +28,8 @@
         <div id="contactsGeneral" class="contactsGeneral"></div>
         <div id="addContact" class="workContact tty100">
             <div class="workContactContainer up">
-                <img class="closeX" src="../assets/icons/close.svg" alt="close X"
-                    onclick="toggleClass('addContact', 'tt0', 'tty100')">
-                <img class="closeX" src="../assets/icons/closeGrey.svg" alt="close X"
-                    onclick="toggleClass('addContact', 'tt0', 'tty100')">
+                <img class="closeX" src="../assets/icons/close.svg" alt="close X">
+                <img class="closeX" src="../assets/icons/closeGrey.svg" alt="close X">
                 <img src="../assets/icons/logowhite.svg" alt="logo white">
                 <h2>Add contact</h2>
                 <p class="bordered">Tasks are better with a team!</p>
@@ -40,7 +38,7 @@
                 <img src="../assets/img/contacts/emptyProfilPic.svg" alt="empty Profil Picture">
             </div>
             <div class="workContactContainer down">
-                <form onsubmit="addContacts(); return false;" class="contactForm">
+                <form class="contactForm">
                     <div class="warning d-none">Name or E-Mail already in use</div>
                     <input id="addName" type="text" placeholder="Name Lastname" value=""
                         pattern="[A-Z][a-zA-Z]+(\s[A-Z][a-zA-Z]+)+"
@@ -53,7 +51,7 @@
                         title="Phone number must include country prefix, phone prefix, and phone number (e.g., +491234567890)"
                         minlength="7" maxlength="17" value="" required>
                     <div class="editButtonContainer">
-                        <button onclick="toggleClass('addContact', 'tt0', 'tty100')" class="deleteContactButton">Cancel
+                        <button id="cancelAddContact" class="deleteContactButton">Cancel
                             <img src="../assets/icons/closeGrey.svg" alt="close X">
                             <img src="../assets/icons/closeBlue.svg" alt="close X">
                         </button>
@@ -66,16 +64,14 @@
         </div>
         <div id="editContact" class="workContact tty100">
             <div class="workContactContainer up">
-                <img class="closeX" src="../assets/icons/close.svg" alt="close X"
-                    onclick="toggleClass('editContact', 'tt0', 'tty100')">
-                <img class="closeX" src="../assets/icons/closeGrey.svg" alt="close X"
-                    onclick="toggleClass('editContact', 'tt0', 'tty100')">
+                <img class="closeX" src="../assets/icons/close.svg" alt="close X">
+                <img class="closeX" src="../assets/icons/closeGrey.svg" alt="close X">
                 <img src="../assets/icons/logowhite.svg" alt="logo white">
                 <h2 class="bordered">Edit contact</h2>
             </div>
             <div id="editProfilePic" class="editProfilePic"></div>
             <div class="workContactContainer down">
-                <form onsubmit="editContacts(); return false;" class="contactForm">
+                <form class="contactForm">
                     <div class="warning d-none">Name or E-Mail already in use</div>
                     <input id="editName" type="text" placeholder="Name Lastname" value=""
                         pattern="[A-Z][a-zA-Z]+(\s[A-Z][a-zA-Z]+)+"
@@ -88,7 +84,7 @@
                         title="Phone number must include country prefix, phone prefix, and phone number (e.g., +491234567890)"
                         minlength="7" maxlength="17" value="" required>
                     <div class="editButtonContainer">
-                        <button type="button" onclick="openDeleteContacts()" class="deleteContactButton">Delete</button>
+                        <button id="editContactDelete" type="button" class="deleteContactButton">Delete</button>
                         <button type="submit" class="editContactButton">Save <img src="../assets/icons/check.svg"
                                 alt="check icon"></button>
                     </div>
@@ -98,10 +94,14 @@
         <div id="deleteResponse" class="deleteResponse ts0">
             <div class="deleteQuestion">
                 <p>Do you really want to delete this entry?</p>
-                <form onsubmit="deleteContacts(); return false;">
-                    <button type="button" onclick="toggleClass('deleteResponse', 'ts0', 'ts1')">NO <img
-                            src="../assets/icons/close.svg" alt="close X"></button>
-                    <button type="submit">YES <img src="../assets/icons/check.svg" alt="check icon"></button>
+                <form>
+                    <button id="closeDeleteResponse" type="button">
+                        NO
+                        <img src="../assets/icons/close.svg" alt="close X">
+                    </button>
+                    <button type="submit">
+                        YES
+                        <img src="../assets/icons/check.svg" alt="check icon"></button>
                 </form>
             </div>
         </div>
@@ -112,7 +112,6 @@
     <nav w3-include-html="../assets/templates/html/menu.html" class="menu"></nav>
 
     <script type="module" src="../script/firebase-init.js"></script>
-    <script type="module" src="../script/contactsTemplate.js"></script>
     <script type="module" src="../script/contacts.js"></script>
     <script type="module" src="../script.js"></script>
 

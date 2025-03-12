@@ -10,6 +10,7 @@ let clickCount = -1;
  * Initializes the login form, setting up remembered user credentials and password toggle functionality.
  */
 function initLogin() {
+    activateListener();
     if (document.getElementById('login-form')) {
         let rememberMe = localStorage.getItem('rememberMe') === 'true';
         if (rememberMe) {
@@ -195,10 +196,36 @@ function checkBoxClicked() {
     checkboxImg.src = checkedState ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
 }
 
-document.getElementById('rememberMe').addEventListener('click', checkBoxClicked);
-document.getElementById('loginButton').addEventListener('click', loginButtonClick);
-document.getElementById('guestLogin').addEventListener('click', handleGuestLogin);
-document.getElementById('signup-btn').addEventListener('click', () => { window.location.href = 'html/register.html'; });
-document.getElementById('privacy-policy').addEventListener('click', () => { sessionStorage.setItem('activeTab', "privacy policy"); });
-document.getElementById('legal-notice').addEventListener('click', () => { sessionStorage.setItem('activeTab', "legal notice"); });
+function activateListener() {
+    document.getElementById('rememberMe')?.addEventListener('click', checkBoxClicked);
+    document.getElementById('loginButton')?.addEventListener('click', loginButtonClick);
+    document.getElementById('guestLogin')?.addEventListener('click', handleGuestLogin);
+    document.getElementById('signup-btn')?.addEventListener('click', forwardRegister);
+    document.getElementById('privacy-policy')?.addEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice')?.addEventListener('click', forwardLegal);
+}
+
+export function deactivateAllListenersLogin() {
+    document.getElementById('rememberMe')?.removeEventListener('click', checkBoxClicked);
+    document.getElementById('loginButton')?.removeEventListener('click', loginButtonClick);
+    document.getElementById('guestLogin')?.removeEventListener('click', handleGuestLogin);
+    document.getElementById('signup-btn')?.removeEventListener('click', forwardRegister);
+    document.getElementById('privacy-policy')?.removeEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice')?.removeEventListener('click', forwardLegal);
+}
+
+
+function forwardRegister() {
+    window.location.href = 'html/register.html';
+}
+
+function forwardLegal() {
+    sessionStorage.setItem('activeTab', "legal notice");
+}
+
+function forwardPrivacy() {
+    sessionStorage.setItem('activeTab', "privacy policy");
+}
+
+
 document.addEventListener("DOMContentLoaded", initLogin);
