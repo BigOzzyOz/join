@@ -4,6 +4,7 @@ import { closeModal } from "./script/board2.js";
 import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
 import { deactivateAllListenersContacts } from "./script/contacts.js";
 import { deactivateAllListenersLogin } from "./script/login.js";
+import { deactivateAllListenersRegister } from "./script/register.js";
 
 export const BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
 export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
@@ -95,6 +96,7 @@ function handleMenuClick(event) {
 
 function deactivateListeners() {
   deactivateAllListenersLogin();
+  deactivateAllListenersRegister();
   deactivateAllListenersContacts();
   deactivateListenersScript();
 }
@@ -106,6 +108,12 @@ function deactivateListenersScript() {
   const headerLegal = document.getElementById('header-legal');
   const headerPrivacy = document.getElementById('header-privacy');
   const menuBtns = document.querySelectorAll('.menuBtn');
+  headerUserBadge.removeEventListener('click', headerUserBadgeButton);
+  headerUserBadgeMobile.removeEventListener('click', headerUserBadgeMobileButton);
+  headerLogout.removeEventListener('click', logOut);
+  headerLegal.removeEventListener('click', headerLegalButton);
+  headerPrivacy.removeEventListener('click', headerPrivacyButton);
+  menuBtns.forEach(btn => btn.removeEventListener('click', handleMenuClick));
 }
 
 /**

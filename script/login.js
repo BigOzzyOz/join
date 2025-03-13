@@ -219,11 +219,11 @@ function forwardRegister() {
     window.location.href = 'html/register.html';
 }
 
-function forwardLegal() {
+export function forwardLegal() {
     sessionStorage.setItem('activeTab', "legal notice");
 }
 
-function forwardPrivacy() {
+export function forwardPrivacy() {
     sessionStorage.setItem('activeTab', "privacy policy");
 }
 

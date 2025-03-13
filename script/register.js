@@ -1,6 +1,7 @@
 import { BASE_URL, contacts, updateData } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
+import { forwardLegal, forwardPrivacy } from "./login.js";
 import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "./firebase-init.js";
 
 let clickCount1 = 0;
@@ -12,9 +13,7 @@ let clickCount2 = 0;
  * for a signup form.
  */
 function initRegister() {
-    document.getElementById('signupForm').addEventListener('submit', submitData);
-    setupPasswordFieldToggle("password");
-    setupPasswordFieldToggle("confirmPassword");
+    activateListener();
 }
 
 
@@ -26,9 +25,54 @@ function initRegister() {
  */
 function setupPasswordFieldToggle(inputFieldId) {
     const passwordInputField = document.getElementById(inputFieldId);
-    passwordInputField.addEventListener("mousedown", (event) => togglePassword(event, passwordInputField));
-    passwordInputField.addEventListener("focus", () => updateBackgroundImage(passwordInputField, false));
-    passwordInputField.addEventListener("blur", () => resetState(passwordInputField));
+    if (!passwordInputField) return;
+    function handleClick(event) {
+        togglePassword(event, passwordInputField);
+    }
+    function handleFocus() {
+        updateBackgroundImage(passwordInputField, false);
+    }
+    function handleBlur() {
+        resetState(passwordInputField);
+    }
+    passwordInputField.addEventListener('click', handleClick);
+    passwordInputField.addEventListener('abort', handleFocus);
+    passwordInputField.addEventListener('blur', handleBlur);
+    passwordInputField._eventHandlers = { handleClick, handleFocus, handleBlur };
+}
+
+function removePasswordFieldToggle(inputFieldId) {
+    const passwordInputField = document.getElementById(inputFieldId);
+    if (!passwordInputField || !passwordInputField._eventHandlers) return;
+    const { handleClick, handleFocus, handleBlur } = passwordInputField._eventHandlers;
+    passwordInputField?.removeEventListener('click', handleClick);
+    passwordInputField?.removeEventListener('focus', handleFocus);
+    passwordInputField?.removeEventListener('blur', handleBlur);
+    delete passwordInputField._eventHandlers;
+}
+
+function activateListener() {
+    document.getElementById('signupForm')?.addEventListener('submit', submitData);
+    document.getElementById('privacy-policy')?.addEventListener('click', checkBoxClicked);
+    document.getElementById('back-btn')?.addEventListener('click', forwardToIndex);
+    document.getElementById('privacy-policy-link')?.addEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice-link')?.addEventListener('click', forwardLegal);
+    setupPasswordFieldToggle('password');
+    setupPasswordFieldToggle('confirmPassword');
+}
+
+export function deactivateAllListenersRegister() {
+    document.getElementById('signupForm')?.removeEventListener('submit', submitData);
+    document.getElementById('privacy-policy')?.removeEventListener('click', checkBoxClicked);
+    document.getElementById('back-btn')?.removeEventListener('click', forwardToIndex);
+    document.getElementById('privacy-policy-link')?.removeEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice-link')?.removeEventListener('click', forwardLegal);
+    removePasswordFieldToggle('password');
+    removePasswordFieldToggle('confirmPassword');
+}
+
+function forwardToIndex() {
+    window.location.href = '../index.html';
 }
 
 
@@ -332,10 +376,6 @@ function checkBoxClicked() {
 }
 
 
-/* The code is adding an event listener to the element with the id 'privacy-policy'. When this element
-is clicked, the function checkBoxClicked will be called. Additionally, the code is also adding an
-event listener to the 'DOMContentLoaded' event, which will call the function initRegister when the
-DOM content has finished loading. */
-document.getElementById('privacy-policy').addEventListener('click', checkBoxClicked);
-document.getElementById('back-btn').addEventListener('click', () => { window.location.href = '../index.html'; });
-document.addEventListener('DOMContentLoaded', initRegister);
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.href.includes('register.html')) initRegister();
+});
