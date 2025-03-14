@@ -20,6 +20,7 @@ async function initSummary() {
   await loadCategory();
   taskAssignment();
   showUrgentTask();
+  activateListener();
 }
 
 
@@ -193,9 +194,28 @@ function nextPage() {
   sessionStorage.setItem('activeTab', 'board');
 }
 
-document.querySelectorAll('.summ-info-field').forEach(btn => {
-  btn.addEventListener('click', function () {
-    nextPage();
+/**
+ * Attaches a click event listener to all elements with the class 'summ-info-field'.
+ * When an element is clicked, the `nextPage` function is called.
+ */
+function activateListener() {
+  document.querySelectorAll('.summ-info-field').forEach(btn => {
+    btn.addEventListener('click', nextPage);
   });
+}
+
+/**
+ * Deactivates all click event listeners from elements with the class 'summ-info-field'.
+ * This function selects all elements with the class 'summ-info-field' and removes the 'click' event listener
+ * that triggers the 'nextPage' function.
+ */
+export function deactivateAllListenersSummary() {
+  document.querySelectorAll('.summ-info-field').forEach(btn => {
+    btn.removeEventListener('click', nextPage);
+  });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.href.includes('summary.html')) initSummary();
 });
-document.addEventListener('DOMContentLoaded', () => { initSummary(); });
