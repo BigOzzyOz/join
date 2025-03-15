@@ -1,4 +1,5 @@
 import { assignedContacts } from "./addTask.js";
+import { tasks } from "../script.js";
 
 /**
  * Generates the HTML for a todo item.
@@ -22,7 +23,7 @@ export function generateTodoHTML(element) {
     let prioHTML = generatePrioHTML(element.prio);
 
     return /*html*/ `
-        <div draggable="true" id="${element.id}" class="todoContainer" onclick="openOverlay('${element.id}')" ondragend="dragEnd()">
+        <div draggable="true" id="${element.id}" class="todoContainer" data-id="${element.id}">
             <div class="toDoContent">
                 ${categoryHTML}
                 <div class="toDoHeaderContainer">
@@ -222,7 +223,7 @@ function generateModalSubtasksHTML(element) {
             let subtask = element.subtasks[i];
             let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
             modalSubtasksHTML += /*html*/ `
-                <label class="modalSubtasksSingle" onclick="updateSubtaskStatus('${element.id}', ${i})">
+                <label class="modalSubtasksSingle" data-subtaskIndex="${i}">
                     <img id="subtaskCheckbox${i}" src="${checked}" alt="Checkbox">
                     <div>${subtask.text}</div>
                 </label>
@@ -256,11 +257,11 @@ export function generateOpenOverlayHTML(element) {
     let modalSubtasksHTML = generateModalSubtasksHTML(element);
 
     return /*html*/ `
-        <div class="modalContainer" id="modalContainer">
+        <div class="modalContainer" id="modalContainer" data-id="${element.id}">
             <div class="modalToDoContent">
                 <div class="modalCategoryContainer">
                     ${modalCategoryHTML}
-                    <img class="modalCloseIcon" onclick="closeModal()" src="../assets/icons/closeGrey.svg" alt="">
+                    <img id="modalCloseBtn" class="modalCloseIcon" src="../assets/icons/closeGrey.svg" alt="">
                 </div>
                 <div class="modalScrollbarWrapper">
                     <div id="modalHeader" class="modalHeader">${element.title}</div>
@@ -286,12 +287,12 @@ export function generateOpenOverlayHTML(element) {
                     </div>
                 </div>
                 <div class="modalBottomContainer">
-                    <div class="modalBottomDeleteContainer" onclick="deleteTask('${element.id}')">
+                    <div id="modalContainerDeleteBtn" class="modalBottomDeleteContainer">
                         <img src="../assets/icons/deleteDarkBlue.svg">
                         <div>Delete</div>
                     </div>
                     <div class="modalBottomSeparator"></div>
-                    <div class="modalBottomEditContainer" onclick="enableTaskEdit('${element.id}')">
+                    <div id="modalContainerEditBtn" class="modalBottomEditContainer">
                         <img src="../assets/icons/pencilDarkBlue.svg">
                         <div>Edit</div>
                     </div>

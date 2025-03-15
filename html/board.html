@@ -7,8 +7,8 @@
   <title>Board</title>
   <link rel="icon" href="../assets/icons/logoBlue.svg" />
 
-  <link rel="stylesheet" href="../style.css" />
   <link rel="stylesheet" href="../style/fonts.css" />
+  <link rel="stylesheet" href="../style.css" />
   <link rel="stylesheet" href="../style/board.css" />
   <link rel="stylesheet" href="../style/boardmodals.css" />
   <link rel="stylesheet" href="../style/addtask.css" />
@@ -23,14 +23,13 @@
     <section class="headerSection">
       <div class="headerPlusBtn">
         <div>Board</div>
-        <a href="../html/addtask.html" class="addTaskBtnMobile" onclick="checkScreenWidth('toDo')">
+        <a id="addTaskBtn" href="../html/addtask.html" class="addTaskBtnMobile">
           <img src="../assets/icons/add.svg" />
         </a>
       </div>
       <div class="searchBtnContainer">
-        <input class="searchInput" oninput="searchTasks(this.value)" onblur="" maxlength="40" type="text"
-          placeholder="Find Task" />
-        <div class="addTaskBtnDesktop" onclick="checkScreenWidth('toDo')">
+        <input id="searchInput" class="searchInput" maxlength="40" type="text" placeholder="Find Task" />
+        <div id="addTaskBtnDesktop" class="addTaskBtnDesktop">
           <div class="addTaskBtnDesktopText">Add task</div>
         </div>
       </div>
@@ -40,38 +39,31 @@
 
       <div id="noTasksFound" class="noTasksFound dNone">No tasks found</div>
 
-      <div class="taskCategoryContainer" ondrop="moveTo('toDo')" ondragover="allowDrop(event)"
-        ondragleave="dragLeave()">
+      <div id="toDo-container" class="taskCategoryContainer">
         <div class="taskCategoryHeader">
           <div>To do</div>
-          <img class="taskCategoryIcon" onclick="checkScreenWidth('toDo')"
-            src="../assets/icons/plusAddTaskMobileWhite.svg" />
+          <img class="taskCategoryIcon" src="../assets/icons/plusAddTaskMobileWhite.svg" />
         </div>
         <div class="taskDragArea" id="toDo"></div>
       </div>
 
-      <div class="taskCategoryContainer" ondrop="moveTo('inProgress')" ondragover="allowDrop(event)"
-        ondragleave="dragLeave()">
+      <div id="inProgress-container" class="taskCategoryContainer">
         <div class="taskCategoryHeader">
           <div>In progress</div>
-          <img class="taskCategoryIcon" onclick="checkScreenWidth('inProgress')"
-            src="../assets/icons/plusAddTaskMobileWhite.svg" />
+          <img id="addTaskInProgress" class="taskCategoryIcon" src="../assets/icons/plusAddTaskMobileWhite.svg" />
         </div>
         <div class="taskDragArea" id="inProgress"></div>
       </div>
 
-      <div class="taskCategoryContainer" ondrop="moveTo('awaitFeedback')" ondragover="allowDrop(event)"
-        ondragleave="dragLeave()">
+      <div id="awaitFeedback-container" class="taskCategoryContainer">
         <div class="taskCategoryHeader">
           <div>Await Feedback</div>
-          <img class="taskCategoryIcon" onclick="checkScreenWidth('awaitFeedback')"
-            src="../assets/icons/plusAddTaskMobileWhite.svg" />
+          <img id="addTaskFeedback" class="taskCategoryIcon" src="../assets/icons/plusAddTaskMobileWhite.svg" />
         </div>
         <div class="taskDragArea" id="awaitFeedback"></div>
       </div>
 
-      <div class="taskCategoryContainer" ondrop="moveTo('done')" ondragover="allowDrop(event)"
-        ondragleave="dragLeave()">
+      <div id="done-container" class="taskCategoryContainer">
         <div class="taskCategoryHeader">
           <div>Done</div>
         </div>
@@ -89,10 +81,6 @@
   <script type="module" src="../script/firebase-init.js"></script>
   <script type="module" src="../script/board.js"></script>
   <script type="module" src="../script/board2.js"></script>
-  <script type="module" src="../script/boardtemplate.js"></script>
-  <script type="module" src="../script/contactsTemplate.js"></script>
-  <script type="module" src="../script/addTask.js"></script>
-  <script type="module" src="../script/addTaskTemplate.js"></script>
   <script type="module" src="../script.js"></script>
 
 </body>

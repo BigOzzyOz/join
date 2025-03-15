@@ -1,9 +1,9 @@
-import { BASE_URL, contacts, tasks, init, loadData, updateData } from "../script.js";
-import { updateNoTasksFoundVisibility } from "./board2.js";
+import { BASE_URL, contacts, tasks, loadData, updateData } from "../script.js";
+import { updateNoTasksFoundVisibility, activateListeners, openOverlay } from "./board2.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
 
-let currentDraggedElement;
+export let currentDraggedElement;
 let currentSearchInput = '';
 export let currentTaskStatus;
 
@@ -17,6 +17,7 @@ async function initBoard() {
   try {
     await initCheckData();
     sessionStorage.setItem("tasks", JSON.stringify(tasks));
+    activateListeners();
     initDragDrop();
     applyCurrentSearchFilter();
   } catch (error) {
@@ -234,14 +235,35 @@ export function initDragDrop() {
  */
 function dragDrop() {
   document.querySelectorAll(".todoContainer").forEach((todoContainer) => {
-    todoContainer.addEventListener("dragstart", (e) => {
-      e.target.classList.add("tilted");
-      startDragging(e.target.id);
-    });
-    todoContainer.addEventListener("dragend", (e) => {
-      e.target.classList.remove("tilted");
-    });
+    todoContainer.addEventListener('click', handleToDoClick);
+    todoContainer.addEventListener("dragstart", handleDragStart);
+    todoContainer.addEventListener("dragend", handleDragEnd);
   });
+}
+
+
+export function deactivateDragDrop() {
+  document.querySelectorAll(".todoContainer").forEach((todoContainer) => {
+    todoContainer.removeEventListener('click', handleToDoClick);
+    todoContainer.removeEventListener("dragstart", handleDragStart);
+    todoContainer.removeEventListener("dragend", handleDragEnd);
+  });
+}
+
+function handleDragStart(e) {
+  e.target.classList.add("tilted");
+  startDragging(e.target.id);
+}
+
+function handleDragEnd(e) {
+  e.target.classList.remove("tilted");
+  dragEnd();
+}
+
+function handleToDoClick(e) {
+  const target = e.target.closest(".todoContainer");
+  e.stopPropagation();
+  openOverlay(target.id);
 }
 
 
@@ -255,56 +277,6 @@ function startDragging(id) {
   document.querySelectorAll(".taskDragArea").forEach((zone) => {
     zone.classList.add("highlighted");
   });
-}
-
-
-/**
- * Allows dropping of elements by preventing the default event behavior.
- * 
- * @param {Event} ev - The dragover event.
- */
-function allowDrop(ev) {
-  let dropTarget = ev.target;
-  let allowDropTarget = document.querySelectorAll('.taskDragArea');
-  allowDropTarget.forEach(t => {
-    if (t == dropTarget || t.contains(dropTarget)) {
-      ev.preventDefault();
-      t.classList.add('highlightedBackground');
-    }
-  });
-}
-
-
-/**
- * Removes drag-related background highlights from all task drop areas.
- */
-function dragLeave() {
-  document.querySelectorAll('.taskDragArea').forEach((zone) => {
-    zone.classList.remove('highlightedBackground');
-  });
-}
-
-
-/**
- * Moves a task to a new status and updates the board accordingly.
- * 
- * @async
- * @param {string} status - The new status of the task.
- */
-async function moveTo(status) {
-  document.querySelectorAll(".taskDragArea").forEach((zone) => {
-    zone.classList.add("highlighted");
-  });
-  let task = tasks.find((task) => task.id == currentDraggedElement);
-  if (task && status != "") {
-    task.status = status;
-    initDragDrop();
-    applyCurrentSearchFilter();
-    await updateData(`${BASE_URL}tasks/${task.id}.json`, task);
-    let taskIndex = tasks.findIndex(t => task.id === t.id);
-    tasks.splice(taskIndex, 1, await createTaskArray(task.id, task));
-    sessionStorage.setItem("tasks", JSON.stringify(tasks));
-  }
 }
 
 
@@ -335,7 +307,7 @@ export function applyCurrentSearchFilter() {
  * query entered by the user to search for tasks. This value is used to filter and search through the
  * task cards based on their titles or descriptions.
  */
-function searchTasks(inputValue) {
+export function searchTasks(inputValue) {
   emptyDragAreaWhileSearching(inputValue);
   currentSearchInput = inputValue.toLowerCase();
   const taskCards = document.querySelectorAll(".todoContainer");
@@ -395,5 +367,5 @@ function emptyDragAreaWhileSearching(searchValue) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  initBoard();
+  if (window.location.pathname.includes("board.html")) initBoard();
 });

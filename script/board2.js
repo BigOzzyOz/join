@@ -1,6 +1,6 @@
 import { BASE_URL, tasks, changeActive, updatePrioActiveBtn, updateData } from "../script.js";
 import { assignedContacts, renderAssignedContacts } from "./addTask.js";
-import { currentTaskStatus, createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter } from "./board.js";
+import { currentTaskStatus, createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter, searchTasks, deactivateDragDrop, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 
 /**
@@ -64,12 +64,53 @@ async function openAddTaskOverlay() {
  * to open in an overlay. In the provided function `openOverlay`, this parameter is used to find the
  * corresponding task object from an array called `tasks` based on its `id`.
  */
-function openOverlay(elementId) {
+export function openOverlay(elementId) {
   let element = tasks.find((task) => task.id === elementId);
   let overlay = document.getElementById("overlay");
-  assignedContacts = [];
+  assignedContacts.length = 0;
   overlay.innerHTML = generateOpenOverlayHTML(element);
+  activateOverlayListeners(elementId);
   overlay.style.display = "block";
+}
+
+function activateOverlayListeners(elementId) {
+  const closeBtn = document.getElementById("modalCloseBtn");
+  const subtasks = document.querySelectorAll('.modalSubtaskSingle');
+  const editBtn = document.getElementById("modalContainerEditBtn");
+  const deleteBtn = document.getElementById("modalContainerDeleteBtn");
+
+  closeBtn?.addEventListener("click", closeModal);
+  subtasks?.forEach(subtask => subtask.addEventListener('click', handleSubtaskClick));
+  editBtn?.addEventListener('click', handleOverlayEditClick);
+  deleteBtn?.addEventListener('click', handleOverlayDeleteClick);
+}
+
+function deactivateOverlayListeners() {
+  const closeBtn = document.getElementById("modalCloseBtn");
+  const subtasks = document.querySelectorAll('.modalSubtaskSingle');
+  const editBtn = document.getElementById("modalContainerEditBtn");
+  const deleteBtn = document.getElementById("modalContainerDeleteBtn");
+
+  closeBtn?.removeEventListener("click", closeModal);
+  subtasks?.forEach(subtask => subtask.removeEventListener('click', handleSubtaskClick));
+  editBtn?.removeEventListener('click', handleOverlayEditClick);
+  deleteBtn?.removeEventListener('click', handleOverlayDeleteClick);
+}
+
+function handleSubtaskClick(event) {
+  const subtaskIndex = event.target.closest('.modalSubtaskSingle').dataset.subtaskIndex;
+  const taskId = event.target.closest('#modalContainer').dataset.id;
+  updateSubtaskStatus(taskId, subtaskIndex);
+}
+
+function handleOverlayEditClick(event) {
+  const taskId = event.target.closest('#modalContainer').dataset.id;
+  enableTaskEdit(taskId);
+}
+
+function handleOverlayDeleteClick(event) {
+  const taskId = event.target.closest('#modalContainer').dataset.id;
+  deleteTask(taskId);
 }
 
 
@@ -81,6 +122,7 @@ function openOverlay(elementId) {
 export function closeModal() {
   const overlay = document.getElementById("overlay");
   const addTaskOverlay = document.getElementById("addTaskOverlay");
+  deactivateOverlayListeners();
   if (overlay || addTaskOverlay) {
     overlay.style.display = "none";
     addTaskOverlay.style.display = "none";
@@ -243,3 +285,124 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('taskCategory');
   }
 });
+
+
+export function activateListeners() {
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  const addTaskBtnDesktop = document.getElementById("addTaskBtnDesktop");
+  const searchInput = document.getElementById("searchInput");
+  const container = document.querySelectorAll('.taskCategoryContainer');
+  const toDoContainer = document.getElementById('toDo-container');
+  const inProgressContainer = document.getElementById('inProgress-container');
+  const awaitFeedbackContainer = document.getElementById('awaitFeedback-container');
+  const doneContainer = document.getElementById('done-container');
+  const addTaskPlus = document.querySelectorAll('.taskCategoryIcon');
+
+  addTaskBtn?.addEventListener('click', handleAddTaskBtnClick);
+  addTaskBtnDesktop?.addEventListener('click', handleAddTaskBtnClick);
+  searchInput?.addEventListener('input', handleSearchInput);
+  container?.forEach((element) => {
+    element.addEventListener('dragover', allowDrop);
+    element.addEventListener('dragleave', dragLeave);
+  });
+  toDoContainer?.addEventListener('drop', handleDrop);
+  inProgressContainer?.addEventListener('drop', handleDrop);
+  awaitFeedbackContainer?.addEventListener('drop', handleDrop);
+  doneContainer?.addEventListener('drop', handleDrop);
+  addTaskPlus?.forEach((element) => {
+    element.addEventListener('click', handleAddTaskBtnClick);
+  });
+}
+
+export function deactivateAllListenersBoard() {
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  const addTaskBtnDesktop = document.getElementById("addTaskBtnDesktop");
+  const searchInput = document.getElementById("searchInput");
+  const container = document.querySelectorAll('.taskCategoryContainer');
+  const toDoContainer = document.getElementById('toDo-container');
+  const inProgressContainer = document.getElementById('inProgress-container');
+  const awaitFeedbackContainer = document.getElementById('awaitFeedback-container');
+  const doneContainer = document.getElementById('done-container');
+  const addTaskPlus = document.querySelectorAll('.taskCategoryIcon');
+
+  addTaskBtn?.removeEventListener('click', handleAddTaskBtnClick);
+  addTaskBtnDesktop?.removeEventListener('click', handleAddTaskBtnClick);
+  searchInput?.removeEventListener('input', handleSearchInput);
+  container?.forEach((element) => {
+    element.removeEventListener('dragover', allowDrop);
+    element.removeEventListener('dragleave', dragLeave);
+  });
+  toDoContainer?.removeEventListener('drop', handleDrop);
+  inProgressContainer?.removeEventListener('drop', handleDrop);
+  awaitFeedbackContainer?.removeEventListener('drop', handleDrop);
+  doneContainer?.removeEventListener('drop', handleDrop);
+  addTaskPlus?.forEach((element) => {
+    element.removeEventListener('click', handleAddTaskBtnClick);
+  });
+  deactivateDragDrop();
+  deactivateOverlayListeners();
+}
+
+function handleAddTaskBtnClick(event) {
+  if (event.target.id === "addTaskInProgress") checkScreenWidth("inProgress");
+  else if (event.target.id === "addTaskFeedback") checkScreenWidth("awaitFeedback");
+  else checkScreenWidth("toDo");
+};
+
+function handleSearchInput() {
+  const searchInput = document.getElementById("searchInput");
+  searchTasks(searchInput.value);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  moveTo(event.target.id);
+}
+
+/**
+ * Removes drag-related background highlights from all task drop areas.
+ */
+function dragLeave() {
+  document.querySelectorAll('.taskDragArea').forEach((zone) => {
+    zone.classList.remove('highlightedBackground');
+  });
+}
+
+
+/**
+ * Allows dropping of elements by preventing the default event behavior.
+ * 
+ * @param {Event} ev - The dragover event.
+ */
+function allowDrop(ev) {
+  let dropTarget = ev.target;
+  let allowDropTarget = document.querySelectorAll('.taskDragArea');
+  allowDropTarget.forEach(t => {
+    if (t == dropTarget || t.contains(dropTarget)) {
+      ev.preventDefault();
+      t.classList.add('highlightedBackground');
+    }
+  });
+}
+
+/**
+ * Moves a task to a new status and updates the board accordingly.
+ * 
+ * @async
+ * @param {string} status - The new status of the task.
+ */
+async function moveTo(status) {
+  document.querySelectorAll(".taskDragArea").forEach((zone) => {
+    zone.classList.add("highlighted");
+  });
+  let task = tasks.find((task) => task.id == currentDraggedElement);
+  if (task && status != "") {
+    task.status = status;
+    await updateData(`${BASE_URL}tasks/${task.id}.json`, task);
+    let taskIndex = tasks.findIndex(t => task.id === t.id);
+    tasks.splice(taskIndex, 1, await createTaskArray(task.id, task));
+    sessionStorage.setItem("tasks", JSON.stringify(tasks));
+    initDragDrop();
+    applyCurrentSearchFilter();
+  }
+}
