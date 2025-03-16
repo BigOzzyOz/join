@@ -1,5 +1,5 @@
 import { BASE_URL, tasks, changeActive, updatePrioActiveBtn, updateData } from "../script.js";
-import { assignedContacts, renderAssignedContacts, currentPrio } from "./addTask.js";
+import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentPrio } from "./addTask.js";
 import { createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
@@ -34,7 +34,7 @@ export function checkScreenWidth(category) {
 
 async function openAddTaskOverlay() {
   let addTaskOverlay = document.getElementById("addTaskOverlay");
-  assignedContacts = [];
+  setAssignedContacts([]);
   addTaskOverlay.innerHTML = await fetchAddTaskTemplate();
   addTaskOverlay.style.display = "block";
 }
@@ -43,7 +43,7 @@ async function openAddTaskOverlay() {
 export function openOverlay(elementId) {
   let element = tasks.find((task) => task.id === elementId);
   let overlay = document.getElementById("overlay");
-  assignedContacts.length = 0;
+  setAssignedContacts([]);
   overlay.innerHTML = generateOpenOverlayHTML(element);
   activateOverlayListeners(elementId);
   overlay.style.display = "block";
@@ -92,8 +92,7 @@ export function enableTaskEdit(taskId) {
   let modalContainer = document.getElementById("modalContainer");
   modalContainer.innerHTML = generateTaskEditHTML(taskId);
   let task = tasks.find((task) => task.id === taskId);
-  assignedContacts.length = 0;
-  if (task.assignedTo) assignedContacts.push(...task.assignedTo);
+  if (task.assignedTo) setAssignedContacts(task.assignedTo);
   currentTaskStatus = task.status;
   document.getElementById("editTaskTitle").value = task.title;
   document.getElementById("editTaskDescription").value = task.description;
@@ -121,6 +120,7 @@ function createEditedTask(taskId) {
 
 
 function createEditedTaskReturn(subtasks, originalTask) {
+  console.log(assignedContacts);
   return {
     title: document.getElementById('editTaskTitle').value,
     description: document.getElementById('editTaskDescription').value,
@@ -128,7 +128,7 @@ function createEditedTaskReturn(subtasks, originalTask) {
     prio: currentPrio,
     status: currentTaskStatus,
     subtasks: subtasks,
-    assignedTo: assignedContacts ? assignedContacts : [],
+    assignedTo: assignedContacts,
     category: originalTask.category,
   };
 }
@@ -136,10 +136,15 @@ function createEditedTaskReturn(subtasks, originalTask) {
 
 export async function saveEditedTask(taskId) {
   let singleTask = createEditedTask(taskId);
+  console.log("Edited task:", singleTask);
   await updateData(`${BASE_URL}tasks/${taskId}.json`, singleTask);
+  console.log("Task updated:", singleTask);
   let taskIndex = tasks.findIndex(t => taskId === t.id);
+  console.log("Task index:", taskIndex);
   tasks.splice(taskIndex, 1, await createTaskArray(taskId, singleTask));
+  console.log("Updated tasks:", tasks);
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
+  console.log("Tasks saved to session storage:", sessionStorage.getItem("tasks"));
   openOverlay(taskId);
   initDragDrop();
   applyCurrentSearchFilter();

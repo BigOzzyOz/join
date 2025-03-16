@@ -113,6 +113,7 @@ export async function createTaskArray(key, singleTask) {
     "subtasks": singleTask.subtasks,
     "title": singleTask.title,
   };
+  console.log("Task created:", task);
   return task;
 }
 

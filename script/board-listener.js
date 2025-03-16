@@ -302,7 +302,6 @@ export function deactivateEditTaskListeners() {
 
 
 function handleEditTaskFormSubmit(event) {
-  console.log('submit');
   event.preventDefault();
   const taskId = event.target.closest('#editTaskForm').dataset.id;
   if (formValidation()) saveEditedTask(taskId);
@@ -333,7 +332,6 @@ function handleDeleteSubtaskList(event) {
 export function handleAssignContact(event) {
   event.preventDefault();
   const contact = event.target.closest('.assignContactToProject').dataset.id;
-  console.log(contact);
   contactAssign(contact);
 }
 

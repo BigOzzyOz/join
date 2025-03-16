@@ -10,6 +10,10 @@ export let assignedContacts = [];
 export let currentPrio = 'medium';
 
 
+export function setAssignedContacts(contactsArray) {
+  assignedContacts = contactsArray;
+}
+
 /**
  * Toggles the assign dropdown menu.
  * 
@@ -88,9 +92,8 @@ function closeAssignDropdown() {
 export function contactAssign(id) {
   const checkbox = document.getElementById(`contact${id}`);
   const contactLabel = checkbox.parentElement;
-  checkbox.checked = !checkbox.checked;
   contactLabel.classList.toggle('contactsToAssignCheck');
-  if (checkbox.checked) assignedContacts.push(contacts.find(c => c.id == id));
+  if (contactLabel.classList.contains('contactsToAssignCheck')) assignedContacts.push(contacts.find(c => c.id == id));
   else assignedContacts.splice(assignedContacts.findIndex(c => c.id == id), 1);
   renderAssignedContacts();
 }

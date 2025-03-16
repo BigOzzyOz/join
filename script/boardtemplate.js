@@ -1,4 +1,4 @@
-import { assignedContacts } from "./addTask.js";
+import { assignedContacts, setAssignedContacts } from "./addTask.js";
 import { tasks } from "../script.js";
 
 /**
@@ -312,7 +312,7 @@ export function generateOpenOverlayHTML(element) {
 export function generateTaskEditHTML(taskId) {
     let task = tasks.find(task => task.id === taskId);
     let subtaskHTML = '';
-    !task.assignedTo ? assignedContacts.length = 0 : task.assignedTo.forEach(t => assignedContacts.push(t));
+    !task.assignedTo ? setAssignedContacts([]) : setAssignedContacts(task.assignedTo);
 
     if (task.subtasks && task.subtasks.length > 0) {
         task.subtasks.forEach((subtask, index) => {
