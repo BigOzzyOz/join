@@ -4,6 +4,8 @@ import { createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentS
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
 import { activateAddTaskListeners } from "./addTask-listener.js";
+import { token } from "./firebase-init.js";
+
 
 
 let currentTaskStatus;
@@ -71,7 +73,7 @@ export async function updateSubtaskStatus(taskId, subtaskIndex) {
     if (subtask) {
       updateSubtaskStatusDom(subtask, subtaskIndex);
       updateSubtasksProgressBar(task.subtasks, taskId);
-      await updateData(`${BASE_URL}tasks/${taskId}.json`, task);
+      await updateData(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
       let taskIndex = tasks.findIndex(t => taskId === t.id);
       tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
       sessionStorage.setItem("tasks", JSON.stringify(tasks));
@@ -137,7 +139,7 @@ function createEditedTaskReturn(subtasks, originalTask) {
 
 export async function saveEditedTask(taskId) {
   let singleTask = createEditedTask(taskId);
-  await updateData(`${BASE_URL}tasks/${taskId}.json`, singleTask);
+  await updateData(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, singleTask);
   let taskIndex = tasks.findIndex(t => taskId === t.id);
   tasks.splice(taskIndex, 1, await createTaskArray(taskId, singleTask));
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
@@ -154,7 +156,7 @@ export async function moveTo(status) {
   let task = tasks.find((task) => task.id == currentDraggedElement);
   if (task && status != "") {
     task.status = status;
-    await updateData(`${BASE_URL}tasks/${task.id}.json`, task);
+    await updateData(`${BASE_URL}tasks/${task.id}.json?auth=${token}`, task);
     let taskIndex = tasks.findIndex(t => task.id === t.id);
     tasks.splice(taskIndex, 1, await createTaskArray(task.id, task));
     sessionStorage.setItem("tasks", JSON.stringify(tasks));

@@ -1,4 +1,4 @@
-import { firebaseLogout } from "./script/firebase-init.js";
+import { firebaseLogout, token } from "./script/firebase-init.js";
 import { initCheckData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
 import { deactivateDeleteResponseListeners } from "./script/board-listener.js";
@@ -298,7 +298,10 @@ export function getId(id) {
  */
 export async function loadData(path = '') {
   try {
-    let response = await fetch(BASE_URL + path + ".json");
+    let response = await fetch(BASE_URL + path + ".json?auth=" + token, {
+      method: "GET",
+      headers: { "Content-Type": " application/json" },
+    });
     let responseAsJson = await response.json();
     return responseAsJson;
   } catch (error) {
@@ -315,8 +318,9 @@ export async function loadData(path = '') {
  */
 export async function deleteData(path = '') {
   let responseToJson;
-  let response = await fetch(BASE_URL + path + '.json', {
+  let response = await fetch(BASE_URL + path + '.json?auth=' + token, {
     method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
   });
   return responseToJson = await response.json();
 }
@@ -331,7 +335,7 @@ export async function deleteData(path = '') {
  */
 export async function postData(path = "", data = {}) {
   try {
-    let response = await fetch(BASE_URL + path + ".json", {
+    let response = await fetch(BASE_URL + path + ".json?auth=" + token, {
       method: "POST",
       header: { "Content-Type": " application/json" },
       body: JSON.stringify(data),
@@ -450,6 +454,6 @@ function checkOutsideModal(event, modalName, class1, class2, handler) {
 }
 
 
-document.addEventListener('DOMContentLoaded', init);
+
 
 

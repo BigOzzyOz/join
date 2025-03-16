@@ -115,8 +115,3 @@ function handleSubtaskList(event) {
 //NOTE - Geneal listener and handler
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.location.href.includes('addtask.html')) {
-    setTimeout(() => activateAddTaskListeners(), 500);
-  }
-});

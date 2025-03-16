@@ -317,6 +317,5 @@ export function handleAssignContact(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const category = localStorage.getItem('taskCategory');
-  if (window.location.pathname.includes("board.html")) initBoard();
   if (category) localStorage.removeItem('taskCategory');
 });

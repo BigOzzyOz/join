@@ -15,7 +15,7 @@ let counts = {
  * The function `initSummary` initializes, greets, loads categories, assigns tasks, and shows urgent
  * tasks asynchronously.
  */
-async function initSummary() {
+export async function initSummary() {
   greetingSummary();
   await loadCategory();
   taskAssignment();
@@ -216,6 +216,6 @@ export function deactivateAllListenersSummary() {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.location.href.includes('summary.html')) initSummary();
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//   if (window.location.href.includes('summary.html')) initSummary();
+// });

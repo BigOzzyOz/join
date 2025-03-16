@@ -1,5 +1,7 @@
 import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
+import { token } from "./firebase-init.js";
+
 
 let currentLetter = '';
 let currentLetterId = '';
@@ -9,7 +11,7 @@ let editId = -1;
 /**
  * Initializes the contacts page by setting up necessary data and rendering contacts.
  */
-async function initContacts() {
+export async function initContacts() {
   await getContactsData();
   renderContactsGeneral();
   activateListeners();
@@ -295,7 +297,7 @@ async function addContacts(id = editId) {
   let addTel = document.getElementById('addTel').value;
   let newContact = await createContact(id, addName, addEmail, addTel, false, false);
   if (checkAlreadyExists(newContact)) {
-    await updateData(`${BASE_URL}contacts/${id}.json`, newContact);
+    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, newContact);
     contacts.push(pushToContacts(newContact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
     refreshPage();
@@ -393,7 +395,7 @@ async function editContacts(id = editId) {
   if (checkAlreadyExists(contact)) {
     let editContact = await createContact(contact.id, editName, editEmail, editTel, nameChange ? false : contact.profilePic, contact.isUser);
     contacts[contacts.findIndex(c => c.id == id)].profilePic = editContact.profilePic;
-    await updateData(`${BASE_URL}contacts/${id}.json`, editContact);
+    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, editContact);
     refreshPage();
   }
 }
@@ -461,7 +463,3 @@ export function generateSvgCircleWithInitials(name, width, height) {
   const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
   return svgProfilePic(randomColor, initials, height, width);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.location.href.includes('contacts.html')) initContacts();
-});

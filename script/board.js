@@ -3,6 +3,7 @@ import { updateNoTasksFoundVisibility } from "./board2.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
+import { token } from "./firebase-init.js";
 
 
 export let currentDraggedElement;
@@ -72,10 +73,10 @@ async function checkContactChange(updatedTask, highestId) {
     if (!c) continue;
     if (contacts.findIndex(cont => cont.id === c.id) === -1) {
       updatedTask.assignedTo.splice(i, 1);
-      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json`, updatedTask.assignedTo);
+      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json?auth=${token}`, updatedTask.assignedTo);
     } else if (compareContact(c)) {
       updatedTask.assignedTo[i] = contacts[contacts.findIndex(cont => cont.id === c.id)];
-      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json`, updatedTask.assignedTo);
+      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json?auth=${token}`, updatedTask.assignedTo);
     }
   }
   return updatedTask;

@@ -2,7 +2,7 @@ import { BASE_URL, contacts, updateData } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
 import { forwardLegal, forwardPrivacy } from "./login.js";
-import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "./firebase-init.js";
+import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, token } from "./firebase-init.js";
 
 let clickCount1 = 0;
 let clickCount2 = 0;
@@ -12,7 +12,7 @@ let clickCount2 = 0;
  * The `initRegister` function initializes form submission handling and sets up password field toggling
  * for a signup form.
  */
-function initRegister() {
+export function initRegister() {
     activateListener();
 }
 
@@ -149,7 +149,8 @@ async function submitData(event) {
     hideErrorMessages();
     if (!await validateForm(password, confirmPassword, email)) return;
     try {
-        await signUp(name, email, password);
+        signUp(name, email, password);
+        console.log('User signed up successfully!');
     } catch (error) {
         submitDataErrorHandling(error);
     }
@@ -316,7 +317,7 @@ function signUp(name, email, password) {
  */
 async function createNewContact(name, email) {
     const contact = await createContact(false, name, email, 'Please add phone number', false, true);
-    await updateData(`${BASE_URL}contacts/${contact.id}.json`, contact);
+    await updateData(`${BASE_URL}contacts/${contact.id}.json?auth=${token}`, contact);
     contacts.push(pushToContacts(contact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
 }
@@ -370,12 +371,12 @@ function showError(messageId) {
 function checkBoxClicked() {
     const checkedState = document.getElementById('privacy-policy').checked;
     const checkboxImg = document.getElementById('checkbox');
-    const submitButton = document.getElementById('signup-btn');
+    const submitButton = document.getElementById('signup-btn-register');
     submitButton.disabled = !checkedState;
     checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.href.includes('register.html')) initRegister();
+    // if (window.location.href.includes('register.html')) initRegister();
 });
