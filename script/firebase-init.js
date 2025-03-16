@@ -29,16 +29,17 @@ onAuthStateChanged(auth, (user) => {
     });
   } else {
     init().then(() => {
-      if (window.location.href.includes('register.html')) initRegister();
+      init().then(() => {
+        if (window.location.href.includes('register.html')) initRegister();
+      });
     });
-    console.log("No user logged in.");
   }
 });
 
 setPersistence(auth, browserLocalPersistence).then(() => {
-  console.log("Session-Persistence aktiviert");
+
 }).catch((error) => {
-  console.error("Fehler bei der Session-Persistence:", error);
+
 });
 
 

@@ -375,8 +375,3 @@ function checkBoxClicked() {
     submitButton.disabled = !checkedState;
     checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
 }
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // if (window.location.href.includes('register.html')) initRegister();
-});
