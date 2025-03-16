@@ -1,11 +1,13 @@
-import { activeTab, contacts, setActiveTab, updatePrioActiveBtn, toggleClass, getId, postData, init } from "../script.js";
+import { activeTab, contacts, setActiveTab, updatePrioActiveBtn, toggleClass, getId, postData, } from "../script.js";
 import { initCheckData, updateAllTaskCategories, initDragDrop } from "./board.js";
 import { closeModal } from "./board2.js";
+import { handleAssignContact } from "./board-listener.js";
 import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
 import { getContactsData } from "./contacts.js";
 import { svgProfilePic } from "./contactsTemplate.js";
 
 export let assignedContacts = [];
+export let currentPrio = 'medium';
 
 
 /**
@@ -13,7 +15,7 @@ export let assignedContacts = [];
  * 
  * @returns {Promise<void>}
  */
-async function toggleDropdown() {
+export async function toggleDropdown() {
   document.getElementById('assignDropdown').classList.toggle('open');
   document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await openAssignDropdown() : closeAssignDropdown();
   toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
@@ -34,7 +36,8 @@ async function openAssignDropdown() {
   document.getElementById('assignDropArrow').style.transform = 'rotate(180deg)';
   searchInput.value = '';
   searchInput.removeAttribute('readonly');
-  searchInput.removeAttribute('onclick');
+  const contactsAssign = document.querySelectorAll('.assignContactToProject');
+  contactsAssign.forEach((element) => element.addEventListener('click', handleAssignContact));
   document.addEventListener('click', checkOutsideAssign);
 }
 
@@ -55,7 +58,7 @@ function checkOutsideAssign(event) {
 /**
  * Filters and displays contacts based on the search input.
  */
-async function assignSearchInput() {
+export async function assignSearchInput() {
   let searchInput = document.getElementById('assignSearch');
   let contactsContainer = document.getElementById('contactsToAssign');
   let searchText = searchInput.value.toLowerCase();
@@ -76,28 +79,20 @@ function closeAssignDropdown() {
   document.getElementById('assignDropArrow').style.transform = 'rotate(0deg)';
   searchInput.value = 'Select contacts to assign';
   searchInput.setAttribute('readonly', true);
-  searchInput.setAttribute('onclick', 'toggleDropdown()');
+  const contactsAssign = document.querySelectorAll('.assignContactToProject');
+  contactsAssign?.forEach((element) => element.removeEventListener('click', handleAssignContact));
   document?.removeEventListener('click', checkOutsideAssign);
 };
 
 
-/**
- * Assigns or unassigns a contact to/from a task.
- * 
- * @param {number} id - The contact ID.
- * @param {Event} event - The click event.
- */
-function contactAssign(id, event) {
-  event.stopPropagation();
-  let contactLabel = document.getElementById(`contact${id}`).parentElement;
+export function contactAssign(id) {
+  const checkbox = document.getElementById(`contact${id}`);
+  const contactLabel = checkbox.parentElement;
+  checkbox.checked = !checkbox.checked;
   contactLabel.classList.toggle('contactsToAssignCheck');
-  if (contactLabel.classList.contains('contactsToAssignCheck')) {
-    assignedContacts.push(contacts[contacts.findIndex(c => c.id == id)]);
-    renderAssignedContacts();
-  } else {
-    assignedContacts.splice(assignedContacts.findIndex(c => c.id == id), 1);
-    renderAssignedContacts();
-  }
+  if (checkbox.checked) assignedContacts.push(contacts.find(c => c.id == id));
+  else assignedContacts.splice(assignedContacts.findIndex(c => c.id == id), 1);
+  renderAssignedContacts();
 }
 
 
@@ -126,7 +121,7 @@ export function renderAssignedContacts() {
  * 
  * @param {HTMLElement} element - The element that triggered the priority setting.
  */
-function setPrio(element) {
+export function setPrio(element) {
   const prio = element.getAttribute('data-prio');
   currentPrio = prio;
   updatePrioActiveBtn(prio);
@@ -155,7 +150,7 @@ function toggleCategoryDropdown(e, value) {
  * 
  * @param {Event} event - The event triggered by adding a subtask.
  */
-function addNewSubtask(event) {
+export function addNewSubtask(event) {
   handleKeyDown(event);
   let input = document.getElementById('subtaskInput').value.length;
   if (input > -1) {
@@ -171,7 +166,7 @@ function addNewSubtask(event) {
 /**
  * Clears the subtask input field.
  */
-function clearSubtaskInput() {
+export function clearSubtaskInput() {
   document.getElementById('subtaskInput').value = '';
 }
 
@@ -181,7 +176,7 @@ function clearSubtaskInput() {
  * 
  * @param {KeyboardEvent} event - The keyboard event.
  */
-function handleKeyDown(event) {
+export function handleKeyDown(event) {
   if (event.key === 'Enter') {
     event.preventDefault();
     saveSubtask();
@@ -192,7 +187,7 @@ function handleKeyDown(event) {
 /**
  * Saves a subtask to the subtask list.
  */
-function saveSubtask() {
+export function saveSubtask() {
   let subtaskList = document.getElementById('subtaskList');
   let inputText = document.getElementById('subtaskInput').value.trim();
   if (inputText === '') { return; }
@@ -212,7 +207,7 @@ function saveSubtask() {
  * 
  * @param {HTMLElement} editIcon - The edit icon element that was clicked.
  */
-function editSubtask(editIcon) {
+export function editSubtask(editIcon) {
   let subtaskItem = editIcon.closest('.subtaskEditList');
   let subtaskText = subtaskItem.querySelector('.subtaskItemText');
   let editInput = subtaskItem.querySelector('.editSubtaskInput');
@@ -241,7 +236,7 @@ function saveEditedSubtask(subtaskText, editInput) {
  * 
  * @param {HTMLElement} deleteIcon - The delete icon element that was clicked.
  */
-function deleteSubtask(deleteIcon) {
+export function deleteSubtask(deleteIcon) {
   let subtaskItem = deleteIcon.closest('.subtaskEditList');
   subtaskItem.remove();
 }
@@ -353,7 +348,7 @@ function showTaskAddedAnimationModal() {
  * 
  * @returns {boolean} True if all required inputs are valid, false otherwise.
  */
-function formValidation() {
+export function formValidation() {
   const inputs = document.querySelectorAll('.singleInputContainer input[required]');
   let isValid = true;
   inputs.forEach(input => {

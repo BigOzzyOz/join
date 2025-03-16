@@ -391,7 +391,7 @@ input:focus {
 }
 
 .checkMark {
-  background: url('../assets/icons/checkbox.svg');
+  background: url('../assets/icons/checkbox.svg') no-repeat center;
   background-size: contain;
   margin-left: auto;
   width: 20px;

@@ -1,15 +1,13 @@
 import { BASE_URL, tasks, changeActive, updatePrioActiveBtn, updateData } from "../script.js";
-import { assignedContacts, renderAssignedContacts } from "./addTask.js";
-import { currentTaskStatus, createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter, searchTasks, deactivateDragDrop, currentDraggedElement } from "./board.js";
+import { assignedContacts, renderAssignedContacts, currentPrio } from "./addTask.js";
+import { createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
+import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
 
-/**
- * The function `updateNoTasksFoundVisibility` toggles the visibility of an element based on the
- * presence of any visible tasks.
- * @param anyVisibleTask - The `anyVisibleTask` parameter is a boolean value that indicates whether
- * there are any visible tasks on the page. If there are visible tasks (`anyVisibleTask` is `true`),
- * the function will hide the element with the id 'noTasksFound'. If there are no visible tasks (`any
- */
+
+let currentTaskStatus;
+
+
 export function updateNoTasksFoundVisibility(anyVisibleTask) {
   const noTasksFound = document.getElementById('noTasksFound');
   if (anyVisibleTask) {
@@ -20,16 +18,7 @@ export function updateNoTasksFoundVisibility(anyVisibleTask) {
 }
 
 
-
-/**
- * The function `checkScreenWidth` checks the screen width and redirects to a specific page based on
- * the screen size.
- * @param category - The `category` parameter in the `checkScreenWidth` function is used to determine
- * the task category for the task being added. It is stored in the session storage using
- * `sessionStorage.setItem('taskCategory', category)`. The function then checks the screen width and
- * performs different actions based on the screen width
- */
-function checkScreenWidth(category) {
+export function checkScreenWidth(category) {
   const screenWidth = window.innerWidth;
   const activeTab = document.querySelector('.menuBtn[href="../html/addtask.html"]');
   const taskStatus = category;
@@ -43,11 +32,6 @@ function checkScreenWidth(category) {
 }
 
 
-
-/**
- * The function `openAddTaskOverlay` asynchronously opens an overlay for adding a task by fetching a
- * template and displaying it on the webpage.
- */
 async function openAddTaskOverlay() {
   let addTaskOverlay = document.getElementById("addTaskOverlay");
   assignedContacts = [];
@@ -56,14 +40,6 @@ async function openAddTaskOverlay() {
 }
 
 
-
-/**
- * The function `openOverlay` displays an overlay with information about a specific task based on its
- * ID.
- * @param elementId - The `elementId` parameter is the unique identifier of the element that you want
- * to open in an overlay. In the provided function `openOverlay`, this parameter is used to find the
- * corresponding task object from an array called `tasks` based on its `id`.
- */
 export function openOverlay(elementId) {
   let element = tasks.find((task) => task.id === elementId);
   let overlay = document.getElementById("overlay");
@@ -73,52 +49,7 @@ export function openOverlay(elementId) {
   overlay.style.display = "block";
 }
 
-function activateOverlayListeners(elementId) {
-  const closeBtn = document.getElementById("modalCloseBtn");
-  const subtasks = document.querySelectorAll('.modalSubtaskSingle');
-  const editBtn = document.getElementById("modalContainerEditBtn");
-  const deleteBtn = document.getElementById("modalContainerDeleteBtn");
 
-  closeBtn?.addEventListener("click", closeModal);
-  subtasks?.forEach(subtask => subtask.addEventListener('click', handleSubtaskClick));
-  editBtn?.addEventListener('click', handleOverlayEditClick);
-  deleteBtn?.addEventListener('click', handleOverlayDeleteClick);
-}
-
-function deactivateOverlayListeners() {
-  const closeBtn = document.getElementById("modalCloseBtn");
-  const subtasks = document.querySelectorAll('.modalSubtaskSingle');
-  const editBtn = document.getElementById("modalContainerEditBtn");
-  const deleteBtn = document.getElementById("modalContainerDeleteBtn");
-
-  closeBtn?.removeEventListener("click", closeModal);
-  subtasks?.forEach(subtask => subtask.removeEventListener('click', handleSubtaskClick));
-  editBtn?.removeEventListener('click', handleOverlayEditClick);
-  deleteBtn?.removeEventListener('click', handleOverlayDeleteClick);
-}
-
-function handleSubtaskClick(event) {
-  const subtaskIndex = event.target.closest('.modalSubtaskSingle').dataset.subtaskIndex;
-  const taskId = event.target.closest('#modalContainer').dataset.id;
-  updateSubtaskStatus(taskId, subtaskIndex);
-}
-
-function handleOverlayEditClick(event) {
-  const taskId = event.target.closest('#modalContainer').dataset.id;
-  enableTaskEdit(taskId);
-}
-
-function handleOverlayDeleteClick(event) {
-  const taskId = event.target.closest('#modalContainer').dataset.id;
-  deleteTask(taskId);
-}
-
-
-
-/**
- * The function closeModal hides the overlay and addTaskOverlay elements and removes the "modalOpen"
- * class from the body.
- */
 export function closeModal() {
   const overlay = document.getElementById("overlay");
   const addTaskOverlay = document.getElementById("addTaskOverlay");
@@ -131,21 +62,12 @@ export function closeModal() {
 }
 
 
-/**
- * The function `updateSubtaskStatus` updates the status of a subtask within a task, updates the DOM,
- * progress bar, and data, and stores the updated tasks in session storage.
- * @param taskId - The `taskId` parameter is the unique identifier of the task that contains the
- * subtask you want to update.
- * @param subtaskIndex - The `subtaskIndex` parameter in the `updateSubtaskStatus` function refers to
- * the index of the subtask within the subtasks array of a specific task. It is used to identify the
- * particular subtask that needs to be updated in terms of its status.
- */
-async function updateSubtaskStatus(taskId, subtaskIndex) {
+export async function updateSubtaskStatus(taskId, subtaskIndex) {
   let task = tasks.find((task) => task.id === taskId);
   if (task) {
     let subtask = task.subtasks[subtaskIndex];
     if (subtask) {
-      updateSubtaskStatusDom(subtask);
+      updateSubtaskStatusDom(subtask, subtaskIndex);
       updateSubtasksProgressBar(task.subtasks, taskId);
       await updateData(`${BASE_URL}tasks/${taskId}.json`, task);
       let taskIndex = tasks.findIndex(t => taskId === t.id);
@@ -156,16 +78,7 @@ async function updateSubtaskStatus(taskId, subtaskIndex) {
 }
 
 
-/**
- * Updates the status of a subtask in the DOM by toggling its checkbox image.
- *
- * @param {Object} subtask - The subtask object to update.
- * @param {string} subtask.status - The current status of the subtask ("checked" or "unchecked").
- * @param {number} subtaskIndex - The index of the subtask within its parent task's subtasks array.
- *
- * @returns {void}
- */
-function updateSubtaskStatusDom(subtask) {
+function updateSubtaskStatusDom(subtask, subtaskIndex) {
   subtask.status = subtask.status === "checked" ? "unchecked" : "checked";
   let subtaskCheckbox = document.getElementById(`subtaskCheckbox${subtaskIndex}`);
   if (subtaskCheckbox) {
@@ -175,36 +88,22 @@ function updateSubtaskStatusDom(subtask) {
 }
 
 
-
-/**
- * Enables the editing of a task by populating the edit form with the task's current data.
- *
- * @param {string} taskId - The unique identifier of the task to be edited.
- *
- * @returns {void}
- */
-function enableTaskEdit(taskId) {
+export function enableTaskEdit(taskId) {
   let modalContainer = document.getElementById("modalContainer");
   modalContainer.innerHTML = generateTaskEditHTML(taskId);
   let task = tasks.find((task) => task.id === taskId);
-  assignedContacts = task.assignedTo ? task.assignedTo : [];
+  assignedContacts.length = 0;
+  if (task.assignedTo) assignedContacts.push(...task.assignedTo);
   currentTaskStatus = task.status;
   document.getElementById("editTaskTitle").value = task.title;
   document.getElementById("editTaskDescription").value = task.description;
   document.getElementById("editDateInput").value = task.date;
   updatePrioActiveBtn(task.prio);
   renderAssignedContacts();
+  activateEditTaskListeners();
 }
 
-/**
- * Creates an edited task object based on the provided task ID.
- * The function retrieves the original task from the tasks array,
- * iterates through the subtasks, and constructs a new subtasks array.
- * It then calls the createEditedTaskReturn function to create the edited task object.
- * @param {string} taskId - The unique identifier of the task to be edited.
- * @returns {Object} The edited task object.
- * @throws Will throw an error if the original task is not found in the tasks array.
- */
+
 function createEditedTask(taskId) {
   let originalTask = tasks.find(task => task.id === taskId);
   if (!originalTask) return;
@@ -221,13 +120,6 @@ function createEditedTask(taskId) {
 }
 
 
-/**
- * Helper function to create the edited task object.
- * 
- * @param {Object[]} subtasks - The updated subtasks.
- * @param {Object} originalTask - The original task object.
- * @returns {Object} The edited task object.
- */
 function createEditedTaskReturn(subtasks, originalTask) {
   return {
     title: document.getElementById('editTaskTitle').value,
@@ -242,15 +134,7 @@ function createEditedTaskReturn(subtasks, originalTask) {
 }
 
 
-/**
- * Saves the edited task and updates the board accordingly.
- * 
- * @async
- * @param {Event} event - The form submission event.
- * @param {string} taskId - The ID of the task to save.
- */
-async function saveEditedTask(event, taskId) {
-  event.preventDefault();
+export async function saveEditedTask(taskId) {
   let singleTask = createEditedTask(taskId);
   await updateData(`${BASE_URL}tasks/${taskId}.json`, singleTask);
   let taskIndex = tasks.findIndex(t => taskId === t.id);
@@ -262,136 +146,7 @@ async function saveEditedTask(event, taskId) {
 }
 
 
-/**
- * Closes the modal if outside the overlay or add task overlay is clicked.
- * 
- * @param {MouseEvent} event - The mouse click event.
- */
-window.onclick = function (event) {
-  const overlay = document.getElementById("overlay");
-  const addTaskOverlay = document.getElementById("addTaskOverlay");
-  if (event.target === overlay || event.target === addTaskOverlay) {
-    closeModal();
-  }
-};
-
-
-/**
- * Removes the task category from local storage if it exists.
- */
-document.addEventListener('DOMContentLoaded', () => {
-  const category = localStorage.getItem('taskCategory');
-  if (category) {
-    localStorage.removeItem('taskCategory');
-  }
-});
-
-
-export function activateListeners() {
-  const addTaskBtn = document.getElementById("addTaskBtn");
-  const addTaskBtnDesktop = document.getElementById("addTaskBtnDesktop");
-  const searchInput = document.getElementById("searchInput");
-  const container = document.querySelectorAll('.taskCategoryContainer');
-  const toDoContainer = document.getElementById('toDo-container');
-  const inProgressContainer = document.getElementById('inProgress-container');
-  const awaitFeedbackContainer = document.getElementById('awaitFeedback-container');
-  const doneContainer = document.getElementById('done-container');
-  const addTaskPlus = document.querySelectorAll('.taskCategoryIcon');
-
-  addTaskBtn?.addEventListener('click', handleAddTaskBtnClick);
-  addTaskBtnDesktop?.addEventListener('click', handleAddTaskBtnClick);
-  searchInput?.addEventListener('input', handleSearchInput);
-  container?.forEach((element) => {
-    element.addEventListener('dragover', allowDrop);
-    element.addEventListener('dragleave', dragLeave);
-  });
-  toDoContainer?.addEventListener('drop', handleDrop);
-  inProgressContainer?.addEventListener('drop', handleDrop);
-  awaitFeedbackContainer?.addEventListener('drop', handleDrop);
-  doneContainer?.addEventListener('drop', handleDrop);
-  addTaskPlus?.forEach((element) => {
-    element.addEventListener('click', handleAddTaskBtnClick);
-  });
-}
-
-export function deactivateAllListenersBoard() {
-  const addTaskBtn = document.getElementById("addTaskBtn");
-  const addTaskBtnDesktop = document.getElementById("addTaskBtnDesktop");
-  const searchInput = document.getElementById("searchInput");
-  const container = document.querySelectorAll('.taskCategoryContainer');
-  const toDoContainer = document.getElementById('toDo-container');
-  const inProgressContainer = document.getElementById('inProgress-container');
-  const awaitFeedbackContainer = document.getElementById('awaitFeedback-container');
-  const doneContainer = document.getElementById('done-container');
-  const addTaskPlus = document.querySelectorAll('.taskCategoryIcon');
-
-  addTaskBtn?.removeEventListener('click', handleAddTaskBtnClick);
-  addTaskBtnDesktop?.removeEventListener('click', handleAddTaskBtnClick);
-  searchInput?.removeEventListener('input', handleSearchInput);
-  container?.forEach((element) => {
-    element.removeEventListener('dragover', allowDrop);
-    element.removeEventListener('dragleave', dragLeave);
-  });
-  toDoContainer?.removeEventListener('drop', handleDrop);
-  inProgressContainer?.removeEventListener('drop', handleDrop);
-  awaitFeedbackContainer?.removeEventListener('drop', handleDrop);
-  doneContainer?.removeEventListener('drop', handleDrop);
-  addTaskPlus?.forEach((element) => {
-    element.removeEventListener('click', handleAddTaskBtnClick);
-  });
-  deactivateDragDrop();
-  deactivateOverlayListeners();
-}
-
-function handleAddTaskBtnClick(event) {
-  if (event.target.id === "addTaskInProgress") checkScreenWidth("inProgress");
-  else if (event.target.id === "addTaskFeedback") checkScreenWidth("awaitFeedback");
-  else checkScreenWidth("toDo");
-};
-
-function handleSearchInput() {
-  const searchInput = document.getElementById("searchInput");
-  searchTasks(searchInput.value);
-}
-
-function handleDrop(event) {
-  event.preventDefault();
-  moveTo(event.target.id);
-}
-
-/**
- * Removes drag-related background highlights from all task drop areas.
- */
-function dragLeave() {
-  document.querySelectorAll('.taskDragArea').forEach((zone) => {
-    zone.classList.remove('highlightedBackground');
-  });
-}
-
-
-/**
- * Allows dropping of elements by preventing the default event behavior.
- * 
- * @param {Event} ev - The dragover event.
- */
-function allowDrop(ev) {
-  let dropTarget = ev.target;
-  let allowDropTarget = document.querySelectorAll('.taskDragArea');
-  allowDropTarget.forEach(t => {
-    if (t == dropTarget || t.contains(dropTarget)) {
-      ev.preventDefault();
-      t.classList.add('highlightedBackground');
-    }
-  });
-}
-
-/**
- * Moves a task to a new status and updates the board accordingly.
- * 
- * @async
- * @param {string} status - The new status of the task.
- */
-async function moveTo(status) {
+export async function moveTo(status) {
   document.querySelectorAll(".taskDragArea").forEach((zone) => {
     zone.classList.add("highlighted");
   });

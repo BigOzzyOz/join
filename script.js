@@ -1,6 +1,7 @@
 import { firebaseLogout } from "./script/firebase-init.js";
 import { initCheckData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
+import { deactivateDeleteResponseListeners } from "./script/board-listener.js";
 import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
 import { deactivateAllListenersContacts } from "./script/contacts.js";
 import { deactivateAllListenersLogin } from "./script/login.js";
@@ -12,7 +13,7 @@ export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON
 export let activeTab = sessionStorage.getItem('activeTab') || '';
 export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
 export let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
-export let currentPrio = 'medium';
+
 
 
 /**
@@ -304,6 +305,7 @@ export async function loadData(path = '') {
  * @returns {Promise<Object>} The response from the delete request.
  */
 export async function deleteData(path = '') {
+  let responseToJson;
   let response = await fetch(BASE_URL + path + '.json', {
     method: 'DELETE',
   });
@@ -358,7 +360,7 @@ export async function updateData(url, data) {
  * 
  * @param {number} id - The ID of the task to delete.
  */
-function deleteTask(id) {
+export function deleteTask(id) {
   toggleClass('deleteResponse', 'ts0', 'ts1');
   document.getElementById('deleteResponse').innerHTML = openDeleteTaskSureHtml(id);
 }
@@ -369,8 +371,9 @@ function deleteTask(id) {
  * 
  * @param {number} id - The ID of the task to delete.
  */
-async function deleteTaskSure(id) {
+export async function deleteTaskSure(id) {
   toggleClass('deleteResponse', 'ts0', 'ts1');
+  deactivateDeleteResponseListeners();
   await deleteData(`tasks/${id}`);
   tasks = tasks.filter((task) => task.id !== id);
   sessionStorage.setItem("tasks", JSON.stringify(tasks));

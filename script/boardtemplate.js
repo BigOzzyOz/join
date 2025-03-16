@@ -223,7 +223,7 @@ function generateModalSubtasksHTML(element) {
             let subtask = element.subtasks[i];
             let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
             modalSubtasksHTML += /*html*/ `
-                <label class="modalSubtasksSingle" data-subtaskIndex="${i}">
+                <label class="modalSubtasksSingle" data-subtaskindex="${i}">
                     <img id="subtaskCheckbox${i}" src="${checked}" alt="Checkbox">
                     <div>${subtask.text}</div>
                 </label>
@@ -312,19 +312,19 @@ export function generateOpenOverlayHTML(element) {
 export function generateTaskEditHTML(taskId) {
     let task = tasks.find(task => task.id === taskId);
     let subtaskHTML = '';
-    assignedContacts = !task.assignedTo ? [] : task.assignedTo.forEach(t => assignedContacts.push(t));
+    !task.assignedTo ? assignedContacts.length = 0 : task.assignedTo.forEach(t => assignedContacts.push(t));
 
     if (task.subtasks && task.subtasks.length > 0) {
         task.subtasks.forEach((subtask, index) => {
             subtaskHTML += /*html*/ `
-                <li class="subtaskEditList" id="subtask-${index}" ondblclick="editSubtask(this)">
+                <li class="subtaskEditList" data-index="${index}" id="subtask-${index}">
                     <div class="subtaskItem">
                         <span class="subtaskItemText">${subtask.text}</span>
                         <input type="text" class="editSubtaskInput dNone" value="${subtask.text}" maxlength="80"/>
                         <div class="addedTaskIconContainer">
-                            <img class="icon" src="../assets/icons/pencilDarkBlue.svg" onclick="editSubtask(this)">
+                            <img class="icon editSubtaskBtns" src="../assets/icons/pencilDarkBlue.svg">
                             <div class="subtaskInputSeperator"></div>
-                            <img class="icon" src="../assets/icons/delete.svg" onclick="deleteSubtask(this)">
+                            <img class="icon deleteSubtaskBtns" src="../assets/icons/delete.svg">
                         </div>
                     </div>
                 </li>
@@ -335,9 +335,9 @@ export function generateTaskEditHTML(taskId) {
     return /*html*/ `
         <div class="modalToDoContent">
             <div class="editTaskCloseContainer">
-                <img class="modalCloseIcon" onclick="closeModal()" src="../assets/icons/closeGrey.svg" alt="">
+                <img id="editTaskCloseBtn" class="modalCloseIcon" src="../assets/icons/closeGrey.svg" alt="">
             </div>
-            <form onsubmit="return saveEditedTask(event, '${taskId}')" class="editTaskForm">
+            <form id="editTaskForm" data-id="${taskId}" class="editTaskForm">
                 <div class="editTaskScrollbarWrapper">
                     <div class="singleInputContainer">
                         <div class="redStarAfter">Title</div>
@@ -348,7 +348,7 @@ export function generateTaskEditHTML(taskId) {
                         <div>Description</div>
                         <textarea id="editTaskDescription" placeholder="Enter a Description" maxlength="240"></textarea>
                     </div>
-                    <div class="singleInputContainer" onclick="">
+                    <div class="singleInputContainer">
                         <div class="redStarAfter">Due date</div>
                         <input id="editDateInput" class="dateInput" type="date" placeholder="dd/mm/yyyy" required>
                         <div class="formValidationText" style="display: none;">This field is required</div>
@@ -356,18 +356,18 @@ export function generateTaskEditHTML(taskId) {
                     <div class="editTaskPrioContainer">
                         <div>Priority</div>
                     <div class="prioBtnContainer">
-                        <div class="prioBtn prioBtnUrgent" onclick="setPrio(this)" data-prio="urgent">
+                        <div id="urgentPrioBtn" class="prioBtn prioBtnUrgent" data-prio="urgent">
                         <div>Urgent</div>
                             <img class="priourgentsmallWhite" src="../assets/icons/priourgentsmallWhite.svg">
                             <img class="priourgentsmall" src="../assets/icons/priourgentsmall.svg">
                         </div>
-                        <div class="prioBtn prioBtnMedium prioBtnMediumActive" onclick="setPrio(this)" data-prio="medium">
-                        <div>Medium</div>
+                        <div class="prioBtn prioBtnMedium prioBtnMediumActive" data-prio="medium">
+                            <div>Medium</div>
                             <img class="priomediumsmallWhite" src="../assets/icons/priomediumsmallWhite.svg">
                             <img class="priomediumsmall" src="../assets/icons/priomediumsmall.svg">
                         </div>
-                        <div class="prioBtn prioBtnLow" onclick="setPrio(this)" data-prio="low">
-                        <div>Low</div>
+                        <div class="prioBtn prioBtnLow" data-prio="low">
+                            <div>Low</div>
                             <img class="priolowsmallWhite" src="../assets/icons/priolowsmallWhite.svg">
                             <img class="priolowsmall" src="../assets/icons/priolowsmall.svg">
                         </div>
@@ -377,9 +377,8 @@ export function generateTaskEditHTML(taskId) {
                         <div>Assigned to</div>
                         <div id="assignDropdown" class="assignContainer">
                             <input id="assignSearch" type="search" class="contactsAssignStandard"
-                                value="Select contacts to assign" onclick="toggleDropdown()" oninput="assignSearchInput()"
-                                placeholder="Search contacts" readonly>
-                            <div class="imgContainer" onclick="toggleDropdown()">
+                                value="Select contacts to assign" placeholder="Search contacts" readonly>
+                            <div id="assignDropArrowContainer" class="imgContainer">
                                 <img id="assignDropArrow" src="../assets/icons/arrowdropdown.svg" alt="">
                             </div>
                             <div id="contactsToAssign" class="contactsToAssign"></div>
@@ -388,20 +387,20 @@ export function generateTaskEditHTML(taskId) {
                     </div>
                     <div class="singleInputContainer">
                         <div>Subtasks</div>
-                        <div class="subtasksInputContainer" onclick="addNewSubtask(event)">
-                            <input id="subtaskInput" class="subtasksInput" type="text" placeholder="Add new subtask" maxlength="80" onkeydown="handleKeyDown(event)">
+                        <div id="subtasksInputContainer" class="subtasksInputContainer">
+                            <input id="subtaskInput" class="subtasksInput" type="text" placeholder="Add new subtask" maxlength="80">
                             <img id="subtaskPlusIcon" class="subtaskPlusIcon" src="../assets/icons/addBlack.svg">
                             <div id="subtaskIconContainer" class="subtaskIconContainer dNone">
-                                <img onclick="clearSubtaskInput()" class="icon" src="../assets/icons/delete.svg">
+                                <img id="subtaskDeleteIcon" class="icon" src="../assets/icons/delete.svg">
                                 <div class="subtaskInputSeperator"></div>
-                                <img onclick="saveSubtask()" class="icon" src="../assets/icons/checkBlackBig.svg">
+                                <img id="subtaskSaveIcon" class="icon" src="../assets/icons/checkBlackBig.svg">
                             </div>
                         </div>
                         <ul id="subtaskList">${subtaskHTML}</ul>
                     </div>
                 </div>
                 <div class="editBottomContainer">
-                    <button type="submit" class="saveTaskEditBtn" onclick="return formValidation()">
+                    <button id="saveTaskEditBtn" type="submit" class="saveTaskEditBtn">
                         <div>Ok</div>
                         <img src="../assets/icons/check.svg">
                     </button>
@@ -422,11 +421,13 @@ export function openDeleteTaskSureHtml(id) {
     return /*html*/`
         <div class="deleteQuestion">
             <p>Do you really want to delete this entry?</p>
-            <form onsubmit="deleteTaskSure('${id}'); return false;">
-                <button type="button" onclick="toggleClass('deleteResponse', 'ts0', 'ts1')">NO 
+            <form id="deleteTaskForm" data-id="${id}">
+                <button id="deleteTaskNo" type="button">
+                    NO 
                     <img src="../assets/icons/close.svg" alt="close X">
                 </button>
-                <button type="submit">YES 
+                <button type="submit">
+                    YES 
                     <img src="../assets/icons/check.svg" alt="check icon">
                 </button>
             </form>
