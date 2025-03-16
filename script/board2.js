@@ -120,7 +120,6 @@ function createEditedTask(taskId) {
 
 
 function createEditedTaskReturn(subtasks, originalTask) {
-  console.log(assignedContacts);
   return {
     title: document.getElementById('editTaskTitle').value,
     description: document.getElementById('editTaskDescription').value,
@@ -136,15 +135,10 @@ function createEditedTaskReturn(subtasks, originalTask) {
 
 export async function saveEditedTask(taskId) {
   let singleTask = createEditedTask(taskId);
-  console.log("Edited task:", singleTask);
   await updateData(`${BASE_URL}tasks/${taskId}.json`, singleTask);
-  console.log("Task updated:", singleTask);
   let taskIndex = tasks.findIndex(t => taskId === t.id);
-  console.log("Task index:", taskIndex);
   tasks.splice(taskIndex, 1, await createTaskArray(taskId, singleTask));
-  console.log("Updated tasks:", tasks);
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
-  console.log("Tasks saved to session storage:", sessionStorage.getItem("tasks"));
   openOverlay(taskId);
   initDragDrop();
   applyCurrentSearchFilter();

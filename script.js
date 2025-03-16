@@ -15,6 +15,15 @@ export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
 export let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
 
 
+export function setTasks(newTasks) {
+  tasks = newTasks;
+}
+
+
+export function setContacts(newContacts) {
+  contacts = newContacts;
+}
+
 
 /**
  * Initializes the application by including HTML, setting the active tab, and checking the current user.

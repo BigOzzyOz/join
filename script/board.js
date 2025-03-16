@@ -1,4 +1,4 @@
-import { BASE_URL, contacts, tasks, loadData, updateData } from "../script.js";
+import { BASE_URL, contacts, tasks, loadData, updateData, setTasks } from "../script.js";
 import { updateNoTasksFoundVisibility } from "./board2.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
@@ -39,7 +39,7 @@ export async function initCheckData() {
 async function pushDataToArray() {
   try {
     let tasksData = await loadData("tasks");
-    tasks.length = 0;
+    setTasks([]);
     for (const key in tasksData) {
       let singleTask = tasksData[key];
       if (!singleTask) continue;
@@ -113,7 +113,6 @@ export async function createTaskArray(key, singleTask) {
     "subtasks": singleTask.subtasks,
     "title": singleTask.title,
   };
-  console.log("Task created:", task);
   return task;
 }
 

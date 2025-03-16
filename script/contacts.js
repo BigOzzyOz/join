@@ -1,4 +1,4 @@
-import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck } from "../script.js";
+import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
 
 let currentLetter = '';
@@ -187,7 +187,7 @@ export async function getContactsData() {
  * @returns {void}
  */
 function setContactsArray(loadItem) {
-  contacts.length = 0;
+  setContacts([]);
   for (let i = 0; i < loadItem.length; i++) {
     const element = loadItem[i];
     if (!element) continue;
