@@ -322,9 +322,9 @@ export function generateTaskEditHTML(taskId) {
                         <span class="subtaskItemText">${subtask.text}</span>
                         <input type="text" class="editSubtaskInput dNone" value="${subtask.text}" maxlength="80"/>
                         <div class="addedTaskIconContainer">
-                            <img class="icon editSubtaskBtns" src="../assets/icons/pencilDarkBlue.svg">
+                            <img class="icon editSubtaskBtns" data-action="edit" src="../assets/icons/pencilDarkBlue.svg">
                             <div class="subtaskInputSeperator"></div>
-                            <img class="icon deleteSubtaskBtns" src="../assets/icons/delete.svg">
+                            <img class="icon deleteSubtaskBtns" data-action="delete" src="../assets/icons/delete.svg">
                         </div>
                     </div>
                 </li>
