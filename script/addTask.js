@@ -2,6 +2,7 @@ import { activeTab, contacts, setActiveTab, updatePrioActiveBtn, toggleClass, ge
 import { initCheckData, updateAllTaskCategories, initDragDrop } from "./board.js";
 import { closeModal } from "./board2.js";
 import { handleAssignContact } from "./board-listener.js";
+import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
 import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
 import { getContactsData } from "./contacts.js";
 import { svgProfilePic } from "./contactsTemplate.js";
@@ -137,8 +138,7 @@ export function setPrio(element) {
  * @param {Event} e - The click event.
  * @param {string} value - The value to set for the category input.
  */
-function toggleCategoryDropdown(e, value) {
-  e.stopPropagation();
+export function toggleCategoryDropdown(value) {
   let input = document.getElementById('categoryInput');
   let wrapper = document.getElementById('selectWrapper');
   let arrow = document.getElementById('categoryDropArrow');
@@ -202,6 +202,8 @@ export function saveSubtask() {
   document.getElementById('subtaskInput').value = '';
   document.getElementById('subtaskIconContainer').classList.add('dNone');
   document.getElementById('subtaskPlusIcon').classList.remove('dNone');
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
@@ -218,6 +220,8 @@ export function editSubtask(editIcon) {
   editInput.classList.remove('dNone');
   editInput.focus();
   editInput.addEventListener('blur', function () { saveEditedSubtask(subtaskText, editInput); });
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
@@ -242,6 +246,8 @@ function saveEditedSubtask(subtaskText, editInput) {
 export function deleteSubtask(deleteIcon) {
   let subtaskItem = deleteIcon.closest('.subtaskEditList');
   subtaskItem.remove();
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
@@ -274,8 +280,7 @@ function getSubtasks() {
  * represents the event that was triggered, such as a form submission or a button click. In this case,
  * the function is used to handle the form submission event when a new task is being added.
  */
-async function pushNewTask(event) {
-  event.preventDefault();
+export async function pushNewTask() {
   let newTask = createNewTask();
   await postData("tasks", newTask);
   closeAddTaskModal();
@@ -314,10 +319,9 @@ async function closeAddTaskModal() {
     sessionStorage.removeItem('tasks');
   } else {
     showTaskAddedAnimation();
-    sessionStorage.removeItem('tasks');
-    await initCheckData();
-    updateAllTaskCategories();
-    initDragDrop();
+    setTimeout(() => {
+      location.reload();
+    }, 2000);
   }
 }
 
@@ -414,7 +418,7 @@ function formValidationListener(input, validationText) {
 /**
  * Clears the add task form fields.
  */
-function clearAddTaskForm() {
+export function clearAddTaskForm() {
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskDescription').value = '';
   document.getElementById('dateInput').value = '';

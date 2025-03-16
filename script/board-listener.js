@@ -1,7 +1,8 @@
 import { deleteTask, deleteTaskSure, toggleClass, activateOutsideCheck } from '../script.js';
 import { initBoard, searchTasks, startDragging, dragEnd } from './board.js';
 import { checkScreenWidth, openOverlay, closeModal, moveTo, enableTaskEdit, updateSubtaskStatus, saveEditedTask } from './board2.js';
-import { setPrio, toggleDropdown, assignSearchInput, addNewSubtask, handleKeyDown, clearSubtaskInput, saveSubtask, formValidation, editSubtask, deleteSubtask, contactAssign } from './addTask.js';
+import { setPrio, toggleDropdown, assignSearchInput, addNewSubtask, handleKeyDown, clearSubtaskInput, saveSubtask, formValidation, contactAssign } from './addTask.js';
+import { activateSubtaskListeners, deactivateAllAddTaskListeners, deactivateSubtaskListeners } from './addTask-listener.js';
 
 
 
@@ -195,12 +196,13 @@ function handleOverlayDeleteClick(event) {
 }
 
 
-function handleOverlayOutsideClick(event) {
+export function handleOverlayOutsideClick(event) {
   const overlay = document.getElementById("overlay");
   const addTaskOverlay = document.getElementById("addTaskOverlay");
   if (event.target === overlay || event.target === addTaskOverlay) {
     closeModal();
     deactivateOverlayListeners();
+    deactivateAllAddTaskListeners();
   }
 }
 
@@ -251,13 +253,9 @@ export function activateEditTaskListeners() {
   const subtaskInput = document.getElementById("subtaskInput");
   const subtaskDeleteIcon = document.getElementById('subtaskDeleteIcon');
   const subtaskSaveIcon = document.getElementById('subtaskSaveIcon');
-  const subtaskEditList = document.querySelectorAll('.subtaskEditList');
-  const subtaskEditBtns = document.querySelectorAll('.editSubtaskBtns');
-  const subtaskDeleteBtns = document.querySelectorAll('.deleteSubtaskBtns');
-
   editTaskForm?.addEventListener('submit', handleEditTaskFormSubmit);
   closebtn?.addEventListener('click', closeModal);
-  prio?.forEach((element) => element.addEventListener('click', handleEditTaskPrioClick));
+  prio?.forEach((element) => element.addEventListener('click', handlePrioClick));
   assignSearchInputField?.addEventListener('click', toggleDropdown);
   assignSearchInputField?.addEventListener('input', assignSearchInput);
   assignSearchDropdown?.addEventListener('click', toggleDropdown);
@@ -265,9 +263,7 @@ export function activateEditTaskListeners() {
   subtaskInput?.addEventListener('keypress', handleKeyDown);
   subtaskDeleteIcon?.addEventListener('click', clearSubtaskInput);
   subtaskSaveIcon?.addEventListener('click', saveSubtask);
-  subtaskEditList?.forEach((element) => element.addEventListener('dblclick', handleEditSubtaskList));
-  subtaskEditBtns?.forEach((element) => element.addEventListener('click', handleEditSubtaskList));
-  subtaskDeleteBtns?.forEach((element) => element.addEventListener('click', handleDeleteSubtaskList));
+  activateSubtaskListeners();
 }
 
 
@@ -281,13 +277,9 @@ export function deactivateEditTaskListeners() {
   const subtaskInput = document.getElementById("subtaskInput");
   const subtaskDeleteIcon = document.getElementById('subtaskDeleteIcon');
   const subtaskSaveIcon = document.getElementById('subtaskSaveIcon');
-  const subtaskEditList = document.querySelectorAll('.subtaskEditList');
-  const subtaskEditBtns = document.querySelectorAll('.editSubtaskBtns');
-  const subtaskDeleteBtns = document.querySelectorAll('.deleteSubtaskBtns');
-
   editTaskForm?.removeEventListener('submit', handleEditTaskFormSubmit);
   closebtn?.removeEventListener('click', closeModal);
-  prio?.forEach((element) => element.removeEventListener('click', handleEditTaskPrioClick));
+  prio?.forEach((element) => element.removeEventListener('click', handlePrioClick));
   assignSearchInputField?.removeEventListener('click', toggleDropdown);
   assignSearchInputField?.removeEventListener('input', assignSearchInput);
   assignSearchDropdown?.removeEventListener('click', toggleDropdown);
@@ -295,9 +287,7 @@ export function deactivateEditTaskListeners() {
   subtaskInput?.removeEventListener('keypress', handleKeyDown);
   subtaskDeleteIcon?.removeEventListener('click', clearSubtaskInput);
   subtaskSaveIcon?.removeEventListener('click', saveSubtask);
-  subtaskEditList?.forEach((element) => element.removeEventListener('dblclick', handleEditSubtaskList));
-  subtaskEditBtns?.forEach((element) => element.removeEventListener('click', handleEditSubtaskList));
-  subtaskDeleteBtns?.forEach((element) => element.removeEventListener('click', handleDeleteSubtaskList));
+  deactivateSubtaskListeners();
 }
 
 
@@ -308,24 +298,10 @@ function handleEditTaskFormSubmit(event) {
 }
 
 
-function handleEditTaskPrioClick(event) {
+export function handlePrioClick(event) {
   const prioElement = event.target.closest('.prioBtn');
   if (!prioElement) return;
   setPrio(prioElement);
-}
-
-
-function handleEditSubtaskList(event) {
-  const subtask = event.target.closest('.subtaskEditList');
-  if (!subtask) return;
-  editSubtask(subtask);
-}
-
-
-function handleDeleteSubtaskList(event) {
-  const subtask = event.target.closest('.subtaskEditList');
-  if (!subtask) return;
-  deleteSubtask(subtask);
 }
 
 

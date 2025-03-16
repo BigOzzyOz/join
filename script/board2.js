@@ -3,6 +3,7 @@ import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentP
 import { createTaskArray, updateSubtasksProgressBar, initDragDrop, applyCurrentSearchFilter, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
+import { activateAddTaskListeners } from "./addTask-listener.js";
 
 
 let currentTaskStatus;
@@ -37,6 +38,7 @@ async function openAddTaskOverlay() {
   setAssignedContacts([]);
   addTaskOverlay.innerHTML = await fetchAddTaskTemplate();
   addTaskOverlay.style.display = "block";
+  activateAddTaskListeners();
 }
 
 

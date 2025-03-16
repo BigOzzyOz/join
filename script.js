@@ -41,7 +41,7 @@ export async function init() {
 /**
  * Sets the minimum date for date inputs to the current date.
  */
-function setActualDate() {
+export function setActualDate() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('dateInput').setAttribute('min', today);
   document.getElementById('update-date') && document.getElementById('update-date').setAttribute('min', today);

@@ -49,9 +49,11 @@
 }
 
 .singleInputContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 88px;
 }
 
 .descriptionInput {
@@ -278,6 +280,7 @@ input:focus {
   left: 50%;
   transform: translateX(-50%);
   transition: bottom 0.5s ease-out;
+  z-index: 6;
 }
 
 .taskAddedBtnIcon {
@@ -422,6 +425,9 @@ input:focus {
 }
 
 .assignContainer {
+  position: absolute;
+  top: 32px;
+  left: 0;
   border: 1px solid #d1d1d1;
   border-radius: 10px;
   background-color: white;
@@ -560,7 +566,10 @@ ul {
 }
 
 .select-wrapper {
-  position: relative;
+  position: absolute;
+  top: 32px;
+  left: 0;
+  z-index: 5;
   display: inline-block;
   height: 38px;
   overflow: hidden;
@@ -583,7 +592,7 @@ ul {
 }
 
 .select-wrapperOpen {
-  height: 180px !important;
+  height: auto !important;
 }
 
 .select-wrapper p {

@@ -34,14 +34,14 @@ export function htmlRenderContactsAssign(contact) {
  */
 export function generateSaveSubtaskHTML(inputText, index) {
   return /*html*/`
-      <li class="subtaskEditList" id="subtask-${index}" ondblclick="editSubtask(this)">
+      <li class="subtaskEditList" id="subtask-${index}">
         <div class="subtaskItem">
           <span class="subtaskItemText">${inputText}</span>
           <input type="text" class="editSubtaskInput dNone" value="${inputText}" maxlength="80">
           <div class="addedTaskIconContainer">
-              <img class="icon" src="../assets/icons/pencilDarkBlue.svg" onclick="editSubtask(this)">
+              <img class="icon editSubtaskBtns" src="../assets/icons/pencilDarkBlue.svg">
               <div class="subtaskInputSeperator"></div>
-              <img class="icon" src="../assets/icons/delete.svg" onclick="deleteSubtask(this)">
+              <img class="icon deleteSubtaskBtns" src="../assets/icons/delete.svg">
           </div>
         </div>
 
