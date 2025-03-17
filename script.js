@@ -1,9 +1,9 @@
 import { firebaseLogout, token } from "./script/firebase-init.js";
 import { initializeTasksData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
-import { deactivateDeleteResponseListeners } from "./script/board-listener.js";
+import { deactivateDeleteResponseListeners, deactivateAllListenersBoard } from "./script/board-listener.js";
 import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
-import { deactivateAllListenersContacts } from "./script/contacts.js";
+import { deactivateAllListenersContacts } from "./script/contacts-listener.js";
 import { deactivateAllListenersLogin } from "./script/login.js";
 import { deactivateAllListenersRegister } from "./script/register.js";
 import { deactivateAllListenersSummary } from "./script/summary.js";
@@ -109,6 +109,7 @@ function deactivateListeners() {
   deactivateAllListenersLogin();
   deactivateAllListenersRegister();
   deactivateAllListenersSummary();
+  deactivateAllListenersBoard();
   deactivateAllListenersContacts();
   deactivateListenersScript();
 }

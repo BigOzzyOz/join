@@ -1,6 +1,10 @@
 import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
+import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
 import { token } from "./firebase-init.js";
+
+
+//NOTE - Global variables
 
 
 let currentLetter = '';
@@ -8,171 +12,32 @@ let currentLetterId = '';
 let editId = -1;
 
 
+//NOTE - Initialisation and rendering functions
+
+
 /**
- * Initializes the contacts page by setting up necessary data and rendering contacts.
+ * Initialises the contacts view by loading the contacts data from the server and
+ * rendering the contact list. Additionally, it activates the listeners for the
+ * contact list.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the contacts data
+ * has been loaded and the contact list has been rendered.
  */
 export async function initContacts() {
   await getContactsData();
-  renderContactsGeneral();
+  renderContactList();
   activateListeners();
 }
 
-export function deactivateAllListenersContacts() {
-  deactivateListeners();
-  deactivateListenersDetails();
-  deactivateListenersEdit();
-  deactivateListenersDelete();
-  deactivateListenersAdd();
-}
-
-function activateListeners() {
-  const moreContactsButton = document.getElementById('moreContactsButton');
-  const contactsListItem = document.querySelectorAll('.contactListItem');
-  moreContactsButton.addEventListener('click', openAddContacts);
-  contactsListItem.forEach(item => item.addEventListener('click', openContactDetails));
-}
-
-function deactivateListeners() {
-  const moreContactsButton = document.getElementById('moreContactsButton');
-  const contactsListItem = document.querySelectorAll('.contactListItem');
-  moreContactsButton?.removeEventListener('click', openAddContacts);
-  contactsListItem.forEach(item => item?.removeEventListener('click', openContactDetails));
-}
-
-function openContactDetails(event) {
-  const listItem = event.target.closest('li.contactListItem');
-  toggleClass('contactsDetail', 'tt0', 'ttx100');
-  renderContactsDetails(listItem.dataset.id);
-}
-
-function activateListenersDetails() {
-  const backArrowContacts = document.getElementById('backArrow-contacts');
-  const editContactBtn = document.getElementById('editContactBtn');
-  const deleteContactBtn = document.getElementById('deleteContactBtn');
-  const contactsDetailMore = document.getElementById('contactsDetailMore');
-  backArrowContacts.addEventListener('click', closeDetails);
-  editContactBtn.addEventListener('click', openEditContactsButton);
-  deleteContactBtn.addEventListener('click', openDeleteContactsButton);
-  contactsDetailMore.addEventListener('click', contactsDetailsMore);
-}
-
-function deactivateListenersDetails() {
-  const backArrowContacts = document.getElementById('backArrow-contacts');
-  const editContactBtn = document.getElementById('editContactBtn');
-  const deleteContactBtn = document.getElementById('deleteContactBtn');
-  const contactDetailsMore = document.getElementById('contactDetailsMore');
-  backArrowContacts?.removeEventListener('click', closeDetails);
-  editContactBtn?.removeEventListener('click', openEditContactsButton);
-  deleteContactBtn?.removeEventListener('click', openDeleteContactsButton);
-  contactDetailsMore?.removeEventListener('click', contactsDetailsMore);
-}
-
-function closeDetails() {
-  toggleClass('contactsDetail', 'tt0', 'ttx100');
-}
-
-function openDeleteContactsButton(event) {
-  const target = event.target.closest('#deleteContactBtn');
-  openDeleteContacts(target.dataset.id);
-}
-
-function openEditContactsButton(event) {
-  const target = event.target.closest('#editContactBtn');
-  openEditContacts(event, target.dataset.id);
-}
-
-function contactsDetailsMore(event) {
-  toggleClass('editMenu', 'ts0', 'ts1');
-  activateOutsideCheck(event, 'editMenu', 'ts1', 'ts0');
-}
-
-function activateListenersAdd() {
-  const addContactX = document.querySelectorAll('#addContact .closeX');
-  const addContact = document.querySelector('#addContact form');
-  const addContactCancel = document.getElementById('cancelAddContact');
-  addContactX.forEach(b => b.addEventListener('click', closeAddContact));
-  addContact.addEventListener('submit', submitAddContact);
-  addContactCancel.addEventListener('click', closeAddContact);
-}
-
-function deactivateListenersAdd() {
-  const addContactX = document.querySelectorAll('#addContact .closeX');
-  const addContact = document.querySelector('#addContact form');
-  const addContactCancel = document.getElementById('cancelAddContact');
-  addContactX.forEach(b => b?.removeEventListener('click', closeAddContact));
-  addContact?.removeEventListener('submit', submitAddContact);
-  addContactCancel?.removeEventListener('click', closeAddContact);
-}
-
-function closeAddContact() {
-  toggleClass('addContact', 'tt0', 'tty100');
-  deactivateListenersAdd();
-}
-
-function submitAddContact(event) {
-  event.preventDefault();
-  closeAddContact();
-  addContacts();
-}
-
-function activateListenersEdit() {
-  const workContactX = document.querySelectorAll('#editContact .closeX');
-  const editContact = document.querySelector('#editContact form');
-  const editContactDelete = document.getElementById('editContactDelete');
-  workContactX.forEach(b => b.addEventListener('click', closeEditContact));
-  editContactDelete.addEventListener('click', openDeleteContacts);
-  editContact.addEventListener('submit', submitEditContact);
-}
-
-function deactivateListenersEdit() {
-  const workContactX = document.querySelectorAll('#editContact .closeX');
-  const editContact = document.querySelector('#editContact form');
-  const editContactDelete = document.getElementById('editContactDelete');
-  workContactX.forEach(b => b?.removeEventListener('click', closeEditContact));
-  editContactDelete?.removeEventListener('click', openDeleteContacts);
-  editContact?.removeEventListener('submit', submitEditContact);
-}
-
-function closeEditContact() {
-  toggleClass('editContact', 'tt0', 'tty100');
-  deactivateListenersEdit();
-}
-
-function submitEditContact(event) {
-  event.preventDefault();
-  closeEditContact();
-  editContacts();
-}
-
-function activateListenersDelete() {
-  const deleteResponse = document.querySelector('#deleteResponse form');
-  const closeDeleteResponse = document.getElementById('closeDeleteResponse');
-  deleteResponse.addEventListener('submit', submitDeleteContact);
-  closeDeleteResponse.addEventListener('click', closeDeleteResponse);
-}
-
-function deactivateListenersDelete() {
-  const deleteResponse = document.querySelector('#deleteResponse form');
-  const closeDeleteResponse = document.getElementById('closeDeleteResponse');
-  deleteResponse?.removeEventListener('submit', submitDeleteContact);
-  closeDeleteResponse?.removeEventListener('click', closeDeleteResponse);
-}
-
-function submitDeleteContact(event) {
-  event.preventDefault();
-  closeDeleteResponse();
-  deleteContacts();
-}
-
-function closeDeleteResponse() {
-  toggleClass('deleteResponse', 'ts0', 'ts1');
-  deactivateListenersDelete();
-}
 
 /**
- * Fetches contact data from storage and sets it in the contacts array.
- * 
- * @returns {Promise<Array>} - A promise that resolves to the array of contacts.
+ * Loads the contacts data from the server and updates the global contacts
+ * array. The function will clear the existing contacts before adding new
+ * ones. It will also check for duplicate contacts by ID and only add
+ * unique contacts to the list. The function will return the contacts array
+ * after it has been updated.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to the
+ * contacts array after it has been updated.
  */
 export async function getContactsData() {
   let loadItem = await loadData('contacts');
@@ -183,49 +48,58 @@ export async function getContactsData() {
 
 
 /**
- * This function processes the loaded contact data and adds it to the contacts array.
- * It checks for duplicate entries and ensures that only unique contacts are added.
- * @param {Array} loadItem - The loaded contact data from storage.
- * @returns {void}
+ * Updates the global contacts array with new contact data from a loadItem array.
+ * Clears the existing contacts before adding new ones.
+ * Checks for duplicate contacts by ID and only adds unique contacts to the list.
+ *
+ * @param {Array<Object>} loadItem - An array of contact data objects to be processed and added to the contacts list.
  */
 function setContactsArray(loadItem) {
   setContacts([]);
-  for (let i = 0; i < loadItem.length; i++) {
-    const element = loadItem[i];
-    if (!element) continue;
-    if (contacts.findIndex(c => c.id === element.id) > -1) continue;
-    else contacts.push(pushToContacts(element));
+  for (const contactData of loadItem) {
+    if (!contactData) continue;
+    const existingContact = contacts.find((c) => c.id === contactData.id);
+    if (existingContact) continue;
+    const newContact = pushToContacts(contactData);
+    contacts.push(newContact);
   }
 }
 
 
 /**
- * Renders the general contacts list, including contact letters and individual contacts.
+ * Renders the list of contacts in the contactsGeneral container.
+ * The function first sorts the contacts by name alphabetically and then
+ * renders each contact in the list. The contact list is separated by
+ * contact letter sections.
+ * @returns {void}
  */
-function renderContactsGeneral() {
-  let contactBook = document.getElementById('contactsGeneral');
-  let contactSort = [...contacts];
-  contactBook.innerHTML = htmlRenderAddContact();
-  contactSort.sort((a, b) => a.name.localeCompare(b.name));
-  for (let i = 0; i < contactSort.length; i++) {
-    const contact = contactSort[i];
-    renderContactsLetter(contact);
-    const contactBookEntry = document.getElementById(currentLetterId);
-    contactBookEntry.innerHTML += htmlRenderGeneral(contact);
+function renderContactList() {
+  const contactListElement = document.getElementById('contactsGeneral');
+  const sortedContacts = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
+
+  contactListElement.innerHTML = htmlRenderAddContact();
+
+  for (const contact of sortedContacts) {
+    renderContactLetter(contact);
+    const contactSection = document.getElementById(currentLetterId);
+    contactSection.innerHTML += htmlRenderGeneral(contact);
   }
 }
 
 
 /**
- * Renders a new letter section in the contacts list if the first letter of the contact's name has changed.
- * 
- * @param {Object} contact - The contact object.
+ * Renders a contact letter section based on the first letter of the contact's name.
+ * If the letter has not been rendered before, it will add a new section to the
+ * contact list with the letter as the title. The current letter is stored in the
+ * `currentLetter` variable and the ID of the section is stored in the
+ * `currentLetterId` variable.
+ * @param {Object} contact - The contact object containing the name and other details.
  */
-function renderContactsLetter(contact) {
-  let contactBook = document.getElementById('contactsGeneral');
-  let firstLetter = contact.name[0].toUpperCase();
+function renderContactLetter(contact) {
+  const contactList = document.getElementById('contactsGeneral');
+  const firstLetter = contact.name[0].toUpperCase();
   if (firstLetter !== currentLetter) {
-    contactBook.innerHTML += htmlRenderContactLetter(firstLetter);
+    contactList.innerHTML += htmlRenderContactLetter(firstLetter);
     currentLetter = firstLetter;
     currentLetterId = `contactLetter${currentLetter}`;
   }
@@ -233,116 +107,123 @@ function renderContactsLetter(contact) {
 
 
 /**
- * Refreshes the page by re-rendering the general contacts list and the details of the currently edited contact.
+ * Refreshes the page by re-rendering the general contact list and the details of the current contact.
+ * Utilizes the `renderContactList` and `renderContactsDetails` functions, passing the current `editId`.
  */
 function refreshPage() {
-  renderContactsGeneral();
+  renderContactList();
   renderContactsDetails(editId);
 }
 
 
 /**
- * Renders the details of the specified contact or an empty details section if no contact is specified.
- * 
- * @param {number|string} [id=''] - The ID of the contact to render details for.
+ * Renders the contact details section based on the given contact ID.
+ * If no contact ID is given, it will use the current editId.
+ * @param {number} [id] - The ID of the contact to render details for.
  */
-function renderContactsDetails(id = '') {
-  let details = document.getElementById('contactsDetail');
-  editId = id;
-  details.innerHTML = contacts.find(c => (c.id == editId)) && (editId != -1) ? htmlRenderContactDetails(editId) : htmlRenderContactDetailsEmpty();
-  makeContactActive(id);
+export function renderContactsDetails(contactId = '') {
+  const detailsElement = document.getElementById('contactsDetail');
+  editId = contactId;
+  const contact = contacts.find(contact => contact.id == editId);
+
+  detailsElement.innerHTML = contact && editId != -1
+    ? htmlRenderContactDetails(editId)
+    : htmlRenderContactDetailsEmpty();
+
+  setActiveContact(contactId);
   activateListenersDetails();
 }
 
 
 /**
- * Highlights the specified contact in the contacts list as the active contact.
- * 
- * @param {number|string} [id=editId] - The ID of the contact to make active.
+ * Sets the contact element with the given ID as the active contact.
+ * If no ID is given, it will use the current editId.
+ * @param {number} [id] - The ID of the contact to set as active.
  */
-function makeContactActive(id = editId) {
-  let contactLabel = `contact${id}`;
-  let contact = document.getElementById(contactLabel);
-  let activeContact = document.querySelector('.activeContact');
-  activeContact ? activeContact.classList.remove('activeContact') : null;
-  contact ? contact.classList.add('activeContact') : null;
+function setActiveContact(id = editId) {
+  const contactElementId = `contact${id}`;
+  const activeContactElement = document.querySelector('.activeContact');
+  const contactElement = document.getElementById(contactElementId);
+
+  if (activeContactElement) activeContactElement.classList.remove('activeContact');
+
+  if (contactElement) contactElement.classList.add('activeContact');
 }
 
 
 /**
- * Opens the add contact modal with empty input fields.
+ * Opens the add contact form, resets the input fields and toggles the modal on. It also activates the outside click event listener.
+ * @param {Event} event The event that triggered this function.
  */
-function openAddContacts(event) {
-  editId = contacts[contacts.length - 1].id + 1;
-  let name = document.getElementById('addName');
-  let email = document.getElementById('addMail');
-  let tel = document.getElementById('addTel');
-  name.value = '';
-  email.value = '';
-  tel.value = '';
+export function openAddContacts(event) {
+  editId = contacts.length ? contacts[contacts.length - 1].id + 1 : 1;
+  const nameInput = document.getElementById('addName');
+  const emailInput = document.getElementById('addMail');
+  const telInput = document.getElementById('addTel');
+
+  [nameInput, emailInput, telInput].forEach(input => input.value = '');
+
   toggleClass('addContact', 'tt0', 'tty100');
   activateListenersAdd();
   activateOutsideCheck(event, 'addContact', 'tt0', 'tty100');
 }
 
 
+//NOTE - Add contact functions
+
+
 /**
- * Adds a new contact with the inputted details and updates the database.
- * 
- * @param {number|string} [id=editId] - The ID of the new contact.
+ * Adds a new contact to the contact list. If the contact already exists, the contact is not added.
+ * @param {number} [id] - The ID of the contact to add. If not provided, the ID of the last contact
+ * is used.
+ * @returns {Promise<void>} - A promise that resolves when the contact has been added.
  */
-async function addContacts(id = editId) {
-  let addName = document.getElementById('addName').value;
-  let addEmail = document.getElementById('addMail').value;
-  let addTel = document.getElementById('addTel').value;
-  let newContact = await createContact(id, addName, addEmail, addTel, false, false);
-  if (checkAlreadyExists(newContact)) {
+export async function addContacts(id = editId) {
+  const name = document.getElementById('addName').value;
+  const email = document.getElementById('addMail').value;
+  const phone = document.getElementById('addTel').value;
+  const newContact = await createContact(id, name, email, phone, false, false);
+
+  if (checkForExistingContact(newContact)) {
     await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, newContact);
     contacts.push(pushToContacts(newContact));
-    sessionStorage.setItem("contacts", JSON.stringify(contacts));
+    sessionStorage.setItem('contacts', JSON.stringify(contacts));
     refreshPage();
   }
 }
 
 
 /**
- * Checks if a contact with the same name or email already exists.
- * 
- * @param {Object} contact - The contact to check.
- * @returns {boolean} - True if the contact does not already exist, false otherwise.
+ * Checks if a contact with the same name or email already exists in the contacts list.
+ * If a contact with the same name or email exists, a warning message is displayed and the function
+ * returns false. Otherwise, the function returns true.
+ * @param contact - The contact object to be checked.
+ * @returns {boolean} - A boolean indicating whether a contact with the same name or email exists.
  */
-function checkAlreadyExists(contact) {
-  let warningMessage = document.querySelectorAll('.warning');
-  warningMessage.forEach(warning => warning.classList.add('d-none'));
-  for (let i = 0; i < contacts.length; i++) {
-    const c = contacts[i];
-    if ((c.name === contact.name) && (c.id != contact.id) || (c.email === contact.mail) && (c.id != contact.id)) {
-      warningMessage.forEach(warning => warning.classList.remove('d-none'));
-      return false;
-    }
+function checkForExistingContact(contact) {
+  const existingContact = contacts.find(
+    (c) =>
+      (c.name === contact.name && c.id !== contact.id) ||
+      (c.email === contact.email && c.id !== contact.id)
+  );
+
+  const warningMessage = document.querySelector(".warning");
+  if (existingContact) {
+    warningMessage.classList.remove("d-none");
+    return false;
+  } else {
+    warningMessage.classList.add("d-none");
+    return true;
   }
-  return true;
 }
 
 
 /**
- * Transforms a contact object into a new object with specific properties and values.
- * If the contact does not have a profile picture, a new one is generated using the contact's name.
- * @param {Object} contact - The contact object to transform.
- * @property {string} contact.mail - The email of the contact.
- * @property {string} contact.name - The name of the contact.
- * @property {number} contact.id - The ID of the contact.
- * @property {boolean} contact.isUser - Indicates whether the contact is a user.
- * @property {string} contact.profilePic - The profile picture of the contact.
- * @property {string} contact.number - The phone number of the contact.
- * @returns {Object} - A new object with the following properties:
- * @property {string} email - The email of the contact.
- * @property {string} firstLetters - The initials of the contact's name.
- * @property {number} id - The ID of the contact.
- * @property {boolean} isUser - Indicates whether the contact is a user.
- * @property {string} name - The name of the contact.
- * @property {string} profilePic - The profile picture of the contact. If not provided, a new one is generated.
- * @property {string} phone - The phone number of the contact.
+ * Takes a contact object and returns a new object with the keys
+ * email, firstLetters, id, isUser, name, profilePic, and phone.
+ * The new object is used to store the contact in the contacts array.
+ * @param {Object} contact - The contact object to be processed.
+ * @returns {Object} - The processed contact object.
  */
 export function pushToContacts(contact) {
   return {
@@ -357,80 +238,103 @@ export function pushToContacts(contact) {
 }
 
 
+//NOTE - Edit contact functions
+
+
 /**
- * Opens the edit contact modal with the details of the specified contact.
- * 
- * @param {number|string} id - The ID of the contact to edit.
+ * Opens the edit contact form for the contact with the given ID.
+ * @param {Event} event The event that triggered this function.
+ * @param {number} id The ID of the contact to edit.
  */
-function openEditContacts(event, id) {
+export function openEditContacts(event, id) {
   editId = id;
-  let name = document.getElementById('editName');
-  let email = document.getElementById('editMail');
-  let tel = document.getElementById('editTel');
-  let profilePic = document.getElementById('editProfilePic');
-  name.value = contacts[contacts.findIndex(c => c.id == id)].name;
-  email.value = contacts[contacts.findIndex(c => c.id == id)].email;
-  tel.value = contacts[contacts.findIndex(c => c.id == id)].phone;
-  profilePic.innerHTML = contacts[contacts.findIndex(c => c.id == id)].profilePic;
+  const contact = contacts.find((c) => c.id === id);
+  const nameInput = document.getElementById('editName');
+  const emailInput = document.getElementById('editMail');
+  const telInput = document.getElementById('editTel');
+  const profilePicElement = document.getElementById('editProfilePic');
+
+  nameInput.value = contact.name;
+  emailInput.value = contact.email;
+  telInput.value = contact.phone;
+  profilePicElement.innerHTML = contact.profilePic;
+
   toggleClass('editContact', 'tt0', 'tty100');
   activateOutsideCheck(event, 'editContact', 'tt0', 'tty100');
   activateListenersEdit();
 }
 
 
+
 /**
- * Saves the edited contact details and updates the contact in the database.
- * 
- * @param {number|string} [id=editId] - The ID of the contact to save.
+ * Edits the contact with the given ID (or the contact with ID in editId if no ID is provided).
+ * Checks if the contact already exists with the new name or email address.
+ * If the contact does not exist, updates the contact in the database and refreshes the page.
+ * @param {number} [id] - The ID of the contact to be edited.
+ * @returns {Promise<void>} - A promise that resolves when the contact has been edited.
  */
-async function editContacts(id = editId) {
-  let editName = document.getElementById('editName').value;
-  let editEmail = document.getElementById('editMail').value;
-  let editTel = document.getElementById('editTel').value;
-  let nameChange = editName != contacts[contacts.findIndex(c => c.id == id)].name;
-  contacts[contacts.findIndex(c => c.id == id)].name = editName;
-  contacts[contacts.findIndex(c => c.id == id)].email = editEmail;
-  contacts[contacts.findIndex(c => c.id == id)].phone = editTel;
-  let contact = contacts[contacts.findIndex(c => c.id == id)];
-  if (checkAlreadyExists(contact)) {
-    let editContact = await createContact(contact.id, editName, editEmail, editTel, nameChange ? false : contact.profilePic, contact.isUser);
-    contacts[contacts.findIndex(c => c.id == id)].profilePic = editContact.profilePic;
-    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, editContact);
+export async function editContacts(id = editId) {
+  const contact = contacts.find(c => c.id === id);
+  const updatedName = document.getElementById('editName').value;
+  const updatedEmail = document.getElementById('editMail').value;
+  const updatedPhone = document.getElementById('editTel').value;
+  const isNameChanged = updatedName !== contact.name;
+
+  contact.name = updatedName;
+  contact.email = updatedEmail;
+  contact.phone = updatedPhone;
+
+  if (checkForExistingContact(contact)) {
+    const updatedContact = await createContact(
+      contact.id,
+      updatedName,
+      updatedEmail,
+      updatedPhone,
+      isNameChanged ? null : contact.profilePic,
+      contact.isUser
+    );
+    contact.profilePic = updatedContact.profilePic;
+    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, updatedContact);
     refreshPage();
   }
 }
 
 
+//NOTE - Delete contact functions
+
+
 /**
- * The function `openDeleteContacts` prompts the user with a confirmation message based on the type of
- * account being deleted.
- * @param [id] - The `id` parameter in the `openDeleteContacts` function is used to specify the ID of
- * the contact that you want to delete. If no `id` is provided when calling the function, it will
- * default to the value of `editId`.
+ * Opens the delete contact confirmation modal.
+ * - Updates the global editId with the provided contact ID.
+ * - Sets the confirmation message in the delete response modal based on the contact type.
+ * - If the contact is the current user, a specific warning message is shown.
+ * - Toggles the visibility of the delete response modal.
+ * 
+ * @param {Event} event - The event that triggered the function.
+ * @param {number|string} [id=editId] - The ID of the contact to be deleted.
  */
-function openDeleteContacts(event, id = editId) {
+export function openDeleteContacts(event, id = editId) {
   editId = id;
-  let response = document.querySelector('#deleteResponse>.deleteQuestion>p');
-  if (id === currentUser.id) {
-    response.textContent = 'Are you sure you want to delete your own account?';
-  } else if (contacts[contacts.findIndex(c => c.id == id)].isUser) {
-    response.textContent = 'Are you sure you want to delete this user\'s account?';
-  } else {
-    response.textContent = 'Are you sure you want to delete this contact?';
-  };
+  const response = document.querySelector('#deleteResponse>.deleteQuestion>p');
+
+  let question;
+  if (id === currentUser.id) question = 'Are you sure you want to delete your own account?';
+  else if (contacts[contacts.findIndex(contact => contact.id === id)].isUser)
+    question = 'Are you sure you want to delete this user\'s account?';
+  else question = 'Are you sure you want to delete this contact?';
+
+  response.textContent = question;
   toggleClass('deleteResponse', 'ts0', 'ts1');
 }
 
 
 /**
- * The function `deleteContacts` removes a contact from a list, deletes the contact data from a server,
- * updates the session storage, toggles a class in the DOM, and logs out the current user or refreshes
- * the page.
- * @param [id] - The `id` parameter in the `deleteContacts` function is used to specify the ID of the
- * contact that needs to be deleted. If no `id` is provided when calling the function, it defaults to
- * the value of `editId`.
+ * Deletes a contact with the given id.
+ * If the contact being deleted is the user, logs out.
+ * Otherwise, refreshes the page.
+ * @param {number|string} [id=editId] - The id of the contact to be deleted.
  */
-async function deleteContacts(id = editId) {
+export async function deleteContacts(id = editId) {
   contacts.splice(contacts.findIndex(c => c.id == id), 1);
   await deleteData(`contacts/${id}`);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
@@ -438,11 +342,14 @@ async function deleteContacts(id = editId) {
 }
 
 
+//NOTE - User badge functions
+
+
 /**
- * Filters the first letters of each word in a name to create initials.
- * 
- * @param {string} name - The name to filter.
- * @returns {string} - The initials created from the name.
+ * Extracts the first letter from each word in a given name and uppercases them.
+ *
+ * @param {string} name - The full name from which first letters are extracted.
+ * @returns {string} - A string of uppercased first letters.
  */
 export function filterFirstLetters(name) {
   return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
@@ -450,12 +357,12 @@ export function filterFirstLetters(name) {
 
 
 /**
- * Generates an SVG profile picture with initials and a random background color.
- * 
- * @param {string} name - The name of the contact.
- * @param {number} width - The width of the SVG.
- * @param {number} height - The height of the SVG.
- * @returns {string} - The SVG profile picture as a string.
+ * Generates an SVG string for a circle with the initials of a given name.
+ *
+ * @param {string} name - The full name from which initials are extracted.
+ * @param {number} width - The width of the SVG circle.
+ * @param {number} height - The height of the SVG circle.
+ * @returns {string} - An SVG string representing a circular profile picture with randomly selected background color and the extracted initials.
  */
 export function generateSvgCircleWithInitials(name, width, height) {
   const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
