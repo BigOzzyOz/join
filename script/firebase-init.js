@@ -10,10 +10,33 @@ import { initBoard } from "./board.js";
 import { initContacts } from "./contacts.js";
 import { initRegister } from "./register.js";
 
+
+//NOTE - Firebase initialisation
+
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 let token = '';
+
+
+//NOTE - Firebase authentication
+
+
+/**
+ * Asynchronously retrieves the current user's ID token from Firebase authentication.
+ * If a user is authenticated, their ID token is fetched and stored in the `token` variable.
+ * If no user is authenticated, the `token` variable is set to an empty string.
+ * This function is useful for obtaining an authentication token for making authenticated requests.
+ */
+async function getToken() {
+  const user = auth.currentUser;
+  if (user) {
+    const tokenNew = await user.getIdToken();
+    token = tokenNew;
+  } else token = '';
+}
+
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -43,6 +66,13 @@ setPersistence(auth, browserLocalPersistence).then(() => {
 });
 
 
+//NOTE - Firebase logout
+
+
+/**
+ * Logs out the current user by signing them out of Firebase authentication,
+ * removing their session and local storage data, and redirecting to the login page.
+ */
 function firebaseLogout() {
   signOut(auth).then(() => {
     sessionStorage.removeItem('currentUser');
@@ -51,15 +81,5 @@ function firebaseLogout() {
   });
 }
 
-
-async function getToken() {
-  const user = auth.currentUser;
-  if (user) {
-    const tokenNew = await user.getIdToken();
-    token = tokenNew;
-  } else {
-    token = '';
-  }
-}
 
 export { auth, database, ref, child, get, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, deleteUser, firebaseLogout, token };
