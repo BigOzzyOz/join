@@ -1,5 +1,5 @@
 import { firebaseLogout, token } from "./script/firebase-init.js";
-import { initCheckData, initDragDrop } from "./script/board.js";
+import { initializeTasksData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
 import { deactivateDeleteResponseListeners } from "./script/board-listener.js";
 import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
@@ -392,7 +392,7 @@ export async function deleteTaskSure(id) {
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
   closeModal();
   initDragDrop();
-  initCheckData();
+  initializeTasksData();
 }
 
 
