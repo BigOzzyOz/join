@@ -48,6 +48,7 @@ onAuthStateChanged(auth, (user) => {
         }
         if (window.location.pathname.includes("board.html")) initBoard();
         if (window.location.href.includes('contacts.html')) initContacts();
+        if (window.location.href.includes('register.html')) initRegister();
       });
     });
   } else {

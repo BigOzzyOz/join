@@ -4,13 +4,21 @@ import { createContact } from "./contactsTemplate.js";
 import { forwardLegal, forwardPrivacy } from "./login.js";
 import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, token } from "./firebase-init.js";
 
+
+//NOTE - Global Register Variables
+
+
 let clickCount1 = 0;
 let clickCount2 = 0;
 
 
+//NOTE - Initial Register function
+
+
+
 /**
- * The `initRegister` function initializes form submission handling and sets up password field toggling
- * for a signup form.
+ * Initializes the registration page by activating necessary event listeners.
+ * This function sets up interactions for the registration form and its elements.
  */
 export function initRegister() {
     activateListener();
@@ -18,49 +26,74 @@ export function initRegister() {
 
 
 /**
- * The function `setupPasswordFieldToggle` sets up event listeners for toggling a password input field
- * visibility.
- * @param inputFieldId - The `inputFieldId` parameter is the ID of the password input field in the HTML
- * document that you want to enhance with a password toggle functionality.
+ * Adds event listeners to a specified password input field to handle password visibility toggling
+ * and background image updates.
+ * - Attaches a click event listener to toggle password visibility.
+ * - Attaches a focus event listener to update the background image.
+ * - Attaches a blur event listener to reset the input field state.
+ * 
+ * @param {string} inputFieldId - The ID of the password input field to attach the event listeners to.
  */
-function setupPasswordFieldToggle(inputFieldId) {
-    const passwordInputField = document.getElementById(inputFieldId);
-    if (!passwordInputField) return;
-    function handleClick(event) {
-        togglePassword(event, passwordInputField);
-    }
-    function handleFocus() {
-        updateBackgroundImage(passwordInputField, false);
-    }
-    function handleBlur() {
-        resetState(passwordInputField);
-    }
-    passwordInputField.addEventListener('click', handleClick);
-    passwordInputField.addEventListener('abort', handleFocus);
-    passwordInputField.addEventListener('blur', handleBlur);
-    passwordInputField._eventHandlers = { handleClick, handleFocus, handleBlur };
+function addPasswordFieldToggle(inputFieldId) {
+    const passwordField = document.getElementById(inputFieldId);
+    if (!passwordField) return;
+
+    const togglePasswordVisibility = (event) => togglePassword(event, passwordField);
+    const updateBackgroundOnFocus = () => updateBackgroundImage(passwordField, false);
+    const resetOnBlur = () => resetState(passwordField);
+
+    passwordField.addEventListener('click', togglePasswordVisibility);
+    passwordField.addEventListener('focus', updateBackgroundOnFocus);
+    passwordField.addEventListener('blur', resetOnBlur);
+    passwordField._eventHandlers = { togglePasswordVisibility, updateBackgroundOnFocus, resetOnBlur };
 }
 
+
+/**
+ * Removes event listeners for a password field that were added by addPasswordFieldToggle.
+ * @param {string} inputFieldId - The id of the password field.
+ */
 function removePasswordFieldToggle(inputFieldId) {
-    const passwordInputField = document.getElementById(inputFieldId);
-    if (!passwordInputField || !passwordInputField._eventHandlers) return;
-    const { handleClick, handleFocus, handleBlur } = passwordInputField._eventHandlers;
-    passwordInputField?.removeEventListener('click', handleClick);
-    passwordInputField?.removeEventListener('focus', handleFocus);
-    passwordInputField?.removeEventListener('blur', handleBlur);
-    delete passwordInputField._eventHandlers;
+    const passwordField = document.getElementById(inputFieldId);
+    if (!passwordField || !passwordField._eventHandlers) return;
+
+    const { togglePasswordVisibility, updateBackgroundOnFocus, resetOnBlur } = passwordField._eventHandlers;
+    passwordField.removeEventListener('click', togglePasswordVisibility);
+    passwordField.removeEventListener('focus', updateBackgroundOnFocus);
+    passwordField.removeEventListener('blur', resetOnBlur);
+    delete passwordField._eventHandlers;
 }
 
+
+/**
+ * Activates event listeners for the register page.
+ * - Attaches a submit event listener to the register form to handle form submission.
+ * - Attaches a click event listener to the privacy policy checkbox to toggle the checkbox icon.
+ * - Attaches a click event listener to the back button to forward the user to the index page.
+ * - Attaches a click event listener to the privacy policy link to open the privacy policy page.
+ * - Attaches a click event listener to the legal notice link to open the legal notice page.
+ * - Attaches a click event listener to the password fields to toggle password visibility.
+ */
 function activateListener() {
     document.getElementById('signupForm')?.addEventListener('submit', submitData);
     document.getElementById('privacy-policy')?.addEventListener('click', checkBoxClicked);
     document.getElementById('back-btn')?.addEventListener('click', forwardToIndex);
     document.getElementById('privacy-policy-link')?.addEventListener('click', forwardPrivacy);
     document.getElementById('legal-notice-link')?.addEventListener('click', forwardLegal);
-    setupPasswordFieldToggle('password');
-    setupPasswordFieldToggle('confirmPassword');
+    addPasswordFieldToggle('password');
+    addPasswordFieldToggle('confirmPassword');
 }
 
+
+/**
+ * Deactivates all event listeners related to the register page.
+ * - Removes the submit event listener from the register form.
+ * - Removes the click event listener from the privacy policy checkbox.
+ * - Removes the click event listener from the back button to prevent forwarding to the login page.
+ * - Removes the click event listener from the privacy policy link to prevent navigation.
+ * - Removes the click event listener from the legal notice link to prevent navigation.
+ * - Removes the event listeners for the password input fields to prevent password visibility toggling.
+ */
 export function deactivateAllListenersRegister() {
     document.getElementById('signupForm')?.removeEventListener('submit', submitData);
     document.getElementById('privacy-policy')?.removeEventListener('click', checkBoxClicked);
@@ -71,43 +104,43 @@ export function deactivateAllListenersRegister() {
     removePasswordFieldToggle('confirmPassword');
 }
 
+/**
+ * Forwards the user to the index page.
+ */
 function forwardToIndex() {
     window.location.href = '../index.html';
 }
 
 
 /**
- * The function `togglePassword` toggles the visibility of a password input field and updates its
- * background image accordingly.
- * @param e - The `e` parameter in the `togglePassword` function is typically an event object, such as
- * a click event or keypress event, that triggers the function. It is used to prevent the default
- * behavior of the event using `e.preventDefault()`.
- * @param passwordInputField - The `passwordInputField` parameter in the `togglePassword` function is a
- * reference to the input field element where the user enters their password. This field can be of type
- * "password" to hide the entered characters or type "text" to display the characters in plain text.
- * The function toggles
+ * Toggles the visibility of the provided input field by changing its type and
+ * its background image. Also handles the cursor position and focus.
+ * @param {Event} event - The event object passed from the event listener.
+ * @param {HTMLInputElement} inputField - The HTML input element to toggle.
  */
-function togglePassword(e, passwordInputField) {
-    e.preventDefault();
-    const cursorPosition = passwordInputField.selectionStart;
-    const isPasswordVisible = (passwordInputField.id === "password" ? clickCount1 : clickCount2) % 2 === 1;
-    passwordInputField.type = isPasswordVisible ? "text" : "password";
-    updateBackgroundImage(passwordInputField, isPasswordVisible);
-    passwordInputField.setSelectionRange(cursorPosition, cursorPosition);
-    passwordInputField.focus();
-    isPasswordVisible ? passwordInputField.id === "password" ? clickCount1-- : clickCount2-- : passwordInputField.id === "password" ? clickCount1++ : clickCount2++;
+function togglePassword(event, inputField) {
+    event.preventDefault();
+    const cursorPos = inputField.selectionStart;
+    const isVisible = (inputField.id === "password" ? clickCount1 : clickCount2) % 2 === 1;
+    inputField.type = isVisible ? "text" : "password";
+    updateBackgroundImage(inputField, isVisible);
+    inputField.setSelectionRange(cursorPos, cursorPos);
+    inputField.focus();
+
+    if (inputField.id === "password") {
+        clickCount1 += isVisible ? -1 : 1;
+    } else {
+        clickCount2 += isVisible ? -1 : 1;
+    }
 }
 
 
 /**
- * The function `updateBackgroundImage` changes the background image of a specified field based on the
- * visibility status.
- * @param field - The `field` parameter represents the HTML element (e.g., a div, input field, etc.)
- * whose background image you want to update based on the `isVisible` parameter.
- * @param isVisible - The `isVisible` parameter is a boolean value that determines whether the
- * background image should be visible or not. If `isVisible` is `true`, the background image will be
- * set to "visibility.png", and if it is `false`, the background image will be set to
- * "password_off.png".
+ * Updates the background image of the provided input field based on the provided visibility status.
+ * - If the password is visible, sets the background image to "visibility.png".
+ * - If the password is not visible, sets the background image to "password_off.png".
+ * @param {HTMLInputElement} field - The HTML input element to update.
+ * @param {boolean} isVisible - The visibility status of the password.
  */
 function updateBackgroundImage(field, isVisible) {
     const image = isVisible ? "visibility.png" : "password_off.png";
@@ -116,12 +149,9 @@ function updateBackgroundImage(field, isVisible) {
 
 
 /**
- * The function `resetState` resets the state of a given field by changing its type to password,
- * setting a background image, and resetting click counts based on the field's id.
- * @param field - The `field` parameter is likely referring to an HTML input element, such as a text
- * input field on a form. The function `resetState` is designed to reset the state of this input field
- * by changing its type to "password" and updating its background image. Additionally, it resets a
- * click
+ * Resets the state of the password input field by setting its type to "password",
+ * updating its background image, and resetting the click count and visibility status.
+ * @param {HTMLInputElement} field - The HTML input element of the password input field.
  */
 function resetState(field) {
     field.type = "password";
@@ -131,14 +161,17 @@ function resetState(field) {
 
 
 /**
- * The function `submitData` handles form submission by validating user input and signing up the user
- * with the provided information.
- * @param event - The `event` parameter in the `submitData` function is an event object that represents
- * an event being handled, such as a form submission event. In this case, the function is used to
- * handle form submission and prevent the default form submission behavior using
- * `event.preventDefault()`.
- * @returns If the `validateForm` function returns `false`, the `submitData` function will not proceed
- * further and will return without executing the `signUp` function.
+ * Handles the form submission event for user registration.
+ * - Prevents the default form submission behavior.
+ * - Retrieves and trims input values for name, email, password, and confirm password.
+ * - Hides any visible error messages.
+ * - Validates the form input; aborts submission if validation fails.
+ * - Attempts to sign up the user with the provided credentials.
+ * - Logs a success message if the sign-up process is successful.
+ * - Invokes error handling if an error occurs during sign-up.
+ * 
+ * @param {Event} event - The event object from the form submission.
+ * @returns {Promise<void>} - Resolves when the form submission handling is complete.
  */
 async function submitData(event) {
     event.preventDefault();
@@ -157,10 +190,9 @@ async function submitData(event) {
 }
 
 
-
 /**
- * The function `hideErrorMessages` hides error messages displayed on a webpage by setting their
- * display style to 'none'.
+ * Hides all error messages on the registration form.
+ * This function is called after the user submits the form or when the user starts typing in an input field to hide any error messages that may have been displayed previously.
  */
 function hideErrorMessages() {
     document.getElementById('passwordErrorMessage').style.display = 'none';
@@ -170,22 +202,20 @@ function hideErrorMessages() {
 }
 
 
-
 /**
- * The function `validateForm` checks if the password matches the confirmation, meets password
- * criteria, and if the email is valid and doesn't already exist, returning an error message if any
- * condition fails.
- * @param password - The `validateForm` function you provided checks various conditions before allowing
- * a user to submit a form. The `password` parameter is used to store the password input provided by
- * the user.
- * @param confirmPassword - The `confirmPassword` parameter in the `validateForm` function is used to
- * confirm that the user has entered the correct password by comparing it with the original password
- * input. If the `password` and `confirmPassword` values do not match, an error message is displayed to
- * the user.
- * @param email - The `email` parameter in the `validateForm` function is used to pass the email input
- * value that the user enters in a form for validation.
- * @returns The `validateForm` function is returning either an error message element (if a validation
- * check fails) or `true` if all validation checks pass.
+ * Validates the registration form by checking the privacy policy acceptance,
+ * email format, password criteria, and matching password fields.
+ * 
+ * - Ensures the privacy policy checkbox is checked.
+ * - Validates the email format.
+ * - Checks if the email already exists in the database.
+ * - Validates the password against specific criteria.
+ * - Confirms that the password and confirmation password match.
+ * 
+ * @param {string} password - The password input by the user.
+ * @param {string} confirmPassword - The confirmation password input by the user.
+ * @param {string} email - The email address input by the user.
+ * @returns {Promise<boolean>} - Resolves to true if all validations pass, otherwise returns false and displays the appropriate error message.
  */
 async function validateForm(password, confirmPassword, email) {
     if (!document.getElementById('privacy-policy').checked) {
@@ -202,17 +232,15 @@ async function validateForm(password, confirmPassword, email) {
     }
     if (password !== confirmPassword) {
         return returnLoginError(document.getElementById('passwordErrorMessage'));
-    } return true;
+    }
+    return true;
 }
 
 
 /**
- * The function `returnLoginError` displays an error message window and returns false.
- * @param errorWindow - The `errorWindow` parameter is likely a reference to an HTML element that
- * represents a window or container where login errors are displayed. The function `returnLoginError`
- * sets the display style of this element to 'block' in order to make the error message visible to the
- * user.
- * @returns The function `returnLoginError` is returning the boolean value `false`.
+ * Shows an error message window and returns false.
+ * @param {Element} errorWindow - The DOM element of the error message window to be shown.
+ * @returns {boolean} - False, indicating that the user input is invalid.
  */
 function returnLoginError(errorWindow) {
     errorWindow.style.display = 'block';
@@ -221,13 +249,11 @@ function returnLoginError(errorWindow) {
 
 
 /**
- * The function `isValidPassword` uses a regular expression to check if a password meets specific
- * criteria including having at least one uppercase letter, one digit, and one special character, and
- * being at least 8 characters long.
- * @param password - The function `isValidPassword` takes a password as input and checks if it meets
- * the following criteria:
- * @returns The function `isValidPassword` is returning a boolean value - `true` if the `password`
- * meets the specified criteria defined by the regular expression, and `false` otherwise.
+ * Checks if a given password is valid.
+ * A valid password must contain at least one uppercase letter, one number, and one special character,
+ * and must be at least 8 characters long.
+ * @param {string} password - The password to validate.
+ * @returns {boolean} - Returns true if the password is valid, false otherwise.
  */
 function isValidPassword(password) {
     const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.,:])[A-Za-z\d@$!%*?&.,:]{8,}$/;
@@ -236,14 +262,12 @@ function isValidPassword(password) {
 
 
 /**
- * Checks if the provided email address is in a valid format,
- * ending with a period followed by letters, e.g., `.com`, `.org`, etc.
+ * Validates the format of an email address.
+ * Ensures the email contains no spaces, includes an '@' symbol,
+ * followed by a domain name and a top-level domain.
  * 
- * The email address must contain at least one `@` symbol and a period,
- * and the period must be followed by letters.
- * 
- * @param {string} email - The email address to be validated.
- * @returns {boolean} - Returns `true` if the email address matches the valid format, otherwise returns `false`.
+ * @param {string} email - The email address to validate.
+ * @returns {boolean} - Returns true if the email format is valid, false otherwise.
  */
 function isValidEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]+$/;
@@ -252,68 +276,67 @@ function isValidEmail(email) {
 
 
 /**
- * The function `emailExists` checks if a given email exists in the database for a user account.
- * @param email - The `emailExists` function checks if a given email address exists in the `contacts`
- * database and belongs to a user. The function takes an email address as a parameter to search for in
- * the database.
- * @returns If the email exists in the database for a user with the `isUser` property set to true, the
- * function will return `false`. If there is an error during the process, the function will also return
- * `false`. If the email does not exist in the database or if there are no users with the `isUser`
- * property set to true, the function will not return anything explicitly (implicitly
+ * Checks if an email address already exists in the contacts database.
+ * Searches through the 'contacts' database for a contact with the given 
+ * email address, ignoring case, and verifies if the contact is marked 
+ * as a user.
+ * 
+ * @param {string} email - The email address to check for existence.
+ * @returns {Promise<boolean>} - A promise that resolves to false if 
+ * the email exists and belongs to an existing user, otherwise resolves 
+ * to false if any error occurs or if the email is not found.
  */
 async function emailExists(email) {
     try {
-        const userSnapshot = await get(child(ref(database), `contacts`));
-        const users = userSnapshot.val() || {};
-        for (const key in users) {
-            if (!users[key]) {
-                continue;
-            }
-            if (users[key].mail.toLowerCase() === email.toLowerCase() && users[key].isUser) {
+        const snapshot = await get(child(ref(database), 'contacts'));
+        const contacts = snapshot.val() || {};
+        for (const id in contacts) {
+            const contact = contacts[id];
+            if (contact && contact.mail.toLowerCase() === email.toLowerCase() && contact.isUser) {
                 return false;
             }
         }
-    } catch (error) {
+    } catch {
         return false;
     }
 }
 
 
 /**
- * The `signUp` function asynchronously creates a new user account with the provided name, email, and
- * password, then creates a new contact, shows a success popup, and redirects the user to the index
- * page after a delay.
- * @param name - The `name` parameter in the `signUp` function represents the name of the user who is
- * signing up for Join.
- * @param email - The `email` parameter is the email address of the user signing up for Join.
- * @param password - The `password` parameter in the `signUp` function is the password that the user
- * enters when signing up for an account. It is used to create a new user account with the provided
- * email address and password using the `createUserWithEmailAndPassword` function.
+ * Signs up a new user with the provided name, email, and password. If the sign-up is 
+ * successful, the user is automatically signed in, a new contact is created, and a 
+ * success popup is displayed. The user is then redirected to the index page and signed 
+ * out after a short delay. If any error occurs during the process, it handles the error 
+ * by displaying an appropriate error message.
+ * 
+ * @param {string} name - The name of the user signing up.
+ * @param {string} email - The email address of the user signing up.
+ * @param {string} password - The password for the new user account.
+ * @returns {Promise<void>} - A promise that resolves when the sign-up process is complete.
  */
-function signUp(name, email, password) {
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    createNewContact(name, email)
-                        .then(() => {
-                            showSuccessPopup();
-                            setTimeout(() => { window.location.href = "../index.html"; signOut(auth); }, 1500);
-                        });
-                });
-        }).catch((err) => {
-            submitDataErrorHandling(err);
-        });
+async function signUp(name, email, password) {
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password);
+        await createNewContact(name, email);
+        showSuccessPopup();
+        setTimeout(() => {
+            window.location.href = "../index.html";
+            signOut(auth);
+        }, 1500);
+    } catch (error) {
+        submitDataErrorHandling(error);
+    }
 }
 
 
 /**
- * The function `createNewContact` creates a new contact with the provided name and email, updates the
- * data, adds the contact to the contacts list, and stores the contacts in the session storage.
- * @param name - The `name` parameter in the `createNewContact` function represents the name of the
- * contact that you want to create.
- * @param email - The `email` parameter in the `createNewContact` function is the email address of the
- * new contact being created.
+ * Creates a new contact object with the provided name and email address, and adds it to the contacts array.
+ * The contact is marked as the current user and is given a default phone number.
+ * The contact is then added to the database and the contacts array is updated in session storage.
+ * @param {string} name - The name of the new contact.
+ * @param {string} email - The email address of the new contact.
+ * @returns {Promise<void>} - A promise that resolves when the contact has been added.
  */
 async function createNewContact(name, email) {
     const contact = await createContact(false, name, email, 'Please add phone number', false, true);
@@ -324,8 +347,7 @@ async function createNewContact(name, email) {
 
 
 /**
- * The function `showSuccessPopup` displays a popup with the id 'successPopup' and redirects to
- * 'index.html' when the popup is clicked.
+ * Shows the success popup and adds a click event to redirect to the index.html.
  */
 function showSuccessPopup() {
     const popup = document.getElementById('successPopup');
@@ -337,27 +359,21 @@ function showSuccessPopup() {
 
 
 /**
- * The function `submitDataErrorHandling` handles errors by displaying specific messages based on the
- * error code.
- * @param error - The `error` parameter is an object that contains information about the error that
- * occurred during the submission of data. It likely has a `code` property that specifies the type of
- * error that occurred.
+ * Handles error messages from sign-up form submission.
+ * If the error code is 'auth/email-already-in-use', it displays the error message with the ID 'emailExistsMessage'.
+ * Otherwise, it displays the error message with the ID 'errorMessage'.
+ * @param {Error} error - The error that occurred while submitting the sign-up form.
  */
 function submitDataErrorHandling(error) {
     if (error.code === 'auth/email-already-in-use') {
         showError("emailExistsMessage");
-    } else {
-        showError("errorMessage");
-    }
+    } else showError("errorMessage");
 }
 
 
 /**
- * The function showError displays an error message by setting the display style of an element with a
- * specific ID to 'block'.
- * @param messageId - The `messageId` parameter in the `showError` function is a string that represents
- * the id attribute of an HTML element. This function is designed to display the element with the
- * specified id by setting its display style property to 'block', making it visible on the webpage.
+ * Displays the error message with the given ID.
+ * @param {string} messageId - The ID of the error message element to be displayed.
  */
 function showError(messageId) {
     document.getElementById(messageId).style.display = 'block';
@@ -365,8 +381,10 @@ function showError(messageId) {
 
 
 /**
- * The function `checkBoxClicked` toggles the checked state of a checkbox, updates the checkbox image
- * accordingly, and enables/disables a submit button based on the checkbox state.
+ * Updates the checkbox image based on the 'Privacy Policy' checkbox state.
+ * Disables/Enables the submit button depending on the checkbox state.
+ * @param {HTMLElement} checkboxImg - Checkbox image element.
+ * @param {HTMLElement} submitButton - Submit button element.
  */
 function checkBoxClicked() {
     const checkedState = document.getElementById('privacy-policy').checked;

@@ -1,6 +1,10 @@
 import { currentUser, loadData } from "../script.js";
 import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
 
+
+//NOTE - global summary variables
+
+
 let numberOfBoard = [];
 let urgentTasks = [];
 let counts = {
@@ -11,91 +15,80 @@ let counts = {
 };
 
 
-/**
- * The function `initSummary` initializes, greets, loads categories, assigns tasks, and shows urgent
- * tasks asynchronously.
- */
+//NOTE - initialise summary function
+
+
 export async function initSummary() {
-  greetingSummary();
   await loadCategory();
   taskAssignment();
-  showUrgentTask();
+  displayUrgentTasks();
   activateListener();
+  displayGreeting();
 }
 
 
-/**
- * The `greetingSummary` function dynamically updates the greeting message based on the user's name and
- * the current time, with different behavior for mobile and desktop views.
- */
-function greetingSummary() {
-  let greetingTime = greeting();
-  let greetingName = currentUser.name;
+//NOTE - greeting functions
 
-  if (window.matchMedia("(max-width: 1199.8px)").matches) {
-    let greetingMobile = document.getElementById('greetingSummaryMobile');
-    let summaryMain = document.getElementById('summaryMain');
-    greetingMobile.innerHTML = greetingMobileHTML(greetingTime, greetingName);
-    animationGreeting(greetingMobile, summaryMain);
-    updateGreetingDesktop(greetingTime, greetingName);
+
+function displayGreeting() {
+  const currentTime = getGreeting();
+  const userName = currentUser.name;
+
+  const isMobile = window.matchMedia("(max-width: 1199.8px)").matches;
+  const mobileElement = document.getElementById('greetingSummaryMobile');
+  const mainElement = document.getElementById('summaryMain');
+
+  if (isMobile) {
+    mobileElement.innerHTML = greetingMobileHTML(currentTime, userName);
+    animateGreeting(mobileElement, mainElement);
+    updateGreetingDesktop(currentTime, userName);
   } else {
-    updateGreetingDesktop(greetingTime, greetingName);
+    updateGreetingDesktop(currentTime, userName);
   }
 }
 
 
 /**
- * The function determines the appropriate greeting based on the current time of day.
- * @returns The function `greeting()` returns a greeting based on the current time of the day. If the
- * current time is before 12 PM, it returns "Good morning,". If the current time is between 12 PM and 6
- * PM, it returns "Good afternoon,". Otherwise, it returns "Good evening,".
+ * Returns a greeting based on the current time of day.
+ * @returns {string} A greeting message that is "Good morning,"
+ *                  "Good afternoon,", or "Good evening,".
  */
-function greeting() {
-  let now = new Date();
-  let hours = now.getHours();
-  if (hours < 12) {
-    return "Good morning,";
-  } else if (hours < 18) {
-    return "Good afternoon,";
-  } else {
-    return "Good evening,";
-  }
+function getGreeting() {
+  const currentTime = new Date().getHours();
+  if (currentTime < 12) return "Good morning,";
+  else if (currentTime < 18) return "Good afternoon,";
+  else return "Good evening,";
 }
 
 
 /**
- * The function `animationGreeting` animates the transition between a mobile greeting element and a
- * main summary element by adjusting their styles and adding/removing classes with timed delays.
- * @param greetingMobile - The `greetingMobile` parameter seems to be a DOM element representing a
- * greeting section on a mobile device. The function `animationGreeting` is designed to animate this
- * greeting section along with a `summaryMain` element.
- * @param summaryMain - `summaryMain` is likely a reference to an HTML element that represents the main
- * summary section of a webpage or application. This element is being used in the `animationGreeting`
- * function to control its opacity and transition properties for a specific animation effect.
+ * Animates the greeting on the summary page. When the user's screen width is
+ * less than 1199.8px, the greeting is displayed on top of the main element.
+ * When the user's screen width is 1199.8px or more, the greeting is displayed
+ * on the side of the main element. The greeting is hidden after 1.9 seconds.
+ * @param {HTMLElement} mobileElement - The mobile greeting element.
+ * @param {HTMLElement} mainElement - The main element of the summary page.
  */
-function animationGreeting(greetingMobile, summaryMain) {
-  greetingMobile.style.display = 'flex';
+function animateGreeting(mobileElement, mainElement) {
+  mobileElement.style.display = 'flex';
   setTimeout(() => {
-    summaryMain.style.opacity = '0';
+    mainElement.style.opacity = '0';
     setTimeout(() => {
-      greetingMobile.classList.add('hide');
+      mobileElement.classList.add('hide');
       setTimeout(() => {
-        greetingMobile.style.display = 'none';
-        summaryMain.style.opacity = '1';
-        summaryMain.style.transition = 'opacity 0.9s ease';
+        mobileElement.style.display = 'none';
+        mainElement.style.opacity = '1';
+        mainElement.style.transition = 'opacity 0.9s ease';
       }, 900);
     }, 1000);
-  });
+  }, 0);
 }
 
 
 /**
- * The function `updateGreetingDesktop` updates the text content of two elements on a webpage with the
- * provided time and name.
- * @param time - The `time` parameter in the `updateGreetingDesktop` function represents the time of
- * day, such as "morning", "afternoon", "evening", or "night".
- * @param name - The `name` parameter in the `updateGreetingDesktop` function represents the name of
- * the user or person for whom the greeting is being displayed on the desktop interface.
+ * Updates the desktop greeting with the current time and user name.
+ * @param {string} time - The time-based greeting (e.g., "Good morning").
+ * @param {string} name - The name of the person being greeted.
  */
 function updateGreetingDesktop(time, name) {
   let greetingDesktop = document.getElementById('greetingSumm');
@@ -105,18 +98,22 @@ function updateGreetingDesktop(time, name) {
 }
 
 
+//NOTE - task count functions
+
 
 /**
- * The function `loadCategory` loads tasks data, processes each task, and categorizes them based on
- * priority.
+ * Loads the number of tasks in each category and the tasks with urgent priority.
+ * - Retrieves the tasks data from the database.
+ * - Iterates over the tasks data and for each task, pushes the category and task
+ *   id to the numberOfBoard array and if the task has urgent priority, pushes the
+ *   task to the urgentTasks array.
+ * @returns {Promise<void>}
  */
 async function loadCategory() {
   let tasksData = await loadData("tasks");
   for (const key in tasksData) {
     const task = tasksData[key];
-    if (!task) {
-      continue;
-    }
+    if (!task) continue;
     numberOfBoard.push(objectTemplateNumberOfBoard(key, task));
     if (task.prio === 'urgent') {
       urgentTasks.push(task);
@@ -126,11 +123,11 @@ async function loadCategory() {
 
 
 /**
- * The function `taskAssignment` updates the counts of different task statuses and the number of tasks
- * on the board in Join summary page.
+ * Updates the task counts in the summary page.
+ * Retrieves the number of tasks by their status and updates the corresponding elements with the counts.
  */
 function taskAssignment() {
-  getTaskCounts();
+  countTasksByStatus();
   updateElement('howManyTodos', counts.toDo);
   updateElement('howManyInProgress', counts.inProgress);
   updateElement('howManyAwaitFeedback', counts.awaitFeedback);
@@ -140,63 +137,62 @@ function taskAssignment() {
 
 
 /**
- * The function `getTaskCounts` is intended to calculate the number of tasks in each status category.
+ * Counts the number of tasks in each status category.
+ * - Uses the reduce() method on the numberOfBoard array to create an object
+ *   with the task status as keys and the count of tasks in that status as values.
+ * - Initialises the counts object with default values of 0 for each status.
+ * @returns {object} An object with the counts of tasks in each status category.
  */
-function getTaskCounts() {
-  counts = numberOfBoard.reduce((acc, task) => {
-    acc[task.status]++;
-    return acc;
-  }, counts);
+function countTasksByStatus() {
+  counts = numberOfBoard.reduce((taskCounts, task) => {
+    taskCounts[task.status] = (taskCounts[task.status] || 0) + 1;
+    return taskCounts;
+  }, { toDo: 0, inProgress: 0, awaitFeedback: 0, done: 0 });
 }
 
 
 /**
- * The function `updateElement` updates the inner HTML content of an element with the specified ID.
- * @param id - The `id` parameter is a string that represents the id attribute of an HTML element that
- * you want to update.
- * @param value - The `value` parameter in the `updateElement` function represents the new content that
- * you want to set for the HTML element with the specified `id`. This content will be displayed on the
- * webpage once the function is called.
+ * Updates the content of an HTML element with the given ID with the given new value.
+ * @param {string} elementId - The ID of the HTML element to update.
+ * @param {string | number} newValue - The new value to set the element's innerHTML to.
  */
-function updateElement(id, value) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.innerHTML = value;
+function updateElement(elementId, newValue) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.innerHTML = newValue;
   }
 }
 
 
 /**
- * The function `showUrgentTask` sorts urgent tasks by date, updates the number of urgent tasks
- * displayed, and formats the date of the earliest urgent task in German locale.
+ * Updates the UI with the count and date of urgent tasks.
+ * - Retrieves the list of urgent tasks and calculates their count.
+ * - Determines the date of the first urgent task, formatted as a German locale string.
+ * - Updates the UI elements with the number of urgent tasks and the formatted date.
  */
-function showUrgentTask() {
-  if (urgentTasks && urgentTasks.length > 0) {
-    urgentTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
-    updateElement('howManyUrgent', urgentTasks.length);
-    let date = new Date(urgentTasks[0].date);
-    let options = { year: 'numeric', month: 'long', day: 'numeric' };
-    let formattedDate = date.toLocaleDateString('de-DE', options);
-    updateElement('summUrgentDate', formattedDate);
-  } else {
-    updateElement('howManyUrgent', 0);
-    updateElement('summUrgentDate', '');
-  }
+function displayUrgentTasks() {
+  const urgentTaskList = urgentTasks ?? [];
+  const urgentTaskCount = urgentTaskList.length;
+  const urgentTaskDate = urgentTaskCount > 0
+    ? new Date(urgentTaskList[0].date).toLocaleDateString('de-DE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    : '';
+
+  updateElement('howManyUrgent', urgentTaskCount);
+  updateElement('summUrgentDate', urgentTaskDate);
 }
 
 
-/**
- * The function `nextPage()` redirects the user to the 'board.html' page and sets the 'activeTab' item
- * in sessionStorage to 'board'.
- */
-function nextPage() {
-  window.location.href = 'board.html';
-  sessionStorage.setItem('activeTab', 'board');
-}
+//NOTE - Listeners summary functions
+
 
 /**
- * Attaches a click event listener to all elements with the class 'summ-info-field'.
- * When an element is clicked, the `nextPage` function is called.
+ * Activates event listeners for the summary page.
+ * - Attaches a click event listener to all elements with the class 'summ-info-field'
+ *   to navigate to the next page.
  */
 function activateListener() {
   document.querySelectorAll('.summ-info-field').forEach(btn => {
@@ -204,10 +200,11 @@ function activateListener() {
   });
 }
 
+
 /**
- * Deactivates all click event listeners from elements with the class 'summ-info-field'.
- * This function selects all elements with the class 'summ-info-field' and removes the 'click' event listener
- * that triggers the 'nextPage' function.
+ * Deactivates all event listeners for the summary page.
+ * - Removes the click event listener from elements with the class 'summ-info-field'
+ *   to prevent navigating to the next page.
  */
 export function deactivateAllListenersSummary() {
   document.querySelectorAll('.summ-info-field').forEach(btn => {
@@ -216,6 +213,10 @@ export function deactivateAllListenersSummary() {
 }
 
 
-// document.addEventListener('DOMContentLoaded', () => {
-//   if (window.location.href.includes('summary.html')) initSummary();
-// });
+/**
+ * Navigate to the board page and update the active tab in session storage.
+ */
+function nextPage() {
+  sessionStorage.setItem('activeTab', 'board');
+  window.location.href = 'board.html';
+}
