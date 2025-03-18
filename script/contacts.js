@@ -1,4 +1,4 @@
-import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts } from "../script.js";
+import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
 import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
 import { token } from "./firebase-init.js";
@@ -24,9 +24,11 @@ let editId = -1;
  * has been loaded and the contact list has been rendered.
  */
 export async function initContacts() {
+  toggleLoader(true);
   await getContactsData();
   renderContactList();
   activateListeners();
+  toggleLoader(false);
 }
 
 

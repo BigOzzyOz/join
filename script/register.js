@@ -1,4 +1,4 @@
-import { BASE_URL, contacts, updateData } from "../script.js";
+import { BASE_URL, contacts, updateData, toggleLoader } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
 import { forwardLegal, forwardPrivacy } from "./login.js";
@@ -183,7 +183,6 @@ async function submitData(event) {
     if (!await validateForm(password, confirmPassword, email)) return;
     try {
         signUp(name, email, password);
-        console.log('User signed up successfully!');
     } catch (error) {
         submitDataErrorHandling(error);
     }

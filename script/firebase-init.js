@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, s
 import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 import { firebaseConfig } from "../assets/environments/firebase-config.js";
 import { initSummary } from "./summary.js";
-import { init } from "../script.js";
+import { init, toggleLoader } from "../script.js";
 import { activateAddTaskListeners } from "./addTask-listener.js";
 import { initBoard } from "./board.js";
 import { initContacts } from "./contacts.js";
@@ -17,7 +17,7 @@ import { initRegister } from "./register.js";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
-let token = '';
+let token = sessionStorage.getItem("token") || '';
 
 
 //NOTE - Firebase authentication
@@ -29,7 +29,7 @@ let token = '';
  * If no user is authenticated, the `token` variable is set to an empty string.
  * This function is useful for obtaining an authentication token for making authenticated requests.
  */
-async function getToken() {
+export async function getToken() {
   const user = auth.currentUser;
   if (user) {
     const tokenNew = await user.getIdToken();
@@ -39,8 +39,10 @@ async function getToken() {
 
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    token = getToken().then(() => {
+  if (user || token) {
+    if (!user && token) signInAnonymously(auth);
+    getToken().then(() => {
+      toggleLoader(true);
       init().then(() => {
         if (window.location.href.includes('summary.html')) initSummary();
         if (window.location.href.includes('addtask.html')) {
@@ -49,7 +51,7 @@ onAuthStateChanged(auth, (user) => {
         if (window.location.pathname.includes("board.html")) initBoard();
         if (window.location.href.includes('contacts.html')) initContacts();
         if (window.location.href.includes('register.html')) initRegister();
-      });
+      }).finally(() => toggleLoader(false));
     });
   } else {
     init().then(() => {
@@ -83,4 +85,4 @@ function firebaseLogout() {
 }
 
 
-export { auth, database, ref, child, get, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, deleteUser, firebaseLogout, token };
+export { auth, database, ref, child, get, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, deleteUser, firebaseLogout, token, setPersistence, browserLocalPersistence };

@@ -392,3 +392,65 @@ No media query for `xs` since this is the default in Bootstrap*/
 
 /*XX-Large devices (larger desktops, 1400px and up)*/
 @media (min-width: 1400px) {}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  0% {
+    transform: scale(0);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+#mainLoader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgb(246, 247, 248);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+svg {
+  width: 100px;
+  height: 120px;
+}
+
+.blue-rect {
+  transform: scale(0);
+  animation: scaleUp 0.5s ease-in-out alternate infinite;
+  animation-delay: 0.55s;
+}
+
+.o-letter {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in-out alternate infinite;
+  animation-delay: 0.25s;
+}
+
+.i-letter {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in-out alternate infinite;
+  animation-delay: 0.35s;
+}
+
+.n-letter {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in-out alternate infinite;
+  animation-delay: 0.45s;
+}

@@ -1,4 +1,4 @@
-import { auth, database, ref, child, get, signInWithEmailAndPassword, signInAnonymously, deleteUser } from "./firebase-init.js";
+import { auth, database, ref, child, get, signInWithEmailAndPassword, signInAnonymously, deleteUser, setPersistence, browserLocalPersistence, getToken } from "./firebase-init.js";
 import { currentUser } from "../script.js";
 
 
@@ -196,12 +196,20 @@ function showError(error) {
  * @throws {Error} if an error occurs during sign in.
  */
 function handleGuestLogin() {
-    signInAnonymously(auth).then(() => {
-        const guestUser = { name: "Guest", firstLetters: "G" };
-        sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
-        localStorage.clear();
-        continueToSummary();
-    }).catch((error) => {
+    setPersistence(auth, browserLocalPersistence).then(() => {
+        signInAnonymously(auth).then((userCredential) => {
+            getToken().then((token) => {
+                sessionStorage.setItem("token", JSON.stringify(token));
+                const guestUser = { name: "Guest", firstLetters: "G" };
+                sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
+                localStorage.clear();
+                continueToSummary();
+            });
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+    ).catch((error) => {
         console.error(error);
     });
 }
@@ -238,7 +246,7 @@ function activateListener() {
     document.getElementById('signup-btn')?.addEventListener('click', forwardRegister);
     document.getElementById('privacy-policy')?.addEventListener('click', forwardPrivacy);
     document.getElementById('legal-notice')?.addEventListener('click', forwardLegal);
-}
+};
 
 
 /**

@@ -1,4 +1,4 @@
-import { BASE_URL, contacts, tasks, loadData, updateData, setTasks } from "../script.js";
+import { BASE_URL, contacts, tasks, loadData, updateData, setTasks, toggleLoader } from "../script.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
@@ -23,11 +23,13 @@ let currentSearchInput = '';
  */
 export async function initBoard() {
   try {
+    toggleLoader(true);
     await initializeTasksData();
     sessionStorage.setItem("tasks", JSON.stringify(tasks));
     activateListeners();
     initDragDrop();
     applyCurrentSearchFilter();
+    toggleLoader(false);
   } catch (error) {
     console.error("Initialisation error:", error);
   }

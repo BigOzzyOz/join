@@ -15,6 +15,15 @@ export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
 export let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
 
 
+export function toggleLoader(status) {
+  const loaderElement = document.getElementById('mainLoader');
+
+  if (!loaderElement) return;
+
+  loaderElement.style.display = status ? 'flex' : 'none';
+}
+
+
 export function setTasks(newTasks) {
   tasks = newTasks;
 }
@@ -150,7 +159,7 @@ export function changeActive(link) {
 function setActive() {
   let linkBtn = document.querySelectorAll(".menuBtn");
   linkBtn.forEach(btn => {
-    activeTab = activeTab == '' ? document.querySelector('h1').innerText.toLowerCase() : activeTab;
+    activeTab = !activeTab ? document.querySelector('main').getAttribute('data-page').toLowerCase() : activeTab;
     if (btn.innerText.toLowerCase() === activeTab) {
       btn.classList.add("menuBtnActive");
     }

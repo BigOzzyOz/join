@@ -1,4 +1,4 @@
-import { currentUser, loadData } from "../script.js";
+import { currentUser, loadData, toggleLoader } from "../script.js";
 import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
 
 
@@ -19,11 +19,11 @@ let counts = {
 
 
 export async function initSummary() {
+  displayGreeting();
   await loadCategory();
   taskAssignment();
   displayUrgentTasks();
   activateListener();
-  displayGreeting();
 }
 
 
