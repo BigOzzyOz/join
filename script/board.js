@@ -1,20 +1,34 @@
-let currentDraggedElement;
-let currentSearchInput = '';
-let currentTaskStatus;
+import { BASE_URL, contacts, tasks, fetchDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
+import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
+import { getContactsData } from "./contacts.js";
+import { generateTodoHTML } from "./boardtemplate.js";
+import { token } from "./firebase-init.js";
 
+
+//NOTE - Global Board Variables
+
+
+export let currentDraggedElement;
+let currentSearchInput = '';
+
+
+//NOTE - Board Initialisation
 
 
 /**
- * The `initBoard` function initializes the board by setting up tasks, checking data, storing tasks in
- * session storage, enabling drag and drop functionality, and applying search filters.
+ * Initialises the board page by fetching all tasks from storage, setting up listeners, and activating drag and drop functionality.
+ * If the tasks array is empty, fetches all tasks from storage and pushes them to the tasks array.
+ * Sets the current search filter to the users last search input.
+ * @returns {Promise<void>}
  */
-async function initBoard() {
-  init();
+export async function initBoard() {
   try {
-    await initCheckData();
+    toggleLoader(true);
+    await initializeTasksData();
     sessionStorage.setItem("tasks", JSON.stringify(tasks));
     initDragDrop();
     applyCurrentSearchFilter();
+    toggleLoader(false);
   } catch (error) {
     console.error("Initialisation error:", error);
   }
@@ -22,32 +36,42 @@ async function initBoard() {
 
 
 /**
- * The function `initCheckData` checks if there are tasks, toggles a loader, processes tasks by
- * checking for deleted users, or pushes data to an array if no tasks exist, and toggles the loader
- * again.
+ * Checks if the tasks array is empty and if so, fetches all tasks from
+ * storage and pushes them to the tasks array. If the tasks array is not
+ * empty, it loops over the tasks array and checks if the owner of each
+ * task is deleted by calling checkDeletedUser.
+ * A loader is shown while the tasks are being fetched and hidden when
+ * the process is finished.
+ * If any error occurs during the process, an error message is logged to
+ * the console.
  */
-async function initCheckData() {
-  document.querySelector('.loader').classList.toggle('dNone');
+export async function initializeTasksData() {
+  const loader = document.querySelector('.loader');
+  loader?.classList.toggle('dNone');
+
+  await pushDataToArray();
+
   if (tasks.length > 0) {
     for (let i = 0; i < tasks.length; i++) {
       tasks[i] = await checkDeletedUser(tasks[i]);
     }
-  } else {
-    await pushDataToArray();
+
+    loader?.classList.toggle('dNone');
   }
-  document.querySelector('.loader').classList.toggle('dNone');
+  activateListeners();
 }
 
 
-
 /**
- * The function `pushDataToArray` asynchronously loads data for tasks, processes each task, and pushes
- * them into an array while handling errors.
+ * Fetches all tasks from storage and pushes them to the tasks array.
+ * Each task is formatted by calling createTaskArray and then checked if
+ * the user is deleted by calling checkDeletedUser.
+ * If any error occurs during the process, an error message is logged to the console.
  */
 async function pushDataToArray() {
   try {
-    let tasksData = await loadData("tasks");
-    tasks = [];
+    let tasksData = await fetchDataFromDatabase("tasks");
+    setTasks([]);
     for (const key in tasksData) {
       let singleTask = tasksData[key];
       if (!singleTask) continue;
@@ -61,13 +85,12 @@ async function pushDataToArray() {
 }
 
 
-
 /**
- * The function `checkDeletedUser` checks if a user has been deleted and updates the task accordingly.
- * @param loadedTask - `loadedTask` is an object representing a task that has been loaded. It may
- * contain information such as the task details, assigned users, etc.
- * @returns The function `checkDeletedUser` is returning the `updatedTask` after performing some checks
- * and updates.
+ * Checks if a user, assigned to a task, still exists in the contact list.
+ * If the user does not exist anymore, the user is removed from the task's assigned contacts.
+ * If the user exists, but has a different ID, the task's assigned contacts are updated with the new ID.
+ * @param {Object} loadedTask - The task to check for deleted users.
+ * @returns {Object} The task with updated assigned contacts.
  */
 async function checkDeletedUser(loadedTask) {
   contacts.length == 0 ? await getContactsData() : null;
@@ -83,59 +106,55 @@ async function checkDeletedUser(loadedTask) {
 
 
 /**
- * The function `checkContactChange` iterates through assigned contacts in an updated task, removes any
- * contacts not found in the contacts array, and updates existing contacts if they have changed.
- * @param updatedTask - The `updatedTask` parameter is an object representing a task that has been
- * updated with new information. It contains an array called `assignedTo` which likely holds contact
- * information for the task assignees.
- * @param highestId - The `highestId` parameter in the `checkContactChange` function is used as the
- * starting point for iterating over the `updatedTask.assignedTo` array. It helps in determining the
- * range of indices to check for changes in the assigned contacts. The loop starts from `highestId` and
- * iter
- * @returns The `updatedTask` object is being returned after checking for any changes in the
- * `assignedTo` array and updating it if necessary.
+ * Checks for changes in the assigned contacts of a task and updates them accordingly.
+ * Iterates over assigned contacts of a task from the highest ID down to 0.
+ * If a contact is not found in the existing contacts list, it removes the contact from
+ * the task's assigned list. If a contact has changed, updates the contact information.
+ * Updates the task's assigned contacts data in the database.
+ *
+ * @param {Object} task - The task object containing assigned contacts.
+ * @param {number} maxId - The maximum ID of the assigned contacts to check.
+ * @returns {Promise<Object>} The updated task object.
  */
-async function checkContactChange(updatedTask, highestId) {
-  for (let i = highestId; i >= 0; i--) {
-    let c = updatedTask.assignedTo[i];
-    if (!c) continue;
-    if (contacts.findIndex(cont => cont.id === c.id) === -1) {
-      updatedTask.assignedTo.splice(i, 1);
-      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json`, updatedTask.assignedTo);
-    } else if (compareContact(c)) {
-      updatedTask.assignedTo[i] = contacts[contacts.findIndex(cont => cont.id === c.id)];
-      await updateData(`${BASE_URL}tasks/${updatedTask.id}/assignedTo.json`, updatedTask.assignedTo);
-    }
+async function checkContactChange(task, maxId) {
+  for (let index = maxId; index >= 0; index--) {
+    const assignedContact = task.assignedTo[index];
+    if (!assignedContact) continue;
+
+    const contactIndex = contacts.findIndex(contact => contact.id === assignedContact.id);
+    if (contactIndex === -1) task.assignedTo.splice(index, 1);
+    else if (hasContactChanged(assignedContact)) task.assignedTo[index] = contacts[contactIndex];
+
+    await updateDataInDatabase(`${BASE_URL}tasks/${task.id}/assignedTo.json?auth=${token}`, task.assignedTo);
   }
-  return updatedTask;
+  return task;
 }
 
 
 /**
- * The function `compareContact` checks if the properties of a given contact object differ from the
- * corresponding properties of a contact in an array.
- * @param contact - The `compareContact` function is designed to compare the properties of a given
- * `contact` object with the corresponding properties of a contact in an array named `contacts`. The
- * function checks if any of the properties (`name`, `email`, `phone`, `profilePic`, `firstLetters`) of
- * the
- * @returns The `compareContact` function is returning a boolean value indicating whether any of the
- * properties (name, email, phone, profilePic, firstLetters) of the contact object passed as an
- * argument are different from the corresponding properties of the contact object in the `contacts`
- * array with the same `id`.
+ * Checks if a contact has changed.
+ * @param {Object} assignedContact - The contact assigned to a task.
+ * @returns {boolean} True if the contact has changed, false otherwise.
  */
-function compareContact(contact) {
+function hasContactChanged(assignedContact) {
+  const contactIndex = contacts.findIndex(contact => contact.id === assignedContact.id);
+  if (contactIndex === -1) return true;
+
+  const storedContact = contacts[contactIndex];
   return (
-    contacts[contacts.findIndex(cont => cont.id === contact.id)].name !== contact.name ||
-    contacts[contacts.findIndex(cont => cont.id === contact.id)].email !== contact.email ||
-    contacts[contacts.findIndex(cont => cont.id === contact.id)].phone !== contact.phone ||
-    contacts[contacts.findIndex(cont => cont.id === contact.id)].profilePic !== contact.profilePic ||
-    contacts[contacts.findIndex(cont => cont.id === contact.id)].firstLetters !== contact.firstLetters
+    storedContact.name !== assignedContact.name ||
+    storedContact.email !== assignedContact.email ||
+    storedContact.phone !== assignedContact.phone ||
+    storedContact.profilePic !== assignedContact.profilePic ||
+    storedContact.firstLetters !== assignedContact.firstLetters
   );
 }
 
 
 /**
- * Updates all task categories by calling updateTaskCategories for each status.
+ * Updates the task categories on the board page. This function calls updateTaskCategories
+ * for each category and updates the number of tasks in each category.
+ * @returns {void}
  */
 function updateAllTaskCategories() {
   updateTaskCategories("toDo", "toDo", "No tasks to do");
@@ -146,14 +165,12 @@ function updateAllTaskCategories() {
 
 
 /**
- * Creates a task array from the given key and task data.
- * 
- * @async
- * @param {string} key - The task ID.
- * @param {Object} singleTask - The task data.
- * @returns {Promise<Object>} The created task object.
+ * Creates a new task object with the given key and task data.
+ * @param {string} key - The unique identifier for the task.
+ * @param {Object} singleTask - The task details.
+ * @returns {Object} The new task object.
  */
-async function createTaskArray(key, singleTask) {
+export async function createTaskArray(key, singleTask) {
   let task = {
     "id": key,
     "assignedTo": singleTask.assignedTo,
@@ -169,82 +186,90 @@ async function createTaskArray(key, singleTask) {
 }
 
 
+//NOTE - Subtask functions
+
+
 /**
- * Updates the task categories based on the status and renders them in the specified category element.
- * 
- * @param {string} status - The status of the tasks to update.
- * @param {string} categoryId - The ID of the category element to update.
+ * Updates the contents of a task category section on the board.
+ * - Filters tasks by the given status.
+ * - Empties the category element.
+ * - Appends the HTML for each task in the filtered array to the category element.
+ * - If a task has subtasks, updates the progress bar for those subtasks.
+ * - If there are no tasks, displays a "no task" placeholder with the given message.
+ * @param {string} status - The status of the tasks to show.
+ * @param {string} categoryId - The ID of the HTML element to update.
  * @param {string} noTaskMessage - The message to display if there are no tasks.
  */
 function updateTaskCategories(status, categoryId, noTaskMessage) {
   let taskForSection = tasks.filter((task) => task.status === status);
   let categoryElement = document.getElementById(categoryId);
+  if (!categoryElement) return;
   categoryElement.innerHTML = "";
   if (taskForSection.length > 0) {
     taskForSection.forEach((element) => {
       categoryElement.innerHTML += generateTodoHTML(element);
       if (element.subtasks && element.subtasks.length > 0) {
-        updateSubtasksProgressBar(element.subtasks, element.id);
+        updateSubtaskProgressBar(element.subtasks, element.id);
       }
     });
   } else {
-    categoryElement.innerHTML = `<div class="noTaskPlaceholder">${noTaskMessage}</div>`;
+    if (categoryElement) categoryElement.innerHTML = `<div class="noTaskPlaceholder">${noTaskMessage}</div>`;
   }
 }
 
 
 /**
- * Updates the progress bar for the subtasks of a task.
- * 
- * @param {Object[]} subtasks - The list of subtasks.
- * @param {string} taskId - The ID of the task.
+ * Updates the progress bar for a single task with the given subtasks.
+ * - Filters the subtasks for those that are checked.
+ * - Calculates the percentage of subtasks that are checked.
+ * - Updates the width of the progress bar element to that percentage.
+ * - Updates the text of the progress bar element to show the number of checked/total subtasks.
+ * @param {Array} subtasks - The subtasks of the task to update.
+ * @param {string} taskId - The ID of the task to update.
  */
-function updateSubtasksProgressBar(subtasks, taskId) {
-  let checkedAmt = subtasks.filter(
+export function updateSubtaskProgressBar(subtasks, taskId) {
+  const checkedSubtaskCount = subtasks.filter(
     (subtask) => subtask.status === "checked"
   ).length;
-  let percent = Math.round((checkedAmt / subtasks.length) * 100);
-  document.getElementById(
+  const percentComplete = Math.round(
+    (checkedSubtaskCount / subtasks.length) * 100
+  );
+  const progressBar = document.getElementById(
     `subtasksProgressbarProgress${taskId}`
-  ).style.width = `${percent}%`;
-  document.getElementById(
+  );
+  progressBar.style.width = `${percentComplete}%`;
+  const progressBarText = document.getElementById(
     `subtasksProgressbarText${taskId}`
-  ).innerHTML = `${checkedAmt}/${subtasks.length} Subtasks`;
+  );
+  progressBarText.innerHTML = `${checkedSubtaskCount}/${subtasks.length} Subtasks`;
 }
 
 
+//NOTE - Drag and Drop functions
+
+
 /**
- * Initializes the drag and drop functionality by updating all task categories 
- * and setting up the drag and drop handlers.
+ * Initializes drag and drop functionality on the board.
+ * - Deactivates all drag and drop listeners to prevent duplicate events.
+ * - Updates all task categories to ensure they are properly rendered.
+ * - Re-activates drag and drop listeners to enable drag and drop functionality.
  */
-function initDragDrop() {
+export function initDragDrop() {
+  deactivateDragDrop();
   updateAllTaskCategories();
   dragDrop();
 }
 
 
 /**
- * Sets up drag and drop functionality for task containers.
- */
-function dragDrop() {
-  document.querySelectorAll(".todoContainer").forEach((todoContainer) => {
-    todoContainer.addEventListener("dragstart", (e) => {
-      e.target.classList.add("tilted");
-      startDragging(e.target.id);
-    });
-    todoContainer.addEventListener("dragend", (e) => {
-      e.target.classList.remove("tilted");
-    });
-  });
-}
-
-
-/**
- * Starts dragging an element with the given ID.
+ * Initiates the drag event for a task by highlighting all task drag areas.
+ * - Sets the currentDraggedElement to the provided task ID.
+ * - Selects all elements with the class 'taskDragArea'.
+ * - Adds the 'highlighted' class to each element to visually indicate they are available for drop.
  * 
- * @param {string} id - The ID of the element to drag.
+ * @param {string} id - The ID of the task being dragged.
  */
-function startDragging(id) {
+export function startDragging(id) {
   currentDraggedElement = id;
   document.querySelectorAll(".taskDragArea").forEach((zone) => {
     zone.classList.add("highlighted");
@@ -253,137 +278,98 @@ function startDragging(id) {
 
 
 /**
- * Allows dropping of elements by preventing the default event behavior.
- * 
- * @param {Event} ev - The dragover event.
+ * Ends the drag operation by removing the highlighting
+ * from all task drag areas.
+ * - Selects all elements with the class 'taskDragArea'.
+ * - Removes the 'highlighted' and 'highlightedBackground'
+ *   classes from each element to reset their visual state.
  */
-function allowDrop(ev) {
-  let dropTarget = ev.target;
-  let allowDropTarget = document.querySelectorAll('.taskDragArea');
-  allowDropTarget.forEach(t => {
-    if (t == dropTarget || t.contains(dropTarget)) {
-      ev.preventDefault();
-      t.classList.add('highlightedBackground');
-    }
-  });
-}
-
-
-/**
- * Removes drag-related background highlights from all task drop areas.
- */
-function dragLeave() {
-  document.querySelectorAll('.taskDragArea').forEach((zone) => {
-    zone.classList.remove('highlightedBackground');
-  });
-}
-
-
-/**
- * Moves a task to a new status and updates the board accordingly.
- * 
- * @async
- * @param {string} status - The new status of the task.
- */
-async function moveTo(status) {
-  document.querySelectorAll(".taskDragArea").forEach((zone) => {
-    zone.classList.add("highlighted");
-  });
-  let task = tasks.find((task) => task.id == currentDraggedElement);
-  if (task && status != "") {
-    task.status = status;
-    initDragDrop();
-    applyCurrentSearchFilter();
-    await updateData(`${BASE_URL}tasks/${task.id}.json`, task);
-    let taskIndex = tasks.findIndex(t => task.id === t.id);
-    tasks.splice(taskIndex, 1, await createTaskArray(task.id, task));
-    sessionStorage.setItem("tasks", JSON.stringify(tasks));
-  }
-}
-
-
-/**
- * Removes drag-related highlights from all task drop areas.
- */
-function dragEnd() {
+export function dragEnd() {
   document.querySelectorAll('.taskDragArea').forEach((zone) => {
     zone.classList.remove('highlighted', 'highlightedBackground');
   });
 }
 
 
+//NOTE - Search functions
+
+
 /**
- * Applies the current search filter to update the visibility of tasks.
+ * Applies the current search filter to the list of tasks on the board.
+ * - If there is a search input present, it calls the searchTasks function
+ *   with the current search input value.
+ * - This function updates the task visibility based on the search criteria.
  */
-function applyCurrentSearchFilter() {
-  if (currentSearchInput) {
-    searchTasks(currentSearchInput);
-  }
+export function applyCurrentSearchFilter() {
+  if (currentSearchInput) searchTasks(currentSearchInput);
 }
 
 
 /**
- * The function `searchTasks` searches for tasks based on the input value and updates the visibility of
- * task cards accordingly.
- * @param inputValue - The `inputValue` parameter in the `searchTasks` function represents the search
- * query entered by the user to search for tasks. This value is used to filter and search through the
- * task cards based on their titles or descriptions.
+ * Searches for tasks based on the provided input value and updates the task visibility accordingly.
+ * - Converts the input value to lowercase for case-insensitive search.
+ * - Retrieves all task cards and filters them according to the search input.
+ * - Updates the visibility of a "no tasks found" message based on whether any tasks match the search.
+ * - Adjusts the visibility of drag area placeholders during search.
+ * 
+ * @param {string} inputValue - The search string used to filter tasks.
  */
-function searchTasks(inputValue) {
-  emptyDragAreaWhileSearching(inputValue);
+export function searchTasks(inputValue) {
+  emptyDragAreasWhileSearching(inputValue);
   currentSearchInput = inputValue.toLowerCase();
   const taskCards = document.querySelectorAll(".todoContainer");
-  let anyVisibleTask = searchForTitleOrDescription(taskCards, currentSearchInput);
+  let anyVisibleTask = searchTasksInCards(taskCards, currentSearchInput);
   updateNoTasksFoundVisibility(anyVisibleTask);
 }
 
 
 /**
- * The function `searchForTitleOrDescription` iterates through task cards, searches for a specific
- * input in titles or descriptions, and displays/hides the task cards accordingly while returning a
- * boolean indicating if any task is visible.
- * @param taskCards - An array of HTML elements representing task cards on a webpage. Each task card
- * contains elements with classes "toDoHeader" and "toDoDescription" that hold the title and
- * description of the task respectively.
- * @param currentSearchInput - The `currentSearchInput` parameter is the search term that the user has
- * entered to search for a specific title or description within the task cards.
- * @returns The function `searchForTitleOrDescription` returns a boolean value indicating whether there
- * are any visible tasks matching the current search input in the task cards.
+ * Function to search through an array of task cards and hide/show them based on whether they match the search input or not.
+ * @param {NodeList} taskCards the array of task cards to search through
+ * @param {string} searchInput the search string to look for in the task cards
+ * @returns {boolean} whether any tasks were visible after the search
  */
-function searchForTitleOrDescription(taskCards, currentSearchInput) {
+function searchTasksInCards(taskCards, searchInput) {
   let anyVisibleTask = false;
-  taskCards.forEach((taskCard) => {
-    const titleElement = taskCard.querySelector(".toDoHeader");
-    const descriptionElement = taskCard.querySelector(".toDoDescription");
-    if (titleElement || descriptionElement) {
-      const title = titleElement.textContent.trim().toLowerCase();
-      const description = descriptionElement.textContent.trim().toLowerCase();
-      const isVisible = title.includes(currentSearchInput) || description.includes(currentSearchInput);
-      taskCard.style.display = isVisible ? "block" : "none";
-      if (isVisible) {
-        anyVisibleTask = true;
-      }
-    }
-  });
+
+  for (const taskCard of taskCards) {
+    const title = taskCard.querySelector(".toDoHeader")?.textContent.trim().toLowerCase() || "";
+    const description = taskCard.querySelector(".toDoDescription")?.textContent.trim().toLowerCase() || "";
+
+    const isVisible = title.includes(searchInput) || description.includes(searchInput);
+
+    taskCard.style.display = isVisible ? "block" : "none";
+
+    if (isVisible) anyVisibleTask = true;
+  }
   return anyVisibleTask;
 }
 
 
 /**
- * Toggles the visibility of the drag areas while searching for tasks.
- * 
- * @param {string} searchValue - The search input value.
+ * Toggles the visibility of the drag areas' placeholder text depending on the search input field's value.
+ * If the input field is empty, the placeholder text is shown, otherwise it is hidden.
+ * @param {string} searchInput the current value of the search input field
  */
-function emptyDragAreaWhileSearching(searchValue) {
-  if (searchValue === '') {
-    let dragAreas = document.querySelectorAll(".noTaskPlaceholder");
-    dragAreas.forEach((dragArea) => {
-      dragArea.classList.remove('dNone');
-    });
+function emptyDragAreasWhileSearching(searchInput) {
+  const dragAreas = document.querySelectorAll(".noTaskPlaceholder");
+
+  if (searchInput === '') {
+    dragAreas.forEach((dragArea) => dragArea.classList.remove("dNone"));
   } else {
-    let dragAreas = document.querySelectorAll(".noTaskPlaceholder");
-    dragAreas.forEach((dragArea) => {
-      dragArea.classList.add('dNone');
-    });
+    dragAreas.forEach((dragArea) => dragArea.classList.add("dNone"));
   }
+}
+
+
+/**
+ * Updates the visibility of the "No tasks found" message based on whether any tasks are visible.
+ * - Selects the element with the id 'noTasksFound' and adds or removes the 'dNone' class
+ *   depending on whether anyVisibleTask is true or false.
+ * @param {boolean} anyVisibleTask - Whether any tasks are visible after the search.
+ */
+function updateNoTasksFoundVisibility(anyVisibleTask) {
+  const noTasksFound = document.getElementById('noTasksFound');
+  if (anyVisibleTask) noTasksFound.classList.add('dNone');
+  else noTasksFound.classList.remove('dNone');
 }

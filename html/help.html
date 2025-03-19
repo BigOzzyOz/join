@@ -11,15 +11,14 @@
     <link rel="stylesheet" href="../style/fonts.css">
     <link rel="stylesheet" href="../style/rightsandhelp.css">
 
-    <script src="../script.js"></script>
 
 </head>
 
-<body onload="init()">
+<body>
 
     <header w3-include-html="../assets/templates/html/header.html" class="header"></header>
 
-    <main class="content contentSection forbiddenContent">
+    <main data-page="help" class="content contentSection forbiddenContent">
         <div class="help">
             <h1>Help</h1>
             <p>Welcome to the help page for <a href="../index.html">Join</a>, your guide to using our kanban project
@@ -121,12 +120,16 @@
             We're here to help you!
 
             Enjoy using Join!
-            <a class="backArrow" href="#" onclick="window.history.back()"><img src="../assets/icons/arrow-left-line.svg"
-                    alt="arrow left line"></a>
+            <a id="backArrow" class="backArrow">
+                <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
+            </a>
         </div>
     </main>
 
     <nav w3-include-html="../assets/templates/html/menu.html" class="menu"></nav>
+
+    <script type="module" src="../script.js"></script>
+
 </body>
 
 </html>

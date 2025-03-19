@@ -1,12 +1,24 @@
-let assignedContacts = [];
+import { activeTab, contacts, setActiveTab, toggleClass, postDataToDatabase, setTasks, } from "../script.js";
+import { closeModal } from "./board2.js";
+import { handleAssignContact } from "./board-listener.js";
+import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
+import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
+import { svgProfilePic } from "./contactsTemplate.js";
+
+export let assignedContacts = [];
+export let currentPrio = 'medium';
+
+
+//NOTE - Dropdown functions
 
 
 /**
- * Toggles the assign dropdown menu.
- * 
- * @returns {Promise<void>}
+ * Toggles the assignment dropdown menu open or closed.
+ * If the dropdown is opened, it initializes the assignment process
+ * by displaying the contacts and setting the appropriate styles.
+ * Otherwise, it reverts the styles and clears the displayed contacts.
  */
-async function toggleDropdown() {
+export async function toggleDropdown() {
   document.getElementById('assignDropdown').classList.toggle('open');
   document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await openAssignDropdown() : closeAssignDropdown();
   toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
@@ -14,53 +26,29 @@ async function toggleDropdown() {
 
 
 /**
- * Opens the assign dropdown menu.
- * 
- * @returns {Promise<void>}
+ * Opens the assignment dropdown menu.
+ * Renders the list of contacts sorted by name alphabetically in the dropdown
+ * and sets the styles for the open state.
+ * Adds event listeners for the contacts to be assigned and for outside clicks.
  */
 async function openAssignDropdown() {
-  let searchInput = document.getElementById('assignSearch');
-  let contactsContainer = document.getElementById('contactsToAssign');
-  let contactSorted = contacts.length == 0 ? await getContactsData().then(c => [...c]) : [...contacts];
-  contactSorted.sort((a, b) => a.name.localeCompare(b.name));
-  contactSorted.forEach(c => contactsContainer.innerHTML += htmlRenderContactsAssign(c));
+  const searchInput = document.getElementById('assignSearch');
+  const contactsContainer = document.getElementById('contactsToAssign');
+  const contactsSorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
+  contactsContainer.innerHTML = contactsSorted.map(c => htmlRenderContactsAssign(c)).join('');
   document.getElementById('assignDropArrow').style.transform = 'rotate(180deg)';
   searchInput.value = '';
   searchInput.removeAttribute('readonly');
-  searchInput.removeAttribute('onclick');
+  const contactsAssign = document.querySelectorAll('.assignContactToProject');
+  contactsAssign.forEach((element) => element.addEventListener('click', handleAssignContact));
   document.addEventListener('click', checkOutsideAssign);
 }
 
 
 /**
- * Checks for clicks outside the assign menu to close it.
- * 
- * @param {Event} event - The click event.
- */
-function checkOutsideAssign(event) {
-  let assignMenu = document.getElementById('assignDropdown');
-  if (assignMenu.classList.contains('open') && !assignMenu.contains(event.target)) {
-    toggleDropdown();
-  };
-}
-
-
-/**
- * Filters and displays contacts based on the search input.
- */
-async function assignSearchInput() {
-  let searchInput = document.getElementById('assignSearch');
-  let contactsContainer = document.getElementById('contactsToAssign');
-  let searchText = searchInput.value.toLowerCase();
-  contactsContainer.innerHTML = '';
-  let contactSorted = contacts.length == 0 ? await getContactsData().then(c => [...c]) : [...contacts];
-  contactSorted.sort((a, b) => a.name.localeCompare(b.name));
-  contactSorted.filter(c => c.name.toLowerCase().includes(searchText)).forEach(c => contactsContainer.innerHTML += htmlRenderContactsAssign(c));
-}
-
-
-/**
- * Closes the assign dropdown menu.
+ * Closes the assignment dropdown menu.
+ * Clears the displayed contacts in the dropdown, removes the event listeners for the contacts to be assigned,
+ * and reverts the styles to the closed state.
  */
 function closeAssignDropdown() {
   let searchInput = document.getElementById('assignSearch');
@@ -69,37 +57,111 @@ function closeAssignDropdown() {
   document.getElementById('assignDropArrow').style.transform = 'rotate(0deg)';
   searchInput.value = 'Select contacts to assign';
   searchInput.setAttribute('readonly', true);
-  searchInput.setAttribute('onclick', 'toggleDropdown()');
-  document.removeEventListener('click', checkOutsideAssign);
+  const contactsAssign = document.querySelectorAll('.assignContactToProject');
+  contactsAssign?.forEach((element) => element.removeEventListener('click', handleAssignContact));
+  document?.removeEventListener('click', checkOutsideAssign);
 };
 
 
 /**
- * Assigns or unassigns a contact to/from a task.
- * 
- * @param {number} id - The contact ID.
- * @param {Event} event - The click event.
+ * Toggles the category dropdown menu open or closed.
+ * If the dropdown is opened, it assigns the category value to the input field
+ * and sets the styles for the open state.
+ * Otherwise, it clears the input field and reverts the styles to the closed state.
+ * @param {string} value - The value to assign to the category input field when the dropdown is opened.
  */
-function contactAssign(id, event) {
-  event.stopPropagation();
-  let contactLabel = document.getElementById(`contact${id}`).parentElement;
-  contactLabel.classList.toggle('contactsToAssignCheck');
-  if (contactLabel.classList.contains('contactsToAssignCheck')) {
-    assignedContacts.push(contacts[contacts.findIndex(c => c.id == id)]);
-    renderAssignedContacts();
-  } else {
-    assignedContacts.splice(assignedContacts.findIndex(c => c.id == id), 1);
-    renderAssignedContacts();
-  }
+export function toggleCategoryDropdown(value) {
+  let input = document.getElementById('categoryInput');
+  let wrapper = document.getElementById('selectWrapper');
+  let arrow = document.getElementById('categoryDropArrow');
+  input.value = wrapper.classList.contains('select-wrapperOpen') ? value : '';
+  document.getElementById('selectWrapper').classList.toggle('select-wrapperOpen');
+  wrapper.classList.contains('select-wrapperOpen') ? arrow.style.transform = 'rotate(180deg)' : arrow.style.transform = 'rotate(0deg)';
 }
 
 
+//NOTE - Assign functions
+
 
 /**
- * The function `renderAssignedContacts` renders assigned contacts in a container, displaying profile
- * pictures for the first 6 contacts and a placeholder for any additional contacts.
+ * Retrieves the value of the HTML element with the given id.
+ *
+ * @param {string} id - The id of the HTML element.
+ * @returns {string} The value of the HTML element.
  */
-function renderAssignedContacts() {
+function getId(id) {
+  return document.getElementById(id).value;
+}
+
+
+/**
+ * Sets the assigned contacts array with the provided contacts.
+ *
+ * @param {Array} contactsArray - The array of contacts to be assigned.
+ * @returns {void}
+ */
+export function setAssignedContacts(contactsArray) {
+  assignedContacts = contactsArray;
+}
+
+
+/**
+ * Checks if a click event occurred outside the assignment dropdown menu.
+ * If the dropdown is open and the click is outside of it, the dropdown
+ * menu is toggled closed.
+ *
+ * @param {Event} event - The click event containing the target element.
+ */
+function checkOutsideAssign({ target }) {
+  let assignMenu = document.getElementById('assignDropdown');
+  if (assignMenu.classList.contains('open') && !assignMenu.contains(target)) {
+    toggleDropdown();
+  };
+}
+
+
+/**
+ * Searches for contacts in the assignment dropdown menu based on the input value.
+ * Updates the list of contacts displayed in the dropdown menu with the filtered contacts.
+ * @returns {void}
+ */
+export function assignSearchInput() {
+  const searchInput = document.getElementById('assignSearch');
+  const contactsContainer = document.getElementById('contactsToAssign');
+  const searchText = searchInput.value.toLowerCase();
+  const contactsSorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
+  const filteredContacts = contactsSorted.filter(c => c.name.toLowerCase().includes(searchText));
+  contactsContainer.innerHTML = filteredContacts.map(c => htmlRenderContactsAssign(c)).join('');
+}
+
+
+/**
+ * Toggles the assignment of a contact to the task. If the contact is not currently
+ * assigned, it is added to the list of assigned contacts. If the contact is already
+ * assigned, it is removed from the list of assigned contacts. The UI is updated to
+ * reflect the change.
+ *
+ * @param {number} id - The ID of the contact to assign.
+ */
+export function contactAssign(id) {
+  const index = assignedContacts.findIndex(c => c.id === Number(id));
+  const inAssignedContacts = index > -1;
+  const contactLabel = document.getElementById(`contact${id}`).parentElement;
+  contactLabel.classList.toggle('contactsToAssignCheck', !inAssignedContacts);
+  if (inAssignedContacts) assignedContacts.splice(index, 1);
+  else assignedContacts.push(contacts.find(c => c.id === Number(id)));
+  renderAssignedContacts();
+}
+
+
+/**
+ * Renders the list of assigned contacts for the current task.
+ * The list is rendered in the contactsAssigned container and is
+ * limited to 5 contacts. If there are more than 5 assigned contacts,
+ * a badge is shown with the number of additional contacts.
+ * @returns {void}
+ */
+export function renderAssignedContacts() {
   let assignedContactsContainer = document.getElementById('contactsAssigned');
   assignedContactsContainer.innerHTML = '';
   for (let i = 0; i < assignedContacts.length; i++) {
@@ -114,43 +176,19 @@ function renderAssignedContacts() {
 }
 
 
-/**
- * Sets the priority for a task.
- * 
- * @param {HTMLElement} element - The element that triggered the priority setting.
- */
-function setPrio(element) {
-  const prio = element.getAttribute('data-prio');
-  currentPrio = prio;
-  updatePrioActiveBtn(prio);
-}
+//NOTE - Subtask functions
 
 
 /**
- * Toggles the category dropdown menu.
- * 
- * @param {Event} e - The click event.
- * @param {string} value - The value to set for the category input.
+ * Handles the addition of a new subtask based on user input.
+ * - Invokes the handleKeyDown function to manage key-based events.
+ * - Toggles the visibility of subtask icons based on the input length.
+ *
+ * @param {Event} event - The event object that triggered the function call, typically a keypress or click event.
  */
-function toggleCategoryDropdown(e, value) {
-  e.stopPropagation();
-  let input = document.getElementById('categoryInput');
-  let wrapper = document.getElementById('selectWrapper');
-  let arrow = document.getElementById('categoryDropArrow');
-  input.value = wrapper.classList.contains('select-wrapperOpen') ? value : '';
-  document.getElementById('selectWrapper').classList.toggle('select-wrapperOpen');
-  wrapper.classList.contains('select-wrapperOpen') ? arrow.style.transform = 'rotate(180deg)' : arrow.style.transform = 'rotate(0deg)';
-}
-
-
-/**
- * Handles the addition of a new subtask.
- * 
- * @param {Event} event - The event triggered by adding a subtask.
- */
-function addNewSubtask(event) {
+export function addNewSubtask(event) {
   handleKeyDown(event);
-  let input = document.getElementById('subtaskInput').value.length;
+  const input = document.getElementById('subtaskInput').value.length;
   if (input > -1) {
     document.getElementById('subtaskIconContainer').classList.remove('dNone');
     document.getElementById('subtaskPlusIcon').classList.add('dNone');
@@ -162,19 +200,22 @@ function addNewSubtask(event) {
 
 
 /**
- * Clears the subtask input field.
+ * Clears the value of the subtask input field.
+ * Resets the input field to an empty string.
  */
-function clearSubtaskInput() {
+export function clearSubtaskInput() {
   document.getElementById('subtaskInput').value = '';
 }
 
 
 /**
- * Handles the 'Enter' key event for saving a subtask.
- * 
- * @param {KeyboardEvent} event - The keyboard event.
+ * Handles keydown events on the subtask input field.
+ * If the key pressed is Enter, the event is prevented from
+ * propagating and the saveSubtask function is called to save
+ * the subtask.
+ * @param {Event} event - The event object that triggered the function call.
  */
-function handleKeyDown(event) {
+export function handleKeyDown(event) {
   if (event.key === 'Enter') {
     event.preventDefault();
     saveSubtask();
@@ -183,9 +224,18 @@ function handleKeyDown(event) {
 
 
 /**
- * Saves a subtask to the subtask list.
+ * Saves a subtask based on user input.
+ * - Retrieves the subtask input value and its trimmed version.
+ * - Checks if the trimmed value is empty and if so, ends the function.
+ * - Retrieves the subtask list element and counts the number of its children.
+ * - Generates the HTML for the new subtask by calling generateSaveSubtaskHTML.
+ * - Creates a new div element and sets its innerHTML to the generated HTML.
+ * - Appends the new subtask element to the subtask list.
+ * - Resets the subtask input field to an empty string.
+ * - Toggles the visibility of subtask icons.
+ * - Deactivates and reactivates event listeners for subtask-related elements.
  */
-function saveSubtask() {
+export function saveSubtask() {
   let subtaskList = document.getElementById('subtaskList');
   let inputText = document.getElementById('subtaskInput').value.trim();
   if (inputText === '') { return; }
@@ -197,15 +247,21 @@ function saveSubtask() {
   document.getElementById('subtaskInput').value = '';
   document.getElementById('subtaskIconContainer').classList.add('dNone');
   document.getElementById('subtaskPlusIcon').classList.remove('dNone');
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
 /**
- * Enables the editing of a subtask.
- * 
- * @param {HTMLElement} editIcon - The edit icon element that was clicked.
+ * Handles the edit subtask button click event.
+ * Retrieves the subtask item and its text and input elements.
+ * Hides the subtask text and shows the input element.
+ * Focuses the input element and adds an event listener for blur
+ * to save the edited subtask when the input loses focus.
+ * Deactivates and reactivates event listeners for subtask-related elements.
+ * @param {Element} editIcon - The edit subtask button that triggered the event.
  */
-function editSubtask(editIcon) {
+export function editSubtask(editIcon) {
   let subtaskItem = editIcon.closest('.subtaskEditList');
   let subtaskText = subtaskItem.querySelector('.subtaskItemText');
   let editInput = subtaskItem.querySelector('.editSubtaskInput');
@@ -213,14 +269,16 @@ function editSubtask(editIcon) {
   editInput.classList.remove('dNone');
   editInput.focus();
   editInput.addEventListener('blur', function () { saveEditedSubtask(subtaskText, editInput); });
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
 /**
- * Saves the edited subtask.
- * 
- * @param {HTMLElement} subtaskText - The subtask text element.
- * @param {HTMLInputElement} editInput - The edit input element.
+ * Saves the edited subtask by updating the subtask text with the edited value.
+ * Hides the input element and shows the text element.
+ * @param {Element} subtaskText - The text element of the subtask.
+ * @param {Element} editInput - The input element of the subtask.
  */
 function saveEditedSubtask(subtaskText, editInput) {
   subtaskText.textContent = editInput.value.trim();
@@ -230,18 +288,21 @@ function saveEditedSubtask(subtaskText, editInput) {
 
 
 /**
- * Deletes a subtask.
- * 
- * @param {HTMLElement} deleteIcon - The delete icon element that was clicked.
+ * Deletes a subtask based on user input.
+ * Retrieves the subtask item and removes it.
+ * Deactivates and reactivates event listeners for subtask-related elements.
+ * @param {Element} deleteIcon - The delete subtask button that triggered the event.
  */
-function deleteSubtask(deleteIcon) {
+export function deleteSubtask(deleteIcon) {
   let subtaskItem = deleteIcon.closest('.subtaskEditList');
   subtaskItem.remove();
+  deactivateSubtaskListeners();
+  activateSubtaskListeners();
 }
 
 
 /**
- * Clears the subtask list.
+ * Clears the subtask list by setting the innerHTML of the subtask list element to an empty string.
  */
 function clearSubtaskList() {
   document.getElementById('subtaskList').innerHTML = '';
@@ -249,9 +310,8 @@ function clearSubtaskList() {
 
 
 /**
- * Gets the subtasks from the subtask list.
- * 
- * @returns {Array<Object>} An array of subtask objects.
+ * Retrieves all subtasks from the subtask list.
+ * @return {Array} Array of subtask objects, each with "status" and "text" properties.
  */
 function getSubtasks() {
   const subtaskItems = document.querySelectorAll('.subtaskList .subtaskItemText');
@@ -261,28 +321,103 @@ function getSubtasks() {
 }
 
 
-
 /**
- * The function `pushNewTask` handles the process of creating a new task, posting it to a server, and
- * then closing the add task modal.
- * @param event - The `event` parameter in the `pushNewTask` function is an event object that
- * represents the event that was triggered, such as a form submission or a button click. In this case,
- * the function is used to handle the form submission event when a new task is being added.
+ * Creates a new task based on the user's input in the add task modal,
+ * sends a POST request to the server to add the new task to the database,
+ * and closes the add task modal.
+ * The new task object is created by calling createNewTask.
+ * The POST request is handled by the postDataToDatabase function imported from script.js.
+ * After the request is resolved, the add task modal is closed by calling closeAddTaskModal.
  */
-async function pushNewTask(event) {
-  event.preventDefault();
-  let newTask = createNewtask();
-  await postData("tasks", newTask);
+export async function pushNewTask() {
+  let newTask = createNewTask();
+  await postDataToDatabase("tasks", newTask);
   closeAddTaskModal();
 }
 
 
+//NOTE - Validation functions
+
+
 /**
- * Creates a new task object with the form data.
- * 
+ * Checks if all required input fields in the add task modal are filled in and valid.
+ * Iterates over all required input fields and their corresponding validation text elements.
+ * If an input field is empty, it sets the validation text to an error message.
+ * If an input field is not empty, it sets the validation text to an empty string.
+ * Attaches event listeners to the input fields to check their validity in real-time.
+ * Returns true if all required input fields are valid, false otherwise.
+ */
+export function formValidation() {
+  const inputs = document.querySelectorAll('.singleInputContainer input[required]');
+  let isValid = true;
+  inputs.forEach(input => {
+    const validationText = input.nextElementSibling;
+    if (input.value.trim() === '') {
+      formValidationTrue(input, validationText);
+      isValid = false;
+    }
+    else formValidationFalse(input, validationText);
+    formValidationListener(input, validationText);
+  });
+  return isValid;
+}
+
+
+
+/**
+ * Sets the validation text to an error message and adds a red border to the input element when the input is empty.
+ * Called by formValidation.
+ * @param {Element} input - The input element to be validated.
+ * @param {Element} validationText - The element that displays the validation error message.
+ */
+function formValidationTrue(input, validationText) {
+  validationText.style.display = 'block';
+  input.classList.add('formValidationInputBorder');
+}
+
+
+
+/**
+ * Hides the validation error message and removes the red border from the input element when the input is valid.
+ * Called by formValidation.
+ * @param {Element} input - The input element to be validated.
+ * @param {Element} validationText - The element displaying the validation error message.
+ */
+function formValidationFalse(input, validationText) {
+  validationText.style.display = 'none';
+  input.classList.remove('formValidationInputBorder');
+}
+
+
+
+/**
+ * Adds an event listener to the input element to listen for input events.
+ * If the input value is not empty, it hides the validation error message and removes the red border.
+ * If the input value is empty, it shows the validation error message and adds the red border.
+ * @param {Element} input - The input element to add the event listener to.
+ * @param {Element} validationText - The element that displays the validation error message.
+ */
+function formValidationListener(input, validationText) {
+  input.addEventListener('input', () => {
+    if (input.value.trim() !== '') {
+      validationText.style.display = 'none';
+      input.classList.remove('formValidationInputBorder');
+    } else {
+      validationText.style.display = 'block';
+      input.classList.add('formValidationInputBorder');
+    }
+  });
+}
+
+
+//NOTE - Task functions
+
+
+/**
+ * Creates a new task object with the current values from the add task form.
  * @returns {Object} The new task object.
  */
-function createNewtask() {
+function createNewTask() {
   return {
     title: getId('taskTitle'),
     description: getId('taskDescription'),
@@ -296,29 +431,30 @@ function createNewtask() {
 }
 
 
-
 /**
- * The function `closeAddTaskModal` closes the add task modal, shows a task added animation,
- * initializes data checking, updates task categories, and initializes drag and drop functionality.
+ * Closes the add task modal by running the task added animation and either reloading
+ * the page or switching to the board page, depending on the current active tab.
+ * @async
  */
 async function closeAddTaskModal() {
   if (activeTab == 'add task') {
     showTaskAddedAnimation();
-    tasks = [];
+    setTasks([]);
     setActiveTab('.menuBtn[href="../html/board.html"]');
     sessionStorage.removeItem('tasks');
   } else {
     showTaskAddedAnimation();
-    sessionStorage.removeItem('tasks');
-    await initCheckData();
-    updateAllTaskCategories();
-    initDragDrop();
+    setTasks([]);
+    setTimeout(() => location.reload(), 2000);
   }
 }
 
 
 /**
- * Shows the task added animation and redirects to the board page.
+ * Shows the "Task added!" animation. If the current page is addtask.html,
+ * it shows the animation and redirects to the board page after 2 seconds.
+ * If the current page is board.html, it shows the animation and closes the add
+ * task modal after 2 seconds.
  */
 function showTaskAddedAnimation() {
   if (window.location.href.endsWith('addtask.html')) {
@@ -326,14 +462,14 @@ function showTaskAddedAnimation() {
     setTimeout(() => {
       return window.location.href = "../html/board.html";
     }, 2000);
-  } else {
-    showTaskAddedAnimationModal();
-  }
+  } else showTaskAddedAnimationModal();
 }
 
 
 /**
- * Shows the task added animation in a modal.
+ * Displays the "Task added!" animation modal.
+ * - Toggles the visibility of the task added button to show the animation.
+ * - Automatically closes the modal after 2 seconds by calling closeModal.
  */
 function showTaskAddedAnimationModal() {
   toggleClass('taskAddedBtn', 'd-None', 'show');
@@ -342,78 +478,78 @@ function showTaskAddedAnimationModal() {
 
 
 /**
- * Validates the form inputs.
- * 
- * @returns {boolean} True if all required inputs are valid, false otherwise.
+ * Clears all input fields in the add task form.
+ * - Resets the title, description and date input fields to empty strings.
+ * - Resets the priority buttons to their default state (no button is active).
+ * - Resets the subtask input field to an empty string.
+ * - Clears the subtask list.
  */
-function formValidation() {
-  const inputs = document.querySelectorAll('.singleInputContainer input[required]');
-  let isValid = true;
-  inputs.forEach(input => {
-    const validationText = input.nextElementSibling;
-    if (input.value.trim() === '') {
-      formValidationTrue(input, validationText);
-    } else {
-      formValidationFalse(input, validationText);
-    }
-    formValidationListener(input, validationText);
-  });
-  return isValid;
-}
-
-
-/**
- * Displays validation error for an input.
- * 
- * @param {HTMLInputElement} input - The input element to validate.
- * @param {HTMLElement} validationText - The validation message element.
- */
-function formValidationTrue(input, validationText) {
-  validationText.style.display = 'block';
-  input.classList.add('formValidationInputBorder');
-  isValid = false;
-}
-
-
-/**
- * Hides validation error for an input.
- * 
- * @param {HTMLInputElement} input - The input element to validate.
- * @param {HTMLElement} validationText - The validation message element.
- */
-function formValidationFalse(input, validationText) {
-  validationText.style.display = 'none';
-  input.classList.remove('formValidationInputBorder');
-}
-
-
-/**
- * Adds an input event listener to handle real-time validation.
- * 
- * @param {HTMLInputElement} input - The input element to validate.
- * @param {HTMLElement} validationText - The validation message element.
- */
-function formValidationListener(input, validationText) {
-  input.addEventListener('input', function () {
-    if (input.value.trim() !== '') {
-      validationText.style.display = 'none';
-      input.classList.remove('formValidationInputBorder');
-    } else {
-      validationText.style.display = 'block';
-      input.classList.add('formValidationInputBorder');
-    }
-  });
-}
-
-
-/**
- * Clears the add task form fields.
- */
-function clearAddTaskForm() {
+export function clearAddTaskForm() {
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskDescription').value = '';
   document.getElementById('dateInput').value = '';
   updatePrioActiveBtn('');
   document.getElementById('subtaskInput').value = '';
   clearSubtaskList();
+}
+
+
+//NOTE - priority functions
+
+
+/**
+ * Updates the priority buttons to reflect the selected priority.
+ * - Removes all active classes from the priority buttons.
+ * - Hides all images in the priority buttons.
+ * - Calls changeActiveBtn with the given priority to set the correct active button.
+ * @param {string} prio - The selected priority.
+ */
+export function updatePrioActiveBtn(prio) {
+  const buttons = document.querySelectorAll('.prioBtn');
+  buttons.forEach(button => {
+    button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
+    const imgs = button.querySelectorAll('img');
+    imgs.forEach(img => { img.classList.add('hidden'); });
+  });
+  changeActiveBtn(prio);
+}
+
+
+/**
+ * Sets the active class on the priority button with the given priority and shows the correct icon.
+ * @param {string} prio - The priority to set as active.
+ */
+function changeActiveBtn(prio) {
+  const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
+  if (activeButton) {
+    activeButton.classList.add(`prioBtn${capitalize(prio)}Active`);
+    const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
+    if (whiteIcon) {
+      whiteIcon.classList.remove('hidden');
+    }
+  }
+}
+
+
+/**
+ * Capitalizes the first character of a given string.
+ *
+ * @param {string} str - The string to be capitalized.
+ * @returns {string} The input string with the first character converted to uppercase.
+ */
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
+/**
+ * Sets the current priority based on the specified element's data attribute.
+ * Updates the active priority button accordingly.
+ * 
+ * @param {Element} element - The DOM element representing the priority button.
+ */
+export function setPrio(element) {
+  const prio = element.getAttribute('data-prio');
+  currentPrio = prio;
+  updatePrioActiveBtn(prio);
 }

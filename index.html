@@ -7,43 +7,9 @@
     <title>Login</title>
     <link rel="icon" href="assets/icons/logoBlue.svg" />
 
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style/fonts.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style/login.css">
-
-    <script type="module">
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAVuunbXTGr2CljBpc6fitx4--oaLEfEsE",
-            authDomain: "join-273.firebaseapp.com",
-            databaseURL: "https://join-273-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "join-273",
-            storageBucket: "join-273.appspot.com",
-            messagingSenderId: "180936491276",
-            appId: "1:180936491276:web:9d04962cf61d639e138929"
-        };
-
-
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-        import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
-
-
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
-        window.firebaseDatabase = database;
-    </script>
-    <script type="module" src="script/login.js"></script>
-    <script src="script/contacts.js"></script>
-    <script src="script/contactsTemplate.js"></script>
-    <script src="script.js"></script>
-
-
-
 
 </head>
 
@@ -53,13 +19,13 @@
         <img id="logo" src="assets/icons/logoBlue.svg">
         <header>
             <span>Not a Join user?</span>
-            <button class="signup-button" onclick="window.location.href='html/register.html';">
+            <button id="signup-btn" class="signup-button">
                 Sign Up
             </button>
         </header>
 
 
-        <main>
+        <main data-page="login">
             <section id="login-form-container">
                 <form class="form-container" id="login-form">
                     <div class="headline">
@@ -95,14 +61,15 @@
 
 
         <footer>
-            <a href="html/privacy.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase());"
-                target="_blank">Privacy Policy</a>
-            <a href="html/imprint.html" onclick="sessionStorage.setItem('activeTab', this.innerHTML.toLowerCase())"
-                target="_blank">Legal Notice</a>
+            <a id="privacy-policy" href="html/privacy.html" target="_blank">Privacy Policy</a>
+            <a id="legal-notice" href="html/imprint.html" target="_blank">Legal Notice</a>
         </footer>
 
     </div>
 
+    <script type="module" src="script/firebase-init.js"></script>
+    <script type="module" src="script/login.js"></script>
+    <script type="module" src="script.js"></script>
 
 </body>
 

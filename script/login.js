@@ -1,33 +1,48 @@
-import { getAuth, signInWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+import { auth, database, ref, child, get, signInWithEmailAndPassword, signInAnonymously, deleteUser, setPersistence, browserLocalPersistence, getToken } from "./firebase-init.js";
+import { currentUser } from "../script.js";
 
 
-const auth = getAuth();
-const database = getDatabase();
+//NOTE - Global Login Variables
+
+
 const passwordInput = document.getElementById('passwordInput');
 let isPasswordVisible = false;
 let clickCount = -1;
 
 
+//NOTE - Initial Login function
+
+
 /**
- * Initializes the login form, setting up remembered user credentials and password toggle functionality.
+ * Initialises the login form by setting up event listeners and retrieving stored login credentials, if any.
+ * @function
  */
 function initLogin() {
-    if (document.getElementById('login-form')) {
-        let rememberMe = localStorage.getItem('rememberMe') === 'true';
-        if (rememberMe) {
-            document.getElementById('emailInput').value = localStorage.getItem('email');
-            document.getElementById('passwordInput').value = localStorage.getItem('password');
-            document.getElementById('checkbox').src = rememberMe ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
-            document.getElementById('rememberMe').checked = rememberMe;
+    activateListener();
+
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
+        const emailInput = loginForm.querySelector('#emailInput');
+        const passwordInput = loginForm.querySelector('#passwordInput');
+        const checkbox = loginForm.querySelector('#checkbox');
+
+        if (rememberMeChecked) {
+            emailInput.value = localStorage.getItem('email');
+            passwordInput.value = localStorage.getItem('password');
+            checkbox.src = rememberMeChecked ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
         }
+
         setupPasswordToggle();
     }
 }
 
 
 /**
- * Sets up the password visibility toggle functionality for the password input field.
+ * Sets up event listeners for the password input field to handle password visibility toggling.
+ * - A click event listener to toggle the password visibility state.
+ * - A focus event listener to increment the click count.
+ * - A blur event listener to reset the password input field state.
  */
 function setupPasswordToggle() {
     passwordInput.addEventListener("click", changeVisibility);
@@ -37,26 +52,23 @@ function setupPasswordToggle() {
 
 
 /**
- * Toggles the visibility of the password in the password input field.
- * 
- * @param {Event} e - The click event on the password input field.
+ * Handles the password visibility toggle button click event.
+ * Prevents the default event behavior, saves the current cursor position, toggles the
+ * password visibility, and resets the cursor position.
+ * @param {Event} event - The event object from the button click event.
  */
-function changeVisibility(e) {
-    e.preventDefault();
-    const cursorPosition = passwordInput.selectionStart;
-    if (clickCount === 0) {
-        togglePasswordVisibility();
-        clickCount++;
-    } else if (clickCount === 1) {
-        togglePasswordVisibility();
-        clickCount--;
-    }
-    passwordInput.setSelectionRange(cursorPosition, cursorPosition);
+function changeVisibility(event) {
+    event.preventDefault();
+    const selectionStart = passwordInput.selectionStart;
+    togglePasswordVisibility();
+    clickCount = clickCount === 0 ? 1 : 0;
+    passwordInput.setSelectionRange(selectionStart, selectionStart);
 }
 
 
 /**
- * Resets the password input field to its default state (hidden password) when it loses focus.
+ * Resets the state of the password input field by setting its type to "password",
+ * updating its background image, and resetting the click count and visibility status.
  */
 function resetState() {
     passwordInput.type = "password";
@@ -67,7 +79,8 @@ function resetState() {
 
 
 /**
- * Toggles the type and background image of the password input field to show or hide the password.
+ * Toggles the visibility of the password input field by changing its type and
+ * its background image.
  */
 function togglePasswordVisibility() {
     passwordInput.type = isPasswordVisible ? "text" : "password";
@@ -77,22 +90,27 @@ function togglePasswordVisibility() {
 }
 
 
+
 /**
- * The function `loginButtonClick` handles user login by capturing email and password inputs, signing
- * in with Firebase authentication, and displaying errors if any.
- * @param event - The `event` parameter in the `loginButtonClick` function represents the event that
- * occurred, such as a button click. In this case, the function is used to handle the click event of a
- * login button. By calling `event.preventDefault()`, the default action of the event (in this case,
+ * Handles the login button click event. Prevents the default event behavior,
+ * retrieves the email, password, and remember me checkbox state from the
+ * form, attempts to sign in with the provided credentials, sets the current
+ * user if successful, and redirects to the summary page. If the sign-in
+ * attempt fails, it displays an error message.
+ * @param {Event} event - The event object from the button click event.
+ * @returns {Promise<void>} - A promise resolving when the button click handling
+ * is complete.
  */
 async function loginButtonClick(event) {
     event.preventDefault();
     const email = document.getElementById('emailInput').value.trim().toLowerCase();
     const password = document.getElementById('passwordInput').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    const isRememberMeChecked = document.getElementById('rememberMe').checked;
+
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         await setCurrentUser(email, userCredential);
-        handleRememberMe(rememberMe);
+        handleRememberMe(isRememberMeChecked);
         continueToSummary();
     } catch (error) {
         showError(error);
@@ -101,17 +119,16 @@ async function loginButtonClick(event) {
 
 
 /**
- * The function `setCurrentUser` asynchronously sets the current user based on their email address and
- * user credentials, deleting the user if not found.
- * @param email - The `email` parameter is a string that represents the email address of the user you
- * want to set as the current user.
- * @param userCredential - The `userCredential` parameter is typically an object that contains
- * information about the user who is currently authenticated. It may include details such as the user's
- * unique identifier, email address, display name, and other relevant information provided by the
- * authentication service. This object is usually obtained after a user successfully logs in
- * @returns If a user with the provided email address and isUser flag is found in the contacts data,
- * the currentUser object representing that user is returned. If no user is found, an error is thrown
- * with the message 'No user found with the provided email address.'
+ * Sets the current user in the session storage by searching through the contacts
+ * database with the given email address. If a user is found, their data is stored
+ * in the session storage and the function returns true. If no user is found, the
+ * user is deleted from the Firebase authentication system and the function throws
+ * an error.
+ * @param {string} email - The email address to search for in the database.
+ * @param {object} userCredential - The user credential object from the Firebase
+ * authentication system.
+ * @returns {Promise<boolean>} - A promise resolving to true if a user is found,
+ * or throwing an error if no user is found.
  */
 async function setCurrentUser(email, userCredential) {
     const userSnapshot = await get(child(ref(database), `contacts`));
@@ -120,7 +137,7 @@ async function setCurrentUser(email, userCredential) {
         for (const key in users) {
             if (!users[key]) continue;
             if (users[key].mail.toLowerCase() === email && users[key].isUser) {
-                currentUser = users[key];
+                sessionStorage.setItem('currentUser', JSON.stringify(users[key]));
                 return true;
             }
         }
@@ -131,9 +148,11 @@ async function setCurrentUser(email, userCredential) {
 
 
 /**
- * Handles the "remember me" functionality by storing or removing user credentials in localStorage.
- * 
- * @param {boolean} rememberMe - Indicates if the user wants to be remembered.
+ * Handles the "Remember me" checkbox state.
+ * If the checkbox is checked, the function stores the user's email and password
+ * in local storage. If the checkbox is not checked, the function removes the email
+ * and password from local storage.
+ * @param {boolean} rememberMe - The state of the "Remember me" checkbox.
  */
 function handleRememberMe(rememberMe) {
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -150,7 +169,7 @@ function handleRememberMe(rememberMe) {
 
 
 /**
- * Redirects the user to the summary page.
+ * Redirects the user to the summary page and sets the active tab to 'summary' in session storage.
  */
 function continueToSummary() {
     sessionStorage.setItem('activeTab', 'summary');
@@ -159,10 +178,10 @@ function continueToSummary() {
 
 
 /**
- * The function `showError` displays a specific error message on the webpage based on the type of error
- * received.
- * @param error - The `error` parameter is an object that contains information about an error that
- * occurred in the code. It likely has a `message` property that provides a description of the error.
+ * Displays an error message to the user on the login page.
+ * If the error code includes 'auth/invalid-credential', the displayed message is 'Oops, wrong email address or password! Try it again.'.
+ * Otherwise, the displayed message is the error message passed to this function.
+ * @param {Error} error - The error that occurred while trying to log in.
  */
 function showError(error) {
     const errorMessageElement = document.getElementById('error-message');
@@ -172,18 +191,34 @@ function showError(error) {
 
 
 /**
- * Handles the guest login functionality by setting a guest user and redirecting to the summary page.
+ * Handles guest login by signing in anonymously and setting the current user to a guest user.
+ * Removes all local storage items and continues to the summary page.
+ * @throws {Error} if an error occurs during sign in.
  */
 function handleGuestLogin() {
-    const guestUser = { name: "Guest", firstLetters: "G" };
-    sessionStorage.setItem('currentUser', JSON.stringify(guestUser));
-    localStorage.clear();
-    continueToSummary();
+    setPersistence(auth, browserLocalPersistence).then(() => {
+        signInAnonymously(auth).then((userCredential) => {
+            getToken().then((token) => {
+                sessionStorage.setItem("token", JSON.stringify(token));
+                const guestUser = { name: "Guest", firstLetters: "G" };
+                sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
+                localStorage.clear();
+                continueToSummary();
+            });
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+    ).catch((error) => {
+        console.error(error);
+    });
 }
 
 
 /**
- * Handles the checkbox click event for the "remember me" functionality, updating the checkbox image accordingly.
+ * Toggles the checkbox image based on the 'Remember Me' checkbox state.
+ * Updates the checkbox image source to display a checked or unchecked icon
+ * depending on whether the checkbox is checked or not.
  */
 function checkBoxClicked() {
     const checkedState = document.getElementById('rememberMe').checked;
@@ -191,7 +226,70 @@ function checkBoxClicked() {
     checkboxImg.src = checkedState ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
 }
 
-document.getElementById('rememberMe').addEventListener('click', checkBoxClicked);
-document.getElementById('loginButton').addEventListener('click', loginButtonClick);
-document.getElementById('guestLogin').addEventListener('click', handleGuestLogin);
+
+//NOTE - Listener and handler functions
+
+
+/**
+ * Activates event listeners for the login page.
+ * - Attaches a click event listener to the "Remember Me" checkbox to change the checkbox icon.
+ * - Attaches a click event listener to the login button to handle the login process.
+ * - Attaches a click event listener to the guest login button to handle guest login.
+ * - Attaches a click event listener to the sign up button to forward the user to the sign up page.
+ * - Attaches a click event listener to the privacy policy link to open the privacy policy page.
+ * - Attaches a click event listener to the legal notice link to open the legal notice page.
+ */
+function activateListener() {
+    document.getElementById('rememberMe')?.addEventListener('click', checkBoxClicked);
+    document.getElementById('loginButton')?.addEventListener('click', loginButtonClick);
+    document.getElementById('guestLogin')?.addEventListener('click', handleGuestLogin);
+    document.getElementById('signup-btn')?.addEventListener('click', forwardRegister);
+    document.getElementById('privacy-policy')?.addEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice')?.addEventListener('click', forwardLegal);
+};
+
+
+/**
+ * Deactivates all event listeners related to the login page.
+ * - Removes the click event listener from the "Remember Me" checkbox.
+ * - Removes the click event listener from the login button.
+ * - Removes the click event listener from the guest login button.
+ * - Removes the click event listener from the "Sign Up" button to prevent forwarding to the registration page.
+ * - Removes the click event listener from the privacy policy link to prevent navigation.
+ * - Removes the click event listener from the legal notice link to prevent navigation.
+ */
+export function deactivateAllListenersLogin() {
+    document.getElementById('rememberMe')?.removeEventListener('click', checkBoxClicked);
+    document.getElementById('loginButton')?.removeEventListener('click', loginButtonClick);
+    document.getElementById('guestLogin')?.removeEventListener('click', handleGuestLogin);
+    document.getElementById('signup-btn')?.removeEventListener('click', forwardRegister);
+    document.getElementById('privacy-policy')?.removeEventListener('click', forwardPrivacy);
+    document.getElementById('legal-notice')?.removeEventListener('click', forwardLegal);
+}
+
+
+/**
+ * Forward user to the registration page when the "Sign Up" button is clicked.
+ */
+function forwardRegister() {
+    window.location.href = 'html/register.html';
+}
+
+
+/**
+ * Set the active tab to "legal notice" when the link is clicked.
+ */
+export function forwardLegal() {
+    sessionStorage.setItem('activeTab', "legal notice");
+}
+
+
+/**
+ * Set the active tab to "privacy policy" when the link is clicked.
+ */
+export function forwardPrivacy() {
+    sessionStorage.setItem('activeTab', "privacy policy");
+}
+
+
 document.addEventListener("DOMContentLoaded", initLogin);

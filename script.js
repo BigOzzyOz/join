@@ -1,59 +1,167 @@
-let BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
-let activeTab = sessionStorage.getItem('activeTab') || '';
-let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
-let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
-let currentPrio = 'medium';
+import { firebaseLogout, token } from "./script/firebase-init.js";
+import { initializeTasksData, initDragDrop } from "./script/board.js";
+import { closeModal } from "./script/board2.js";
+import { deactivateDeleteResponseListeners, deactivateAllListenersBoard } from "./script/board-listener.js";
+import { openDeleteTaskSureHtml } from "./script/boardtemplate.js";
+import { deactivateAllListenersContacts } from "./script/contacts-listener.js";
+import { deactivateAllListenersLogin } from "./script/login.js";
+import { deactivateAllListenersRegister } from "./script/register.js";
+import { deactivateAllListenersSummary } from "./script/summary.js";
+
+
+//NOTE - Global variables
+
+
+export const BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
+export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
+export let activeTab = sessionStorage.getItem('activeTab') || '';
+export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
+export let tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
+
+
+//NOTE - initialize and render functions
 
 
 /**
- * Initializes the application by including HTML, setting the active tab, and checking the current user.
- * If 'taskCategory' isn't set in session storage, it'll get set to 'toDo'.
+ * Initializes the application by setting up HTML includes, activating the current tab, 
+ * and checking user login status to show or hide content. If no task category is set 
+ * in the session storage, it defaults to 'toDo'. Additionally, adds a click event 
+ * listener to the back arrow to navigate to the previous page in history.
+ * 
+ * @async
+ * @returns {Promise<void>}
  */
-async function init() {
+export async function init() {
   await includeHTML();
   setActive();
-  checkCurrentUser();
-  if (!sessionStorage.getItem('taskCategory')) {
-    sessionStorage.setItem('taskCategory', 'toDo');
-  }
+  checkAndShowOrHideContent();
+  if (!sessionStorage.getItem('taskCategory')) sessionStorage.setItem('taskCategory', 'toDo');
+  document.getElementById('backArrow')?.addEventListener('click', () => { window.history.back(); });
 }
 
 
 /**
- * Sets the minimum date for date inputs to the current date.
- */
-function setActualDate() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('dateInput').setAttribute('min', today);
-  document.getElementById('update-date') && document.getElementById('update-date').setAttribute('min', today);
-}
-
-
-/**
- * Includes HTML from external files into elements with the 'w3-include-html' attribute.
+ * A function that fetches HTML content from specified files and injects it
+ * into elements with the attribute 'w3-include-html'.
+ *
+ * @function
+ * @async
+ * @param {void} None
+ * @returns {void} None
  */
 async function includeHTML() {
-  let includeElements = document.querySelectorAll('[w3-include-html]');
-  for (let i = 0; i < includeElements.length; i++) {
-    const element = includeElements[i];
-    file = element.getAttribute("w3-include-html");
-    let resp = await fetch(file);
-    if (resp.ok) {
-      element.innerHTML = await resp.text();
-    } else {
+  const elementsToInclude = document.querySelectorAll('[w3-include-html]');
+  for (const element of elementsToInclude) {
+    const filePath = element.getAttribute('w3-include-html');
+    try {
+      const response = await fetch(filePath);
+      element.innerHTML = response.ok ? await response.text() : 'Page not found';
+    } catch {
       element.innerHTML = 'Page not found';
     }
   }
+  if (elementsToInclude.length > 0) activateListener();
+}
+
+
+//NOTE - database functions
+
+
+/**
+ * Fetches data from the database at the given path.
+ * @param {string} [path] - The path of the data to be fetched.
+ * @returns {Promise<Object>} - A promise that resolves to the fetched data.
+ * @throws {Error} - If there is an error fetching data from the database.
+ */
+export async function fetchDataFromDatabase(path = '') {
+  const url = `${BASE_URL}${path}.json?auth=${token}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching data from database:', error);
+  }
 }
 
 
 /**
- * Changes the active tab to the specified link.
- * 
- * @param {Element} link - The link element that was clicked.
+ * Deletes data from the database at the given path.
+ * @param {string} [path] - The path of the data to be deleted.
+ * @returns {Promise<Object>} - A promise that resolves to the deleted data.
  */
-function changeActive(link) {
+export async function deleteDataFromDatabase(path = '') {
+  try {
+    const url = `${BASE_URL}${path}.json?auth=${token}`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const deletedData = await response.json();
+
+    return deletedData;
+  } catch (error) {
+    console.error('Error deleting data from database:', error);
+  }
+}
+
+
+/**
+ * Posts data to the database.
+ * @param {string} path - The path where the data should be posted.
+ * @param {Object} data - The data to be posted.
+ * @returns {Promise<Object>} - The response from the server.
+ */
+export async function postDataToDatabase(path = "", data = {}) {
+  const url = `${BASE_URL}${path}.json?auth=${token}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  return response.json();
+}
+
+
+/**
+ * Updates data in the database.
+ * @param {string} url - The URL of the data to be updated.
+ * @param {Object} dataToUpdate - The data to be updated.
+ * @returns {Promise<Object>} - A promise that resolves to the updated data.
+ */
+export async function updateDataInDatabase(url, dataToUpdate) {
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataToUpdate)
+    });
+
+    const responseData = await response.json();
+
+    return responseData;
+  } catch (error) {
+    console.error('Error updating data in database:', error);
+  }
+}
+
+
+//NOTE - active tab functions
+
+
+/**
+ * Changes the active tab based on the given link.
+ * @param {Element} link - The DOM element of the link to be set as active.
+ */
+export function changeActive(link) {
   let linkBtn = document.querySelectorAll(".menuBtn");
   linkBtn.forEach(btn => btn.classList.remove("menuBtnActive"));
   activeTab = link.innerText.toLowerCase();
@@ -64,135 +172,336 @@ function changeActive(link) {
 
 
 /**
- * Sets the active tab based on the current active tab in session storage.
+ * Sets the active tab based on the given link.
+ *
+ * @function
+ * @private
+ *
+ * @param {string} link - The link to set as the active tab.
  */
 function setActive() {
-  let linkBtn = document.querySelectorAll(".menuBtn");
-  linkBtn.forEach(btn => {
-    activeTab = activeTab == '' ? document.querySelector('h1').innerText.toLowerCase() : activeTab;
-    if (btn.innerText.toLowerCase() === activeTab) {
-      btn.classList.add("menuBtnActive");
+  const menuButtons = document.querySelectorAll(".menuBtn");
+  const currentPage = document.querySelector('main').getAttribute('data-page').toLowerCase();
+  const activeTabName = activeTab || currentPage;
+
+  menuButtons.forEach(button => {
+    const buttonName = button.innerText.toLowerCase();
+    if (buttonName === activeTabName) {
+      button.classList.add("menuBtnActive");
     }
   });
 }
 
 
 /**
- * Removes the active class from all tabs except the current active tab.
+ * Sets the active tab based on the given link.
+ * @param {string} link - The selector for the link to be set as active.
+ * @returns {void}
  */
-function removeActiveTab() {
-  let linkBtn = document.querySelectorAll(".menuBtn");
-  linkBtn.forEach(btn => {
-    activeTab = activeTab == '' ? document.querySelector('h1').innerText.toLowerCase() : activeTab;
-    if (btn.innerText.toLowerCase() != activeTab) {
-      btn.classList.remove("menuBtnActive");
-    }
-  });
-}
-
-
-/**
- * Sets the active tab to the specified link.
- * 
- * @param {string} link - The selector for the link element to set as active.
- */
-function setActiveTab(link) {
+export function setActiveTab(link) {
   const activeTab = document.querySelector(link);
-  if (activeTab) {
-    changeActive(activeTab);
-  }
+  if (activeTab) changeActive(activeTab);
 }
 
 
-/**
- * Updates the active priority button based on the specified priority.
- * 
- * @param {string} prio - The priority level to set as active.
- */
-function updatePrioActiveBtn(prio) {
-  const buttons = document.querySelectorAll('.prioBtn');
-  buttons.forEach(button => {
-    button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
-    const imgs = button.querySelectorAll('img');
-    imgs.forEach(img => { img.classList.add('hidden'); });
-  });
-  changeActiveBtn(prio);
-}
+//NOTE - user and login functions
 
 
 /**
- * Changes the active button based on the specified priority.
- * 
- * @param {string} prio - The priority level to set as active.
+ * Checks if a user is logged in and shows or hides content accordingly.
+ * If the user is not logged in, all elements with the class 'forbiddenContent' are hidden from view,
+ * and the user-specific menu and header items are hidden.
+ * If the user is logged in, all elements with the class 'forbiddenContent' are shown,
+ * the user-specific menu and header items are shown, and the user's initials are displayed in the header.
+ * @returns {void}
  */
-function changeActiveBtn(prio) {
-  const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
-  if (activeButton) {
-    activeButton.classList.add(`prioBtn${capitalize(prio)}Active`);
-    const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
-    if (whiteIcon) {
-      whiteIcon.classList.remove('hidden');
-    }
-  }
-}
+function checkAndShowOrHideContent() {
+  const forbiddenContentElements = document.querySelectorAll(".forbiddenContent");
+  const menuUserContainerElement = document.getElementById("menuUserContainer");
+  const headerUserContainerElement = document.getElementById("headerUserContainer");
+  const headerUserBadgeElements = document.querySelectorAll(".headerUserBadge");
 
+  if (!forbiddenContentElements || !menuUserContainerElement || !headerUserContainerElement) return;
 
-/**
- * Checks the current user and updates the UI based on the user's status.
- */
-function checkCurrentUser() {
-  const forbiddenContent = document.querySelectorAll('.forbiddenContent');
-  const menuUserContainer = document.getElementById('menuUserContainer');
-  const headerUserContainer = document.getElementById('headerUserContainer');
-  const headerUserBadge = document.querySelectorAll('.headerUserBadge');
   if (!currentUser) {
-    noUserContent(forbiddenContent, menuUserContainer, headerUserContainer);
-  } else if (currentUser && currentUser.name === 'Guest') {
-    userContent(forbiddenContent, menuUserContainer, headerUserContainer);
-    headerUserBadge.innerHTML = currentUser.firstLetters;
-  } else if (currentUser) {
-    userContent(forbiddenContent, menuUserContainer, headerUserContainer);
-    headerUserBadge.forEach(b => b.innerHTML = currentUser.firstLetters);
+    hideContentWhenNoUser(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
+  } else {
+    showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
+    headerUserBadgeElements.forEach(badgeElement => badgeElement.innerText = currentUser.firstLetters);
   }
 }
 
 
 /**
- * Hides content for users who are not logged in.
+ * Hides content elements when no user is logged in.
  * 
- * @param {NodeList} forbiddenContent - The content elements to hide.
- * @param {Element} menuUserContainer - The user menu container element.
- * @param {Element} headerUserContainer - The user header container element.
+ * @param {NodeList} forbiddenContentElements - A list of elements to be hidden from view.
+ * @param {HTMLElement} menuUserContainerElement - The container element for user-specific menu items to be hidden.
+ * @param {HTMLElement} headerUserContainerElement - The container element for user-specific header items to be hidden.
+ * 
+ * This function adds the 'd-none' class to specified elements, effectively making them invisible.
  */
-function noUserContent(forbiddenContent, menuUserContainer, headerUserContainer) {
-  forbiddenContent.forEach(content => content.classList.add('d-none'));
-  menuUserContainer.classList.add('d-none');
-  headerUserContainer.classList.add('d-none');
+function hideContentWhenNoUser(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) {
+  forbiddenContentElements.forEach(element => element.classList.add('d-none'));
+  menuUserContainerElement.classList.add('d-none');
+  headerUserContainerElement.classList.add('d-none');
 }
 
 
 /**
- * Shows content for users who are logged in.
+ * Shows content elements when a user is logged in.
  * 
- * @param {NodeList} forbiddenContent - The content elements to show.
- * @param {Element} menuUserContainer - The user menu container element.
- * @param {Element} headerUserContainer - The user header container element.
+ * @param {NodeList} forbiddenContentElements - A list of elements that should be displayed.
+ * @param {HTMLElement} menuUserContainerElement - The container element for user-specific menu items.
+ * @param {HTMLElement} headerUserContainerElement - The container element for user-specific header items.
+ * 
+ * This function removes the 'd-none' class from specified elements, making them visible.
  */
-function userContent(forbiddenContent, menuUserContainer, headerUserContainer) {
-  forbiddenContent.forEach(content => content.classList.remove('d-none'));
-  menuUserContainer.classList.remove('d-none');
-  headerUserContainer.classList.remove('d-none');
+function showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) {
+  forbiddenContentElements.forEach(element => element.classList.remove('d-none'));
+  menuUserContainerElement.classList.remove('d-none');
+  headerUserContainerElement.classList.remove('d-none');
 }
 
 
 /**
- * Toggles between two classes on a specified element.
- * 
- * @param {string} menu - The ID of the element to toggle classes on.
- * @param {string} className1 - The first class to toggle.
- * @param {string} className2 - The second class to toggle.
+ * Logs out the current user by invoking the Firebase logout function.
+ * This will end the current session and redirect the user to the login page.
  */
-function toggleClass(menu, className1, className2) {
+export function logOut() {
+  firebaseLogout();
+}
+
+
+//NOTE - listeners and handlers functions
+
+
+/**
+ * Deactivates all event listeners for the application.
+ * Listeners are for handling the following events:
+ * - Login page events (e.g. submit, click, change events).
+ * - Register page events (e.g. submit, click, change events).
+ * - Summary page events (e.g. click events to open details).
+ * - Board page events (e.g. click events to add tasks, edit tasks, delete tasks, change categories, change priorities, change due dates, drag and drop events).
+ * - Contacts page events (e.g. click events to open contact details, edit contact, delete contact, add contact, delete contact response).
+ * - Header and nav menu button click events to toggle the menu visibility.
+ * - Header and nav menu link click events to open the respective page.
+ * @function deactivateListeners
+ * @returns {void}
+ */
+function deactivateListeners() {
+  deactivateAllListenersLogin();
+  deactivateAllListenersRegister();
+  deactivateAllListenersSummary();
+  deactivateAllListenersBoard();
+  deactivateAllListenersContacts();
+  deactivateListenersScript();
+}
+
+
+/**
+ * Deactivates event listeners for the header, nav and menu buttons.
+ * Listeners are for handling the following events:
+ * - Header and nav menu button click events to toggle the menu visibility.
+ * - Header and nav menu link click events to open the respective page.
+ */
+function deactivateListenersScript() {
+  headerListenerMenu('remove');
+  headerListenerMenuLinks('remove');
+  navListenerMenu('remove');
+}
+
+
+/**
+ * Activates all event listeners for the header, nav and menu buttons.
+ * Listeners are for handling the following events:
+ * - Clicking on the header user badge buttons.
+ * - Clicking on the menu buttons in the header.
+ * - Clicking on the menu buttons in the nav.
+ * @function activateListener
+ * @returns {void}
+ */
+function activateListener() {
+  headerListenerMenu('add');
+  headerListenerMenuLinks('add');
+  navListenerMenu('add');
+}
+
+
+/**
+ * Adds or removes event listeners for the header user badge buttons.
+ * @param {string} action - 'add' or 'remove'.
+ */
+function headerListenerMenu(action) {
+  const headerUserBadge = document.getElementById('headerUserBadge');
+  const headerUserBadgeMobile = document.getElementById('headerUserBadgeMobile');
+
+  if (action === 'add') {
+    headerUserBadge?.addEventListener('click', headerUserBadgeButton);
+    headerUserBadgeMobile?.addEventListener('click', headerUserBadgeMobileButton);
+  } else if (action === 'remove') {
+    headerUserBadge?.removeEventListener('click', headerUserBadgeButton);
+    headerUserBadgeMobile?.removeEventListener('click', headerUserBadgeMobileButton);
+  }
+}
+
+
+/**
+ * Manages event listeners for the menu buttons in the header.
+ * Depending on the action parameter, this function adds or removes
+ * event listeners for the click event on the menu buttons.
+ * - Adds a listener for the click event on the logout button and calls
+ *   the logOut function when the event is triggered.
+ * - Adds a listener for the click event on the legal notice button and calls
+ *   the headerLegalButton function when the event is triggered.
+ * - Adds a listener for the click event on the privacy policy button and calls
+ *   the headerPrivacyButton function when the event is triggered.
+ * - Removes the listeners for the click event on the menu buttons.
+ * @param {string} action - Determines whether to add or remove listeners.
+ *                          Use "add" to attach listeners and "remove" to detach them.
+ */
+function headerListenerMenuLinks(action) {
+  const headerLogout = document.getElementById('header-logout');
+  const headerLegal = document.getElementById('header-legal');
+  const headerPrivacy = document.getElementById('header-privacy');
+
+  if (action === 'add') {
+    headerLogout?.addEventListener('click', logOut);
+    headerLegal?.addEventListener('click', headerLegalButton);
+    headerPrivacy?.addEventListener('click', headerPrivacyButton);
+  } else if (action === 'remove') {
+    headerLogout?.removeEventListener('click', logOut);
+    headerLegal?.removeEventListener('click', headerLegalButton);
+    headerPrivacy?.removeEventListener('click', headerPrivacyButton);
+  }
+}
+
+
+/**
+ * Manages event listeners for the menu buttons in the navigation bar.
+ * Depending on the action parameter, this function adds or removes
+ * event listeners for the click event on the menu buttons.
+ * - Adds a listener for the click event on each menu button and calls
+ *   the handleMenuClick function when the event is triggered.
+ * - Removes the listeners for the click event on each menu button.
+ * @param {string} action - Determines whether to add or remove listeners.
+ *                          Use "add" to attach listeners and "remove" to detach them.
+ */
+function navListenerMenu(action) {
+  const menuBtns = document.querySelectorAll('.menuBtn');
+
+  if (action === 'add') {
+    menuBtns.forEach(btn => btn.addEventListener('click', handleMenuClick));
+  } else if (action === 'remove') {
+    menuBtns.forEach(btn => btn.removeEventListener('click', handleMenuClick));
+  }
+}
+
+
+/**
+ * Handles the click event on the header user badge.
+ * - Toggles the visibility of the header menu container.
+ * - Activates the outside check for the header menu container.
+ * @param {Event} event - The event object of the click event.
+ */
+function headerUserBadgeButton(event) {
+  toggleClass('headerMenuContainer', 'ts0', 'ts1');
+  activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
+}
+
+
+/**
+ * Handles the click event on the header user badge for mobile devices.
+ * - Stops the event propagation to prevent the event from bubbling up.
+ * - Toggles the visibility of the header menu container.
+ * - Activates the outside check for the header menu container.
+ * @param {Event} event - The event object of the click event.
+ */
+function headerUserBadgeMobileButton(event) {
+  event.stopPropagation();
+  toggleClass('headerMenuContainer', 'ts0', 'ts1');
+  activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
+}
+
+
+/**
+ * Activates the tab for the legal notice page.
+ * 
+ * This function sets the active tab to the one corresponding to the legal notice
+ * page by updating the active state of the menu button linked to the imprint.html.
+ */
+function headerLegalButton() {
+  setActiveTab('.menuBtn[href=\'../html/imprint.html\']');
+}
+
+
+/**
+ * Activates the tab for the privacy policy page.
+ * 
+ * This function sets the active tab to the one corresponding to the privacy policy
+ * page by updating the active state of the menu button linked to the privacy.html.
+ */
+function headerPrivacyButton() {
+  setActiveTab('.menuBtn[href=\'../html/privacy.html\']');
+}
+
+
+/**
+ * Handles a click on one of the menu buttons.
+ * Deactivates the outside click check listener and changes the active tab to the one corresponding to the clicked button.
+ * @param {MouseEvent} event - The click event.
+ */
+function handleMenuClick(event) {
+  deactivateListeners();
+  changeActive(event.target);
+}
+
+
+//NOTE - change global variables functions
+
+
+/**
+ * Toggles the display of the main loader element based on the given status.
+ *
+ * @param {boolean} status - Whether to show (true) or hide (false) the loader.
+ */
+export function toggleLoader(status) {
+  const loaderElement = document.getElementById('mainLoader');
+  if (!loaderElement) return;
+  loaderElement.style.display = status ? 'flex' : 'none';
+}
+
+
+/**
+ * Sets the global tasks variable to the given array of tasks.
+ *
+ * @param {Object[]} newTasks - The new array of tasks.
+ */
+export function setTasks(newTasks) {
+  tasks = newTasks;
+}
+
+
+/**
+ * Sets the global contacts variable to the given array of contacts.
+ *
+ * @param {Object[]} newContacts - The new array of contacts.
+ */
+export function setContacts(newContacts) {
+  contacts = newContacts;
+}
+
+
+//NOTE - helper functions
+
+
+/**
+ * Toggles the two given class names on the element with the given id.
+ * @param {string} menu - The id of the element to toggle the classes on.
+ * @param {string} className1 - The first class name to toggle.
+ * @param {string} className2 - The second class name to toggle.
+ */
+export function toggleClass(menu, className1, className2) {
   let edit = document.getElementById(menu);
   edit.classList.toggle(className1);
   edit.classList.toggle(className2);
@@ -200,165 +509,85 @@ function toggleClass(menu, className1, className2) {
 
 
 /**
- * Gets the value of an element by its ID.
- * 
- * @param {string} id - The ID of the element to get the value from.
- * @returns {string} The value of the element.
+ * Opens the delete confirmation dialog for a task with the given id.
+ * - Toggles the 'deleteResponse' container to the visible state.
+ * - Sets the innerHTML of the 'deleteResponse' container to the delete confirmation dialog HTML.
+ * @param {string} id - The ID of the task to be deleted.
  */
-function getId(id) {
-  return document.getElementById(id).value;
-}
-
-
-/**
- * Loads data from a specified path in the database.
- * 
- * @param {string} [path=''] - The path to load data from.
- * @returns {Promise<Object>} The loaded data.
- */
-async function loadData(path = '') {
-  try {
-    let response = await fetch(BASE_URL + path + ".json");
-    let responseAsJson = await response.json();
-    return responseAsJson;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
-
-
-/**
- * Deletes data from a specified path in the database.
- * 
- * @param {string} [path=''] - The path to delete data from.
- * @returns {Promise<Object>} The response from the delete request.
- */
-async function deleteData(path = '') {
-  let response = await fetch(BASE_URL + path + '.json', {
-    method: 'DELETE',
-  });
-  return responseToJson = await response.json();
-}
-
-
-/**
- * Posts data to a specified path in the database.
- * 
- * @param {string} [path=''] - The path to post data to.
- * @param {Object} [data={}] - The data to post.
- * @returns {Promise<Object>} The response from the post request.
- */
-async function postData(path = "", data = {}) {
-  try {
-    let response = await fetch(BASE_URL + path + ".json", {
-      method: "POST",
-      header: { "Content-Type": " application/json" },
-      body: JSON.stringify(data),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error posting data:", error);
-  }
-}
-
-
-/**
- * Updates data at a specified URL in the database.
- * 
- * @param {string} url - The URL to update data at.
- * @param {Object} data - The data to update.
- * @returns {Promise<Object>} The response from the update request.
- */
-async function updateData(url, data) {
-  try {
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error updating data:', error);
-  }
-}
-
-
-/**
- * Displays a confirmation modal to delete a task.
- * 
- * @param {number} id - The ID of the task to delete.
- */
-function deleteTask(id) {
+export function deleteTask(id) {
   toggleClass('deleteResponse', 'ts0', 'ts1');
   document.getElementById('deleteResponse').innerHTML = openDeleteTaskSureHtml(id);
 }
 
 
 /**
- * Deletes a task after confirmation and updates the task list.
- * 
- * @param {number} id - The ID of the task to delete.
+ * Deletes a task with the given id.
+ * - Toggles the 'deleteResponse' container to the hidden state.
+ * - Deactivates the delete response listeners.
+ * - Deletes the task from the database.
+ * - Updates the global tasks array and saves it to session storage.
+ * - Closes the overlay.
+ * - Invokes the initDragDrop function.
+ * - Invokes the initializeTasksData function.
+ * @param {string} taskId - The id of the task to delete.
  */
-async function deleteTaskSure(id) {
+export async function deleteTaskSure(taskId) {
   toggleClass('deleteResponse', 'ts0', 'ts1');
-  await deleteData(`tasks/${id}`);
-  tasks = tasks.filter((task) => task.id !== id);
+  deactivateDeleteResponseListeners();
+
+  await deleteDataFromDatabase(`tasks/${taskId}`);
+  tasks = tasks.filter(task => task.id !== taskId);
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
+
   closeModal();
   initDragDrop();
-  initCheckData();
+  initializeTasksData();
 }
 
 
 /**
- * Capitalizes the first letter of a string.
- * 
- * @param {string} str - The string to capitalize.
- * @returns {string} The capitalized string.
+ * Activates a click event listener to check if a click occurred outside a specified modal.
+ * - Stops the propagation of the click event on the initial target element.
+ * - Defines an event handler to determine if a click is outside the modal and toggles classes if so.
+ * - Attaches the event handler to the document to listen for subsequent clicks.
+ * @param {Event} event - The initial click event object.
+ * @param {string} modalName - The ID of the modal element to check.
+ * @param {string} class1 - The first class name to check and toggle.
+ * @param {string} class2 - The second class name to toggle.
  */
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export function activateOutsideCheck(event, modalName, class1, class2) {
+  event.stopPropagation();
+
+  /**
+   * Handles the click event to determine if it occurs outside a specified modal.
+   * - Invokes the checkOutsideModal function to verify whether the click event target
+   *   is outside the modal and to toggle the modal's classes if necessary.
+   * 
+   * @param {Event} e - The click event object.
+   */
+  function outsideClickHandler(e) {
+    checkOutsideModal(e, modalName, class1, class2, outsideClickHandler);
+  }
+
+  document.addEventListener('click', outsideClickHandler);
 }
 
 
 /**
- * Logs out the current user and redirects to the login page.
+ * Checks if a click event occurred outside the specified modal and toggles its classes if so.
+ * - Retrieves the modal element by the provided modal name.
+ * - If the modal contains the specified class and the click event target is outside the modal,
+ *   it toggles the modal's classes and removes the click event listener.
+ * @param {Event} event - The click event object.
+ * @param {string} modalName - The ID of the modal element to check.
+ * @param {string} class1 - The first class name to check and toggle.
+ * @param {string} class2 - The second class name to toggle.
+ * @param {Function} handler - The event handler function to remove if the condition is met.
  */
-function logOut() {
-  sessionStorage.removeItem('currentUser');
-  localStorage.removeItem('currentUser');
-  window.location.href = '../index.html';
-}
-
-
-/**
- * Activates a mousedown event listener to check if the user has clicked outside a specified modal element.
- * If the user has clicked outside the modal and the modal has the specified class,
- * the function toggles the classes of the modal to hide it.
- *
- * @param {string} modalName - The ID of the modal element.
- * @param {string} class1 - The class to check if the modal has.
- * @param {string} class2 - The class to toggle if the modal should be hidden.
- */
-function activateOutsideCheck(modalName, class1, class2) {
-  document.addEventListener('mousedown', function () { checkOutsideModal(modalName, class1, class2); });
-}
-
-
-
-/**
- * Checks if the user has clicked outside a specified modal element.
- * If the user has clicked outside the modal and the modal has the specified class,
- * the function toggles the classes of the modal to hide it.
- * 
- * @param {string} modalName - The ID of the modal element.
- * @param {string} class1 - The class to check if the modal has.
- * @param {string} class2 - The class to toggle if the modal should be hidden.
- */
-function checkOutsideModal(modalName, class1, class2) {
+function checkOutsideModal(event, modalName, class1, class2, handler) {
   let modal = document.getElementById(modalName);
   if (modal.classList.contains(class1) && !modal.contains(event.target)) {
     toggleClass(modalName, class1, class2);
-    document.removeEventListener('click', function () { checkOutsideModal(modalName); });
+    document?.removeEventListener('click', handler);
   };
 }

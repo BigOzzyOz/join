@@ -1,3 +1,5 @@
+import { assignedContacts } from "./addTask.js";
+
 /**
  * Generates HTML for assigning contacts to a task.
  * 
@@ -7,12 +9,16 @@
  * @param {string} contact.profilePic - The profile picture HTML of the contact.
  * @returns {string} The HTML string for the contact assignment.
  */
-function htmlRenderContactsAssign(contact) {
+export function htmlRenderContactsAssign(contact) {
   return /*html*/`
-    <label for="contact${contact.id}" ${assignedContacts.findIndex(c => c.name == contact.name) != -1 ? 'class= "contactsToAssignCheck"' : ''}>
+    <label for="contact${contact.id}" class="${assignedContacts.some(c => c.name == contact.name) ? 'contactsToAssignCheck' : ''}">
       ${contact.profilePic}
       <p>${contact.name}</p>
-      <input type="checkbox" onclick="contactAssign(${contact.id}, event)" id="contact${contact.id}" name="assignToProject" value="${contact.id}" ${assignedContacts.findIndex(c => c.name == contact.name) != -1 ? 'checked' : ''}>
+      <input class="assignContactToProject" 
+        data-id="${contact.id}" 
+        type="checkbox" 
+        id="contact${contact.id}"  
+        ${assignedContacts.some(c => c.name == contact.name) ? 'checked' : ''}>
       <span class="checkMark"></span>
     </label>
     `;
@@ -26,16 +32,16 @@ function htmlRenderContactsAssign(contact) {
  * @param {number} index - The index of the subtask.
  * @returns {string} The HTML string for the subtask.
  */
-function generateSaveSubtaskHTML(inputText, index) {
+export function generateSaveSubtaskHTML(inputText, index) {
   return /*html*/`
-      <li class="subtaskEditList" id="subtask-${index}" ondblclick="editSubtask(this)">
+      <li class="subtaskEditList" id="subtask-${index}">
         <div class="subtaskItem">
           <span class="subtaskItemText">${inputText}</span>
           <input type="text" class="editSubtaskInput dNone" value="${inputText}" maxlength="80">
           <div class="addedTaskIconContainer">
-              <img class="icon" src="../assets/icons/pencilDarkBlue.svg" onclick="editSubtask(this)">
+              <img class="icon editSubtaskBtns" data-action="edit" src="../assets/icons/pencilDarkBlue.svg">
               <div class="subtaskInputSeperator"></div>
-              <img class="icon" src="../assets/icons/delete.svg" onclick="deleteSubtask(this)">
+              <img class="icon deleteSubtaskBtns" data-action="delete" src="../assets/icons/delete.svg">
           </div>
         </div>
 

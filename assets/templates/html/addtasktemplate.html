@@ -1,13 +1,14 @@
-<section class="addTaskHeaderSection">
-    <div>Add Task</div>
-    <img class="addTaskModalClose" onclick="closeModal()" src="../assets/icons/closeGrey.svg">
+<section class="">
+    <h1 class="addTaskHeaderSection">Add Task</h1>
+    <img id="addTaskModalCloseBtn" class="addTaskModalClose" src="../assets/icons/closeGrey.svg">
 </section>
 
-<section class="addTaskSection" onclick="checkOutsideAssign(event)">
+<section class="addTaskSection">
 
-    <form onsubmit="return pushNewTask(event)" class="addTaskForm">
+    <form id="addTaskForm" class="addTaskForm">
 
         <div class="inputContainer">
+
             <div class="inputContainerTop">
                 <div class="singleInputContainer">
                     <div class="redStarAfter">Title</div>
@@ -22,9 +23,8 @@
                     <div>Assigned to</div>
                     <div id="assignDropdown" class="assignContainer">
                         <input id="assignSearch" type="search" class="contactsAssignStandard"
-                            value="Select contacts to assign" onclick="toggleDropdown()" oninput="assignSearchInput()"
-                            placeholder="Search contacts" readonly>
-                        <div class="imgContainer" onclick="toggleDropdown()">
+                            value="Select contacts to assign" placeholder="Search contacts" readonly>
+                        <div id="assignDropArrowContainer" class="imgContainer">
                             <img id="assignDropArrow" src="../assets/icons/arrowdropdown.svg" alt="">
                         </div>
                         <div id="contactsAssigned" class="contactsAssigned"></div>
@@ -36,7 +36,8 @@
             <div class="seperatorLine"></div>
 
             <div class="inputContainerBottom">
-                <div class="singleInputContainer" onclick="setActualDate()">
+
+                <div id="dateInputContainer" class="singleInputContainer">
                     <div class="redStarAfter">Due date</div>
                     <input id="dateInput" class="dateInput" type="date" placeholder="dd/mm/yyyy" required>
                     <div class="formValidationText" style="display: none;">This field is required</div>
@@ -44,18 +45,17 @@
                 <div class="addTaskPrioContainer">
                     <div>Prio</div>
                     <div class="prioBtnContainer">
-                        <div class="prioBtn prioBtnUrgent" onclick="setPrio(this)" data-prio="urgent">
+                        <div class="prioBtn prioBtnUrgent" data-prio="urgent">
                             <div>Urgent</div>
                             <img class="priourgentsmallWhite" src="../assets/icons/priourgentsmallWhite.svg">
                             <img class="priourgentsmall" src="../assets/icons/priourgentsmall.svg">
                         </div>
-                        <div class="prioBtn prioBtnMedium prioBtnMediumActive" onclick="setPrio(this)"
-                            data-prio="medium">
+                        <div class="prioBtn prioBtnMedium prioBtnMediumActive" data-prio="medium">
                             <div>Medium</div>
                             <img class="priomediumsmallWhite" src="../assets/icons/priomediumsmallWhite.svg">
                             <img class="priomediumsmall" src="../assets/icons/priomediumsmall.svg">
                         </div>
-                        <div class="prioBtn prioBtnLow" onclick="setPrio(this)" data-prio="low">
+                        <div class="prioBtn prioBtnLow" data-prio="low">
                             <div>Low</div>
                             <img class="priolowsmallWhite" src="../assets/icons/priolowsmallWhite.svg">
                             <img class="priolowsmall" src="../assets/icons/priolowsmall.svg">
@@ -66,37 +66,39 @@
 
                 <div class="singleInputContainer">
                     <div class="redStarAfter">Category</div>
-                    <div id="selectWrapper" class="select-wrapper" onclick="toggleCategoryDropdown(event, '')">
+                    <div id="selectWrapper" data-value="" class="select-wrapper categoryValue">
                         <input id="categoryInput" class="categoryInput" type="text" value=""
                             placeholder="Select task category" readonly required>
+                        <div class="formValidationText" style="display: none;">This field is required</div>
                         <div class="imgContainer">
                             <img id="categoryDropArrow" src="../assets/icons/arrowdropdown.svg" alt="">
                         </div>
-                        <p onclick="toggleCategoryDropdown(event, 'Technical Task')" value="Technical Task">Technical
-                            Task
+                        <p class="categoryValue" data-value="Technical Task" value="Technical Task">Technical Task
                         </p>
-                        <p onclick="toggleCategoryDropdown(event, 'User Story')" value="User Story">User Story</p>
+                        <p class="categoryValue" data-value="User Story" value="User Story">
+                            User Story</p>
                         </select>
                     </div>
-                    <div class="formValidationText" style="display: none;">This field is required</div>
                 </div>
 
 
                 <div class="singleInputContainer">
                     <div>Subtasks</div>
-                    <div class="subtasksInputContainer" onkeydown="addNewSubtask(event)">
+                    <div id="subtasksInputContainer" class="subtasksInputContainer">
                         <input id="subtaskInput" class="subtasksInput" type="text" placeholder="Add new subtask"
                             maxlength="80">
                         <img id="subtaskPlusIcon" class="subtaskPlusIcon" src="../assets/icons/addBlack.svg">
                         <div id="subtaskIconContainer" class="subtaskIconContainer dNone">
-                            <img onclick="clearSubtaskInput()" class="icon" src="../assets/icons/delete.svg">
+                            <img id="subtaskDeleteIcon" class="icon" src="../assets/icons/delete.svg">
                             <div class="subtaskInputSeperator"></div>
-                            <img onclick="saveSubtask()" class="icon" src="../assets/icons/checkBlackBig.svg">
+                            <img id="subtaskSaveIcon" class="icon" src="../assets/icons/checkBlackBig.svg">
                         </div>
                     </div>
                     <ul id="subtaskList" class="subtaskList"></ul>
                 </div>
+
             </div>
+
         </div>
 
 
@@ -104,18 +106,19 @@
         <div class="bottomContainer">
             <div class="redStarBefore">This field is required</div>
             <div class="btnContainer">
-                <div class="clearBtn" onclick="clearAddTaskForm()">
+                <div id="clearBtn" class="clearBtn">
                     <div>Clear</div>
                     <img class="clearFormIcon" src="../assets/icons/clearIcon.svg">
                     <img class="clearFormIconBlue" src="../assets/icons/clearIconBlue.svg">
                 </div>
 
-                <button type="submit" id="createTaskBtn" class="createTaskBtn" onclick="return formValidation()">
+                <button type="submit" id="createTaskBtn" class="createTaskBtn">
                     <div>Create Task</div>
                     <img src="../assets/icons/check.svg">
                 </button>
             </div>
         </div>
+
     </form>
 
     <div id="taskAddedBtn" class="taskAddedBtn d-None">

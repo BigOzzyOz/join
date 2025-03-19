@@ -7,18 +7,17 @@
     <title>Imprint</title>
     <link rel="icon" href="../assets/icons/logoBlue.svg" />
 
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/fonts.css">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../style/rightsandhelp.css">
 
-    <script src="../script.js"></script>
 </head>
 
-<body onload="init()">
+<body>
 
     <header w3-include-html="../assets/templates/html/header.html" class="header"></header>
 
-    <main class="content contentSection">
+    <main data-page="legal notice" class="content contentSection">
         <div class='imprint'>
             <h1>Legal Notice</h1>
             <h2>Imprint</h2>
@@ -90,14 +89,18 @@
                     href="mailto:jholtschke@gmx,de">JHoltschke@gmx.de</a>.</p>
             <br>
             <p>Date: July 26, 2023</p>
-            <a class="backArrow" href="#" onclick="window.history.back()"><img src="../assets/icons/arrow-left-line.svg"
-                    alt="arrow left line"></a>
+            <a id="backArrow" class="backArrow">
+                <img src="../assets/icons/arrow-left-line.svg" alt="arrow left line">
+            </a>
         </div>
 
 
     </main>
 
     <nav w3-include-html="../assets/templates/html/menu.html" class="menu"></nav>
+
+    <script type="module" src="../script.js"></script>
+
 </body>
 
 </html>

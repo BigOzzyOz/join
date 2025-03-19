@@ -55,6 +55,7 @@
   font-size: 48px;
   font-weight: 700;
   line-height: 56.4px;
+  margin: 0;
 }
 
 .searchBtnContainer {
@@ -172,6 +173,9 @@ input:focus {
   justify-content: flex-start;
   overflow: auto;
   overflow-y: hidden;
+  transition: all 125ms ease-in-out;
+  border: 1px dashed transparent;
+  background-color: transparent;
 }
 
 .highlighted {
