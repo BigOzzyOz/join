@@ -1,4 +1,4 @@
-import { BASE_URL, contacts, tasks, loadData, updateData, setTasks, toggleLoader } from "../script.js";
+import { BASE_URL, contacts, tasks, fetchDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
@@ -68,7 +68,7 @@ export async function initializeTasksData() {
  */
 async function pushDataToArray() {
   try {
-    let tasksData = await loadData("tasks");
+    let tasksData = await fetchDataFromDatabase("tasks");
     setTasks([]);
     for (const key in tasksData) {
       let singleTask = tasksData[key];
@@ -123,7 +123,7 @@ async function checkContactChange(task, maxId) {
     if (contactIndex === -1) task.assignedTo.splice(index, 1);
     else if (hasContactChanged(assignedContact)) task.assignedTo[index] = contacts[contactIndex];
 
-    await updateData(`${BASE_URL}tasks/${task.id}/assignedTo.json?auth=${token}`, task.assignedTo);
+    await updateDataInDatabase(`${BASE_URL}tasks/${task.id}/assignedTo.json?auth=${token}`, task.assignedTo);
   }
   return task;
 }

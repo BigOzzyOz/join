@@ -79,6 +79,8 @@ setPersistence(auth, browserLocalPersistence).then(() => {
 function firebaseLogout() {
   signOut(auth).then(() => {
     sessionStorage.removeItem('currentUser');
+    sessionStorage.removeItem('activeTab');
+    sessionStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     window.location.href = '../index.html';
   });

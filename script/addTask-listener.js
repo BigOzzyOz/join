@@ -1,4 +1,3 @@
-import { setActualDate } from '../script.js';
 import { closeModal } from './board2.js';
 import { handleOverlayOutsideClick, handlePrioClick } from './board-listener.js';
 import { formValidation, toggleDropdown, assignSearchInput, pushNewTask, toggleCategoryDropdown, addNewSubtask, clearSubtaskInput, saveSubtask, clearAddTaskForm, deleteSubtask, editSubtask } from './addTask.js';
@@ -205,6 +204,18 @@ function handleWrapperClick(event) {
   event.preventDefault();
   let category = event.target.closest('.categoryValue').dataset.value;
   toggleCategoryDropdown(category);
+}
+
+
+/**
+ * Sets the minimum date of the date input element to the current date.
+ * This function is used to ensure that the user can only select a date
+ * equal to or later than the current date.
+ */
+function setActualDate() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateInput').setAttribute('min', today);
+  document.getElementById('update-date') && document.getElementById('update-date').setAttribute('min', today);
 }
 
 

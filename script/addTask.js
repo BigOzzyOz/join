@@ -1,4 +1,4 @@
-import { activeTab, contacts, setActiveTab, updatePrioActiveBtn, toggleClass, getId, postData, } from "../script.js";
+import { activeTab, contacts, setActiveTab, toggleClass, postDataToDatabase, } from "../script.js";
 import { closeModal } from "./board2.js";
 import { handleAssignContact } from "./board-listener.js";
 import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
@@ -81,6 +81,11 @@ export function toggleCategoryDropdown(value) {
 
 
 //NOTE - Assign functions
+
+
+function getId(id) {
+  return document.getElementById(id).value;
+}
 
 
 /**
@@ -315,12 +320,12 @@ function getSubtasks() {
  * sends a POST request to the server to add the new task to the database,
  * and closes the add task modal.
  * The new task object is created by calling createNewTask.
- * The POST request is handled by the postData function imported from script.js.
+ * The POST request is handled by the postDataToDatabase function imported from script.js.
  * After the request is resolved, the add task modal is closed by calling closeAddTaskModal.
  */
 export async function pushNewTask() {
   let newTask = createNewTask();
-  await postData("tasks", newTask);
+  await postDataToDatabase("tasks", newTask);
   closeAddTaskModal();
 }
 
@@ -480,7 +485,52 @@ export function clearAddTaskForm() {
 }
 
 
-//NOTE - Misc functions
+//NOTE - priority functions
+
+
+/**
+ * Updates the priority buttons to reflect the selected priority.
+ * - Removes all active classes from the priority buttons.
+ * - Hides all images in the priority buttons.
+ * - Calls changeActiveBtn with the given priority to set the correct active button.
+ * @param {string} prio - The selected priority.
+ */
+export function updatePrioActiveBtn(prio) {
+  const buttons = document.querySelectorAll('.prioBtn');
+  buttons.forEach(button => {
+    button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
+    const imgs = button.querySelectorAll('img');
+    imgs.forEach(img => { img.classList.add('hidden'); });
+  });
+  changeActiveBtn(prio);
+}
+
+
+/**
+ * Sets the active class on the priority button with the given priority and shows the correct icon.
+ * @param {string} prio - The priority to set as active.
+ */
+function changeActiveBtn(prio) {
+  const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
+  if (activeButton) {
+    activeButton.classList.add(`prioBtn${capitalize(prio)}Active`);
+    const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
+    if (whiteIcon) {
+      whiteIcon.classList.remove('hidden');
+    }
+  }
+}
+
+
+/**
+ * Capitalizes the first character of a given string.
+ *
+ * @param {string} str - The string to be capitalized.
+ * @returns {string} The input string with the first character converted to uppercase.
+ */
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 
 /**

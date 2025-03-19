@@ -1,4 +1,4 @@
-import { BASE_URL, contacts, updateData, toggleLoader } from "../script.js";
+import { BASE_URL, contacts, updateDataInDatabase, toggleLoader } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
 import { forwardLegal, forwardPrivacy } from "./login.js";
@@ -339,7 +339,7 @@ async function signUp(name, email, password) {
  */
 async function createNewContact(name, email) {
     const contact = await createContact(false, name, email, 'Please add phone number', false, true);
-    await updateData(`${BASE_URL}contacts/${contact.id}.json?auth=${token}`, contact);
+    await updateDataInDatabase(`${BASE_URL}contacts/${contact.id}.json?auth=${token}`, contact);
     contacts.push(pushToContacts(contact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
 }

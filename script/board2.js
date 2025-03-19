@@ -1,5 +1,5 @@
-import { BASE_URL, tasks, changeActive, updatePrioActiveBtn, updateData } from "../script.js";
-import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentPrio } from "./addTask.js";
+import { BASE_URL, tasks, changeActive, updateDataInDatabase } from "../script.js";
+import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentPrio, updatePrioActiveBtn } from "./addTask.js";
 import { createTaskArray, updateSubtaskProgressBar, initDragDrop, applyCurrentSearchFilter, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
@@ -93,7 +93,7 @@ export function closeModal() {
  * - Retrieves the subtask object from the task.subtasks array using the provided subtaskIndex.
  * - If the subtask object exists, updates its status in the DOM by calling updateSubtaskStatusInDOM.
  * - Updates the subtask progress bar in the DOM by calling updateSubtaskProgressBar.
- * - Updates the task object in the database by calling updateData.
+ * - Updates the task object in the database by calling updateDataInDatabase.
  * - Updates the tasks array in session storage by calling createTaskArray and replacing the old task object with the new one.
  * @param {string} taskId - The ID of the task.
  * @param {number} subtaskIndex - The index of the subtask in the task.subtasks array.
@@ -106,7 +106,7 @@ export async function updateSubtaskStatus(taskId, subtaskIndex) {
     if (subtask) {
       updateSubtaskStatusInDOM(subtask, subtaskIndex);
       updateSubtaskProgressBar(task.subtasks, taskId);
-      await updateData(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
+      await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
       let taskIndex = tasks.findIndex(t => taskId === t.id);
       tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
       sessionStorage.setItem("tasks", JSON.stringify(tasks));
@@ -220,7 +220,7 @@ function createEditedTaskReturn(subtasks, originalTask) {
  */
 export async function saveEditedTask(taskId) {
   const task = createEditedTask(taskId);
-  await updateData(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
+  await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
   const taskIndex = tasks.findIndex((t) => t.id === taskId);
   tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
   sessionStorage.setItem("tasks", JSON.stringify(tasks));
@@ -248,7 +248,7 @@ export async function moveTo(newStatus) {
   const taskToMove = tasks.find(task => task.id === currentDraggedElement);
   if (taskToMove && newStatus) {
     taskToMove.status = newStatus;
-    await updateData(`${BASE_URL}tasks/${taskToMove.id}.json?auth=${token}`, taskToMove);
+    await updateDataInDatabase(`${BASE_URL}tasks/${taskToMove.id}.json?auth=${token}`, taskToMove);
 
     const taskIndex = tasks.findIndex(task => task.id === taskToMove.id);
     tasks.splice(taskIndex, 1, await createTaskArray(taskToMove.id, taskToMove));

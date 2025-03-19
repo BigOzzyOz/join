@@ -1,4 +1,4 @@
-import { BASE_URL, currentUser, contacts, toggleClass, loadData, deleteData, updateData, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
+import { BASE_URL, currentUser, contacts, toggleClass, fetchDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
 import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
 import { token } from "./firebase-init.js";
@@ -42,7 +42,7 @@ export async function initContacts() {
  * contacts array after it has been updated.
  */
 export async function getContactsData() {
-  let loadItem = await loadData('contacts');
+  let loadItem = await fetchDataFromDatabase('contacts');
   setContactsArray(loadItem);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
   return contacts;
@@ -187,7 +187,7 @@ export async function addContacts(id = editId) {
   const newContact = await createContact(id, name, email, phone, false, false);
 
   if (checkForExistingContact(newContact)) {
-    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, newContact);
+    await updateDataInDatabase(`${BASE_URL}contacts/${id}.json?auth=${token}`, newContact);
     contacts.push(pushToContacts(newContact));
     sessionStorage.setItem('contacts', JSON.stringify(contacts));
     refreshPage();
@@ -296,7 +296,7 @@ export async function editContacts(id = editId) {
       contact.isUser
     );
     contact.profilePic = updatedContact.profilePic;
-    await updateData(`${BASE_URL}contacts/${id}.json?auth=${token}`, updatedContact);
+    await updateDataInDatabase(`${BASE_URL}contacts/${id}.json?auth=${token}`, updatedContact);
     refreshPage();
   }
 }
@@ -338,7 +338,7 @@ export function openDeleteContacts(event, id = editId) {
  */
 export async function deleteContacts(id = editId) {
   contacts.splice(contacts.findIndex(c => c.id == id), 1);
-  await deleteData(`contacts/${id}`);
+  await deleteDataFromDatabase(`contacts/${id}`);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
   id === currentUser.id ? logOut() : refreshPage();
 }

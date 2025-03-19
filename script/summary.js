@@ -1,4 +1,4 @@
-import { currentUser, loadData, toggleLoader } from "../script.js";
+import { currentUser, fetchDataFromDatabase, toggleLoader } from "../script.js";
 import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
 
 
@@ -110,7 +110,7 @@ function updateGreetingDesktop(time, name) {
  * @returns {Promise<void>}
  */
 async function loadCategory() {
-  let tasksData = await loadData("tasks");
+  let tasksData = await fetchDataFromDatabase("tasks");
   for (const key in tasksData) {
     const task = tasksData[key];
     if (!task) continue;
