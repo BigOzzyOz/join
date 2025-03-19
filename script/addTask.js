@@ -144,12 +144,12 @@ export function assignSearchInput() {
  * @param {number} id - The ID of the contact to assign.
  */
 export function contactAssign(id) {
-  const index = assignedContacts.findIndex(c => c.id === id);
+  const index = assignedContacts.findIndex(c => c.id === Number(id));
   const inAssignedContacts = index > -1;
   const contactLabel = document.getElementById(`contact${id}`).parentElement;
   contactLabel.classList.toggle('contactsToAssignCheck', !inAssignedContacts);
   if (inAssignedContacts) assignedContacts.splice(index, 1);
-  else assignedContacts.push(contacts.find(c => c.id === id));
+  else assignedContacts.push(contacts.find(c => c.id === Number(id)));
   renderAssignedContacts();
 }
 
