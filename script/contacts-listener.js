@@ -28,8 +28,8 @@ export function deactivateAllListenersContacts() {
 export function activateListeners() {
   const moreContactsButton = document.getElementById('moreContactsButton');
   const contactsListItem = document.querySelectorAll('.contactListItem');
-  moreContactsButton.addEventListener('click', openAddContacts);
-  contactsListItem.forEach(item => item.addEventListener('click', openContactDetails));
+  moreContactsButton?.addEventListener('click', openAddContacts);
+  contactsListItem?.forEach(item => item.addEventListener('click', openContactDetails));
 }
 
 
@@ -42,7 +42,7 @@ function deactivateListeners() {
   const moreContactsButton = document.getElementById('moreContactsButton');
   const contactsListItem = document.querySelectorAll('.contactListItem');
   moreContactsButton?.removeEventListener('click', openAddContacts);
-  contactsListItem.forEach(item => item?.removeEventListener('click', openContactDetails));
+  contactsListItem?.forEach(item => item?.removeEventListener('click', openContactDetails));
 }
 
 
@@ -71,10 +71,10 @@ export function activateListenersDetails() {
   const editContactBtn = document.getElementById('editContactBtn');
   const deleteContactBtn = document.getElementById('deleteContactBtn');
   const contactsDetailMore = document.getElementById('contactsDetailMore');
-  backArrowContacts.addEventListener('click', closeDetails);
-  editContactBtn.addEventListener('click', openEditContactsButton);
-  deleteContactBtn.addEventListener('click', openDeleteContactsButton);
-  contactsDetailMore.addEventListener('click', contactsDetailsMore);
+  backArrowContacts?.addEventListener('click', closeDetails);
+  editContactBtn?.addEventListener('click', openEditContactsButton);
+  deleteContactBtn?.addEventListener('click', openDeleteContactsButton);
+  contactsDetailMore?.addEventListener('click', contactsDetailsMore);
 }
 
 
@@ -164,7 +164,7 @@ function deactivateListenersAdd() {
   const addContactX = document.querySelectorAll('#addContact .closeX');
   const addContact = document.querySelector('#addContact form');
   const addContactCancel = document.getElementById('cancelAddContact');
-  addContactX.forEach(b => b?.removeEventListener('click', closeAddContact));
+  addContactX?.forEach(b => b?.removeEventListener('click', closeAddContact));
   addContact?.removeEventListener('submit', submitAddContact);
   addContactCancel?.removeEventListener('click', closeAddContact);
 }
@@ -205,9 +205,9 @@ export function activateListenersEdit() {
   const workContactX = document.querySelectorAll('#editContact .closeX');
   const editContact = document.querySelector('#editContact form');
   const editContactDelete = document.getElementById('editContactDelete');
-  workContactX.forEach(b => b.addEventListener('click', closeEditContact));
-  editContactDelete.addEventListener('click', openDeleteContacts);
-  editContact.addEventListener('submit', submitEditContact);
+  workContactX?.forEach(b => b.addEventListener('click', closeEditContact));
+  editContactDelete?.addEventListener('click', openDeleteContacts);
+  editContact?.addEventListener('submit', submitEditContact);
 }
 
 
@@ -221,7 +221,7 @@ function deactivateListenersEdit() {
   const workContactX = document.querySelectorAll('#editContact .closeX');
   const editContact = document.querySelector('#editContact form');
   const editContactDelete = document.getElementById('editContactDelete');
-  workContactX.forEach(b => b?.removeEventListener('click', closeEditContact));
+  workContactX?.forEach(b => b?.removeEventListener('click', closeEditContact));
   editContactDelete?.removeEventListener('click', openDeleteContacts);
   editContact?.removeEventListener('submit', submitEditContact);
 }
@@ -259,8 +259,8 @@ function submitEditContact(event) {
 function activateListenersDelete() {
   const deleteResponse = document.querySelector('#deleteResponse form');
   const closeDeleteResponseBtn = document.getElementById('closeDeleteResponse');
-  deleteResponse.addEventListener('submit', submitDeleteContact);
-  closeDeleteResponseBtn.addEventListener('click', closeDeleteResponse);
+  deleteResponse?.addEventListener('submit', submitDeleteContact);
+  closeDeleteResponseBtn?.addEventListener('click', closeDeleteResponse);
 }
 
 

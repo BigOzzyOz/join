@@ -115,6 +115,7 @@ function renderContactLetter(contact) {
 function refreshPage() {
   renderContactList();
   renderContactsDetails(editId);
+  activateListeners();
 }
 
 
@@ -249,8 +250,9 @@ export function pushToContacts(contact) {
  * @param {number} id The ID of the contact to edit.
  */
 export function openEditContacts(event, id) {
-  editId = id;
-  const contact = contacts.find((c) => c.id === id);
+  editId = Number(id);
+  console.log(editId, typeof editId);
+  const contact = contacts.find((c) => c.id === Number(id));
   const nameInput = document.getElementById('editName');
   const emailInput = document.getElementById('editMail');
   const telInput = document.getElementById('editTel');
@@ -276,7 +278,7 @@ export function openEditContacts(event, id) {
  * @returns {Promise<void>} - A promise that resolves when the contact has been edited.
  */
 export async function editContacts(id = editId) {
-  const contact = contacts.find(c => c.id === id);
+  const contact = contacts.find(c => c.id === Number(id));
   const updatedName = document.getElementById('editName').value;
   const updatedEmail = document.getElementById('editMail').value;
   const updatedPhone = document.getElementById('editTel').value;
@@ -316,7 +318,7 @@ export async function editContacts(id = editId) {
  * @param {number|string} [id=editId] - The ID of the contact to be deleted.
  */
 export function openDeleteContacts(event, id = editId) {
-  editId = id;
+  editId = Number(id);
   const response = document.querySelector('#deleteResponse>.deleteQuestion>p');
 
   let question;
@@ -340,7 +342,7 @@ export async function deleteContacts(id = editId) {
   contacts.splice(contacts.findIndex(c => c.id == id), 1);
   await deleteDataFromDatabase(`contacts/${id}`);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
-  id === currentUser.id ? logOut() : refreshPage();
+  Number(id) === currentUser.id ? logOut() : refreshPage();
 }
 
 
