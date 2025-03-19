@@ -346,7 +346,10 @@ export function formValidation() {
   let isValid = true;
   inputs.forEach(input => {
     const validationText = input.nextElementSibling;
-    if (input.value.trim() === '') formValidationTrue(input, validationText);
+    if (input.value.trim() === '') {
+      formValidationTrue(input, validationText);
+      isValid = false;
+    }
     else formValidationFalse(input, validationText);
     formValidationListener(input, validationText);
   });
@@ -364,7 +367,6 @@ export function formValidation() {
 function formValidationTrue(input, validationText) {
   validationText.style.display = 'block';
   input.classList.add('formValidationInputBorder');
-  isValid = false;
 }
 
 

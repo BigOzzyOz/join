@@ -294,6 +294,7 @@ input:focus {
 }
 
 .formValidationText {
+  position: fixed;
   color: #FF8190;
   font-size: 12px;
   font-weight: 400;
