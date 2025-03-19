@@ -26,7 +26,6 @@ export async function initBoard() {
     toggleLoader(true);
     await initializeTasksData();
     sessionStorage.setItem("tasks", JSON.stringify(tasks));
-    activateListeners();
     initDragDrop();
     applyCurrentSearchFilter();
     toggleLoader(false);
@@ -50,13 +49,16 @@ export async function initializeTasksData() {
   const loader = document.querySelector('.loader');
   loader?.classList.toggle('dNone');
 
+  await pushDataToArray();
+
   if (tasks.length > 0) {
     for (let i = 0; i < tasks.length; i++) {
       tasks[i] = await checkDeletedUser(tasks[i]);
     }
-  } else await pushDataToArray();
 
-  loader?.classList.toggle('dNone');
+    loader?.classList.toggle('dNone');
+  }
+  activateListeners();
 }
 
 
@@ -154,7 +156,7 @@ function hasContactChanged(assignedContact) {
  * for each category and updates the number of tasks in each category.
  * @returns {void}
  */
-export function updateAllTaskCategories() {
+function updateAllTaskCategories() {
   updateTaskCategories("toDo", "toDo", "No tasks to do");
   updateTaskCategories("inProgress", "inProgress", "No tasks in progress");
   updateTaskCategories("awaitFeedback", "awaitFeedback", "No tasks await feedback");

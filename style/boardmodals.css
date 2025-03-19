@@ -316,6 +316,9 @@
 }
 
 .addTaskModalContainer .addTaskModalClose {
+  position: absolute;
+  right: 32px;
+  top: 32px;
   display: flex;
   height: 32px;
   width: 32px;

@@ -1,4 +1,4 @@
-import { activeTab, contacts, setActiveTab, toggleClass, postDataToDatabase, } from "../script.js";
+import { activeTab, contacts, setActiveTab, toggleClass, postDataToDatabase, setTasks, } from "../script.js";
 import { closeModal } from "./board2.js";
 import { handleAssignContact } from "./board-listener.js";
 import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
@@ -83,6 +83,12 @@ export function toggleCategoryDropdown(value) {
 //NOTE - Assign functions
 
 
+/**
+ * Retrieves the value of the HTML element with the given id.
+ *
+ * @param {string} id - The id of the HTML element.
+ * @returns {string} The value of the HTML element.
+ */
 function getId(id) {
   return document.getElementById(id).value;
 }
@@ -433,11 +439,12 @@ function createNewTask() {
 async function closeAddTaskModal() {
   if (activeTab == 'add task') {
     showTaskAddedAnimation();
-    tasks = [];
+    setTasks([]);
     setActiveTab('.menuBtn[href="../html/board.html"]');
     sessionStorage.removeItem('tasks');
   } else {
     showTaskAddedAnimation();
+    setTasks([]);
     setTimeout(() => location.reload(), 2000);
   }
 }
