@@ -1,4 +1,4 @@
-import { auth, database, ref, child, get, signInWithEmailAndPassword, signInAnonymously, deleteUser, setPersistence, browserLocalPersistence, getToken } from "./firebase-init.js";
+import { BASE_URL, token, setToken } from "./api-init.js";
 import { currentUser } from "../script.js";
 
 
@@ -23,12 +23,12 @@ function initLogin() {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
-        const emailInput = loginForm.querySelector('#emailInput');
+        const login = loginForm.querySelector('#loginInput');
         const passwordInput = loginForm.querySelector('#passwordInput');
         const checkbox = loginForm.querySelector('#checkbox');
 
         if (rememberMeChecked) {
-            emailInput.value = localStorage.getItem('email');
+            login.value = localStorage.getItem('login');
             passwordInput.value = localStorage.getItem('password');
             checkbox.src = rememberMeChecked ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
         }
@@ -103,13 +103,24 @@ function togglePasswordVisibility() {
  */
 async function loginButtonClick(event) {
     event.preventDefault();
-    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    const login = document.getElementById('loginInput').value.trim().toLowerCase();
     const password = document.getElementById('passwordInput').value;
     const isRememberMeChecked = document.getElementById('rememberMe').checked;
-
+    const bodyData = {
+        "username": login,
+        "password": password,
+    };
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        await setCurrentUser(email, userCredential);
+        let response = await fetch(`${BASE_URL}/auth/login/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bodyData),
+        });
+        const data = await response.json();
+        data.token ? setToken(data.token) : console.error('Error: No token received from the server.');
+        await setCurrentUser(data);
         handleRememberMe(isRememberMeChecked);
         continueToSummary();
     } catch (error) {
@@ -130,20 +141,22 @@ async function loginButtonClick(event) {
  * @returns {Promise<boolean>} - A promise resolving to true if a user is found,
  * or throwing an error if no user is found.
  */
-async function setCurrentUser(email, userCredential) {
-    const userSnapshot = await get(child(ref(database), `contacts`));
-    if (userSnapshot.exists()) {
-        const users = userSnapshot.val();
-        for (const key in users) {
-            if (!users[key]) continue;
-            if (users[key].mail.toLowerCase() === email && users[key].isUser) {
-                sessionStorage.setItem('currentUser', JSON.stringify(users[key]));
-                return true;
-            }
-        }
+async function setCurrentUser(data) {
+    let userData = { name: "Guest", firstLetters: "G" };
+    try {
+        const user = await fetch(`${BASE_URL}/api/contacts/${data.id}/`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Token ${data.token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (user.ok) userData = await user.json();
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    } finally {
+        sessionStorage.setItem('currentUser', JSON.stringify(userData));
     }
-    deleteUser(userCredential.user);
-    throw new Error('No user found with the provided email address.');
 }
 
 
@@ -157,7 +170,7 @@ async function setCurrentUser(email, userCredential) {
 function handleRememberMe(rememberMe) {
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     if (rememberMe) {
-        localStorage.setItem('email', document.getElementById('emailInput').value);
+        localStorage.setItem('login', document.getElementById('loginInput').value);
         localStorage.setItem('password', document.getElementById('passwordInput').value);
         localStorage.setItem('rememberMe', 'true');
     } else {
@@ -185,7 +198,7 @@ function continueToSummary() {
  */
 function showError(error) {
     const errorMessageElement = document.getElementById('error-message');
-    errorMessageElement.textContent = error.message.includes('auth/invalid-credential') ? 'Oops, wrong email address or password! Try it again.' : error.message;
+    errorMessageElement.textContent = error.email ? 'Oops, wrong email address or password! Try it again.' : error[0];
     errorMessageElement.style.display = 'block';
 }
 
@@ -195,23 +208,24 @@ function showError(error) {
  * Removes all local storage items and continues to the summary page.
  * @throws {Error} if an error occurs during sign in.
  */
-function handleGuestLogin() {
-    setPersistence(auth, browserLocalPersistence).then(() => {
-        signInAnonymously(auth).then((userCredential) => {
-            getToken().then((token) => {
-                sessionStorage.setItem("token", JSON.stringify(token));
-                const guestUser = { name: "Guest", firstLetters: "G" };
-                sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
-                localStorage.clear();
-                continueToSummary();
-            });
-        }).catch((error) => {
-            console.error(error);
+async function handleGuestLogin() {
+    try {
+        const response = await fetch(`${BASE_URL}/auth/guest/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         });
+        const data = await response.json();
+        const guestUser = { name: "Guest", firstLetters: "G" };
+        setToken(data.token);
+        sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
+        localStorage.clear();
+        continueToSummary();
+
+    } catch (error) {
+        console.error('Error signing in as guest:', error);
     }
-    ).catch((error) => {
-        console.error(error);
-    });
 }
 
 

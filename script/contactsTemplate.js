@@ -173,12 +173,12 @@ export function svgProfilePic(color, initials, height, width) {
  */
 export async function createContact(id, name, email, phone, profilePic, isUser) {
   return {
-    'firstLetters': filterFirstLetters(name),
     'id': id ? id : contacts.length == 0 ? await getContactsData().then(contacts => contacts[contacts.length - 1].id + 1) : contacts[contacts.length - 1].id + 1,
-    'isUser': isUser ? true : false,
-    'mail': email,
     'name': name,
+    'mail': email,
     'number': phone,
-    'profilePic': profilePic ? profilePic : generateSvgCircleWithInitials(name, 120, 120),
+    'firstLetters': filterFirstLetters(name),
+    'isUser': isUser ? true : false,
+    'profilePic': profilePic ? profilePic : generateSvgCircleWithInitials(name),
   };
 }

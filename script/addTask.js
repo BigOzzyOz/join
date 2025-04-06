@@ -169,7 +169,7 @@ export function renderAssignedContacts() {
     if (i <= 5) {
       assignedContactsContainer.innerHTML += contact.profilePic;
     } else {
-      assignedContactsContainer.innerHTML += svgProfilePic('#2a3748', `+${assignedContacts.length - 5}`, 120, 120);
+      assignedContactsContainer.innerHTML += svgProfilePic('#2a3748', `+${assignedContacts.length - 5}`);
       break;
     }
   }

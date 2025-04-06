@@ -1,10 +1,10 @@
-import { BASE_URL, tasks, changeActive, updateDataInDatabase } from "../script.js";
+import { tasks, changeActive, updateDataInDatabase } from "../script.js";
 import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentPrio, updatePrioActiveBtn } from "./addTask.js";
 import { createTaskArray, updateSubtaskProgressBar, initDragDrop, applyCurrentSearchFilter, currentDraggedElement } from "./board.js";
 import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js";
 import { activateEditTaskListeners, activateOverlayListeners, deactivateOverlayListeners } from "./board-listener.js";
 import { activateAddTaskListeners } from "./addTask-listener.js";
-import { token } from "./firebase-init.js";
+import { token, BASE_URL } from "./api-init.js";
 
 
 //NOTE - global variable for board2.js

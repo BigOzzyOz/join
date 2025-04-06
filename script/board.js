@@ -1,8 +1,8 @@
-import { BASE_URL, contacts, tasks, fetchDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
+import { contacts, tasks, fetchDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
-import { token } from "./firebase-init.js";
+import { token, BASE_URL } from "./api-init.js";
 
 
 //NOTE - Global Board Variables

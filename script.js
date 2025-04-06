@@ -1,4 +1,4 @@
-import { firebaseLogout, token } from "./script/firebase-init.js";
+import { token, BASE_URL, apiLogout } from "./script/api-init.js";
 import { initializeTasksData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
 import { deactivateDeleteResponseListeners, deactivateAllListenersBoard } from "./script/board-listener.js";
@@ -12,7 +12,6 @@ import { deactivateAllListenersSummary } from "./script/summary.js";
 //NOTE - Global variables
 
 
-export const BASE_URL = 'https://join-273-default-rtdb.europe-west1.firebasedatabase.app/';
 export let currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
 export let activeTab = sessionStorage.getItem('activeTab') || '';
 export let contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
@@ -74,12 +73,15 @@ async function includeHTML() {
  * @throws {Error} - If there is an error fetching data from the database.
  */
 export async function fetchDataFromDatabase(path = '') {
-  const url = `${BASE_URL}${path}.json?auth=${token}`;
+  const url = `${BASE_URL}${path}`;
 
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`,
+      },
     });
 
     const data = await response.json();
@@ -98,10 +100,13 @@ export async function fetchDataFromDatabase(path = '') {
  */
 export async function deleteDataFromDatabase(path = '') {
   try {
-    const url = `${BASE_URL}${path}.json?auth=${token}`;
+    const url = `${BASE_URL}${path}`;
     const response = await fetch(url, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`,
+      },
     });
 
     const deletedData = await response.json();
@@ -120,10 +125,13 @@ export async function deleteDataFromDatabase(path = '') {
  * @returns {Promise<Object>} - The response from the server.
  */
 export async function postDataToDatabase(path = "", data = {}) {
-  const url = `${BASE_URL}${path}.json?auth=${token}`;
+  const url = `${BASE_URL}${path}`;
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Token ${token}`,
+    },
     body: JSON.stringify(data),
   });
 
@@ -141,7 +149,10 @@ export async function updateDataInDatabase(url, dataToUpdate) {
   try {
     const response = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`,
+      },
       body: JSON.stringify(dataToUpdate)
     });
 
@@ -269,7 +280,7 @@ function showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContain
  * This will end the current session and redirect the user to the login page.
  */
 export function logOut() {
-  firebaseLogout();
+  apiLogout();
 }
 
 

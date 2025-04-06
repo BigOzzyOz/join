@@ -1,7 +1,7 @@
-import { BASE_URL, currentUser, contacts, toggleClass, fetchDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
+import { currentUser, contacts, toggleClass, fetchDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
 import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
 import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
-import { token } from "./firebase-init.js";
+import { token, BASE_URL } from "./api-init.js";
 
 
 //NOTE - Global variables
@@ -42,7 +42,7 @@ export async function initContacts() {
  * contacts array after it has been updated.
  */
 export async function getContactsData() {
-  let loadItem = await fetchDataFromDatabase('contacts');
+  let loadItem = await fetchDataFromDatabase('api/contacts/');
   setContactsArray(loadItem);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
   return contacts;
@@ -235,7 +235,7 @@ export function pushToContacts(contact) {
     'id': contact.id,
     'isUser': contact.isUser,
     'name': contact.name,
-    'profilePic': contact.profilePic ? contact.profilePic : generateSvgCircleWithInitials(contact.name, 120, 120),
+    'profilePic': contact.profilePic ? contact.profilePic : generateSvgCircleWithInitials(contact.name),
     'phone': contact.number,
   };
 }
@@ -251,7 +251,6 @@ export function pushToContacts(contact) {
  */
 export function openEditContacts(event, id) {
   editId = Number(id);
-  console.log(editId, typeof editId);
   const contact = contacts.find((c) => c.id === Number(id));
   const nameInput = document.getElementById('editName');
   const emailInput = document.getElementById('editMail');
@@ -368,7 +367,7 @@ export function filterFirstLetters(name) {
  * @param {number} height - The height of the SVG circle.
  * @returns {string} - An SVG string representing a circular profile picture with randomly selected background color and the extracted initials.
  */
-export function generateSvgCircleWithInitials(name, width, height) {
+export function generateSvgCircleWithInitials(name, width = 120, height = 120) {
   const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
   const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();

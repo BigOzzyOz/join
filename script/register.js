@@ -1,8 +1,8 @@
-import { BASE_URL, contacts, updateDataInDatabase, toggleLoader } from "../script.js";
+import { contacts, updateDataInDatabase, toggleLoader } from "../script.js";
 import { pushToContacts } from "./contacts.js";
 import { createContact } from "./contactsTemplate.js";
 import { forwardLegal, forwardPrivacy } from "./login.js";
-import { auth, database, ref, child, get, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, token } from "./firebase-init.js";
+import { BASE_URL, token, setToken } from "./api-init.js";
 
 
 //NOTE - Global Register Variables
@@ -182,10 +182,32 @@ async function submitData(event) {
     hideErrorMessages();
     if (!await validateForm(password, confirmPassword, email)) return;
     try {
-        signUp(name, email, password);
+        const response = await fetch(`${BASE_URL}auth/register/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'name': name,
+                'email': email,
+                'password': password,
+                'repeated_password': confirmPassword,
+            }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setToken(data.token);
+            await signUp(data);
+        } else throw new Error(data.mail ? data.email[0] : 'An unknown error occurred.');
     } catch (error) {
-        submitDataErrorHandling(error);
+        await handleError(error);
     }
+}
+
+
+async function handleError(error) {
+    hideErrorMessages();
+    if (error.message.includes('Email already exists')) showError('emailExistsMessage');
 }
 
 
@@ -222,9 +244,6 @@ async function validateForm(password, confirmPassword, email) {
     }
     if (!isValidEmail(email)) {
         return returnLoginError(document.getElementById('mailErrorMessage'));
-    }
-    if (await emailExists(email)) {
-        return returnLoginError(document.getElementById('emailExistsMessage'));
     }
     if (!isValidPassword(password)) {
         return returnLoginError(document.getElementById('criteriaMessage'));
@@ -275,33 +294,6 @@ function isValidEmail(email) {
 
 
 /**
- * Checks if an email address already exists in the contacts database.
- * Searches through the 'contacts' database for a contact with the given 
- * email address, ignoring case, and verifies if the contact is marked 
- * as a user.
- * 
- * @param {string} email - The email address to check for existence.
- * @returns {Promise<boolean>} - A promise that resolves to false if 
- * the email exists and belongs to an existing user, otherwise resolves 
- * to false if any error occurs or if the email is not found.
- */
-async function emailExists(email) {
-    try {
-        const snapshot = await get(child(ref(database), 'contacts'));
-        const contacts = snapshot.val() || {};
-        for (const id in contacts) {
-            const contact = contacts[id];
-            if (contact && contact.mail.toLowerCase() === email.toLowerCase() && contact.isUser) {
-                return false;
-            }
-        }
-    } catch {
-        return false;
-    }
-}
-
-
-/**
  * Signs up a new user with the provided name, email, and password. If the sign-up is 
  * successful, the user is automatically signed in, a new contact is created, and a 
  * success popup is displayed. The user is then redirected to the index page and signed 
@@ -313,18 +305,15 @@ async function emailExists(email) {
  * @param {string} password - The password for the new user account.
  * @returns {Promise<void>} - A promise that resolves when the sign-up process is complete.
  */
-async function signUp(name, email, password) {
+async function signUp(data) {
     try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        await signInWithEmailAndPassword(auth, email, password);
-        await createNewContact(name, email);
+        await createNewContact(data);
         showSuccessPopup();
         setTimeout(() => {
             window.location.href = "../index.html";
-            signOut(auth);
         }, 1500);
     } catch (error) {
-        submitDataErrorHandling(error);
+        handleError(error);
     }
 }
 
@@ -337,9 +326,9 @@ async function signUp(name, email, password) {
  * @param {string} email - The email address of the new contact.
  * @returns {Promise<void>} - A promise that resolves when the contact has been added.
  */
-async function createNewContact(name, email) {
-    const contact = await createContact(false, name, email, 'Please add phone number', false, true);
-    await updateDataInDatabase(`${BASE_URL}contacts/${contact.id}.json?auth=${token}`, contact);
+async function createNewContact(data) {
+    const contact = await createContact(data.id, data.name, data.email, 'Please add phone number', false, true);
+    await updateDataInDatabase(`${BASE_URL}/api/contacts/${contact.id}/`, contact);
     contacts.push(pushToContacts(contact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
 }
@@ -354,19 +343,6 @@ function showSuccessPopup() {
     popup.addEventListener('click', () => {
         window.location.href = '../index.html';
     });
-}
-
-
-/**
- * Handles error messages from sign-up form submission.
- * If the error code is 'auth/email-already-in-use', it displays the error message with the ID 'emailExistsMessage'.
- * Otherwise, it displays the error message with the ID 'errorMessage'.
- * @param {Error} error - The error that occurred while submitting the sign-up form.
- */
-function submitDataErrorHandling(error) {
-    if (error.code === 'auth/email-already-in-use') {
-        showError("emailExistsMessage");
-    } else showError("errorMessage");
 }
 
 
