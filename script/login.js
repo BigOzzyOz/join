@@ -1,5 +1,6 @@
 import { BASE_URL, token, setToken } from "./api-init.js";
 import { currentUser } from "../script.js";
+import { createContact } from "./contactsTemplate.js";
 
 
 //NOTE - Global Login Variables
@@ -119,6 +120,7 @@ async function loginButtonClick(event) {
             body: JSON.stringify(bodyData),
         });
         const data = await response.json();
+        if (!response.ok) throw new Error(data.non_field_errors ? data.non_field_errors[0] : 'An unknown error occurred.');
         data.token ? setToken(data.token) : console.error('Error: No token received from the server.');
         await setCurrentUser(data);
         handleRememberMe(isRememberMeChecked);
@@ -151,7 +153,10 @@ async function setCurrentUser(data) {
                 'Content-Type': 'application/json',
             },
         });
-        if (user.ok) userData = await user.json();
+        if (user.ok) {
+            const userJson = await user.json();
+            userData = await createContact(userJson.id, userJson.name, userJson.email, userJson.number, userJson.profile_pic, userJson.is_user);
+        }
     } catch (error) {
         console.error('Error fetching user data:', error);
     } finally {
@@ -198,7 +203,7 @@ function continueToSummary() {
  */
 function showError(error) {
     const errorMessageElement = document.getElementById('error-message');
-    errorMessageElement.textContent = error.email ? 'Oops, wrong email address or password! Try it again.' : error[0];
+    errorMessageElement.textContent = error.message.includes('Unable to log in with provided credentials') ? 'Oops, wrong email address or password! Try it again.' : error[0];
     errorMessageElement.style.display = 'block';
 }
 
@@ -222,7 +227,6 @@ async function handleGuestLogin() {
         sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
         localStorage.clear();
         continueToSummary();
-
     } catch (error) {
         console.error('Error signing in as guest:', error);
     }

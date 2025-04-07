@@ -230,7 +230,7 @@ function checkForExistingContact(contact) {
  */
 export function pushToContacts(contact) {
   return {
-    'email': contact.mail,
+    'email': contact.email,
     'firstLetters': filterFirstLetters(contact.name),
     'id': contact.id,
     'isUser': contact.isUser,

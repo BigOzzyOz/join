@@ -165,7 +165,7 @@ export function svgProfilePic(color, initials, height, width) {
  * //   firstLetters: 'JD',
  * //   id: 1,
  * //   isUser: true,
- * //   mail: 'johndoe@example.com',
+ * //   email: 'johndoe@example.com',
  * //   name: 'John Doe',
  * //   number: '+1234567890',
  * //   profilePic: '<svg>...</svg>'
@@ -175,7 +175,7 @@ export async function createContact(id, name, email, phone, profilePic, isUser) 
   return {
     'id': id ? id : contacts.length == 0 ? await getContactsData().then(contacts => contacts[contacts.length - 1].id + 1) : contacts[contacts.length - 1].id + 1,
     'name': name,
-    'mail': email,
+    'email': email,
     'number': phone,
     'firstLetters': filterFirstLetters(name),
     'isUser': isUser ? true : false,

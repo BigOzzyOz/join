@@ -195,10 +195,9 @@ async function submitData(event) {
             }),
         });
         const data = await response.json();
-        if (response.ok) {
-            setToken(data.token);
-            await signUp(data);
-        } else throw new Error(data.mail ? data.email[0] : 'An unknown error occurred.');
+        if (!response.ok) throw new Error(data.email ? data.email[0] : 'An unknown error occurred.');
+        setToken(data.token);
+        await signUp(data);
     } catch (error) {
         await handleError(error);
     }
