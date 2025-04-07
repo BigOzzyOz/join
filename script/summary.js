@@ -1,18 +1,9 @@
-import { currentUser, fetchDataFromDatabase, toggleLoader } from "../script.js";
-import { objectTemplateNumberOfBoard, greetingMobileHTML } from "./miscTemplate.js";
+import { currentUser, fetchDataFromDatabase } from "../script.js";
+import { greetingMobileHTML } from "./miscTemplate.js";
 
 
 //NOTE - global summary variables
 
-
-let numberOfBoard = [];
-let urgentTasks = [];
-let counts = {
-  toDo: 0,
-  inProgress: 0,
-  awaitFeedback: 0,
-  done: 0
-};
 
 
 //NOTE - initialise summary function
@@ -21,8 +12,6 @@ let counts = {
 export async function initSummary() {
   displayGreeting();
   await loadCategory();
-  taskAssignment();
-  displayUrgentTasks();
   activateListener();
 }
 
@@ -110,14 +99,12 @@ function updateGreetingDesktop(time, name) {
  * @returns {Promise<void>}
  */
 async function loadCategory() {
-  let tasksData = await fetchDataFromDatabase("tasks");
-  for (const key in tasksData) {
-    const task = tasksData[key];
-    if (!task) continue;
-    numberOfBoard.push(objectTemplateNumberOfBoard(key, task));
-    if (task.prio === 'urgent') {
-      urgentTasks.push(task);
-    }
+  try {
+    const data = await fetchDataFromDatabase("/api/tasks/summary/");
+    taskAssignment(data);
+    displayUrgentTasks(data);
+  } catch (error) {
+    console.error("Error loading categories:", error);
   }
 }
 
@@ -126,28 +113,12 @@ async function loadCategory() {
  * Updates the task counts in the summary page.
  * Retrieves the number of tasks by their status and updates the corresponding elements with the counts.
  */
-function taskAssignment() {
-  countTasksByStatus();
-  updateElement('howManyTodos', counts.toDo);
-  updateElement('howManyInProgress', counts.inProgress);
-  updateElement('howManyAwaitFeedback', counts.awaitFeedback);
-  updateElement('howManyDone', counts.done);
-  updateElement('howManyTaskInBoard', numberOfBoard.length);
-}
-
-
-/**
- * Counts the number of tasks in each status category.
- * - Uses the reduce() method on the numberOfBoard array to create an object
- *   with the task status as keys and the count of tasks in that status as values.
- * - Initialises the counts object with default values of 0 for each status.
- * @returns {object} An object with the counts of tasks in each status category.
- */
-function countTasksByStatus() {
-  counts = numberOfBoard.reduce((taskCounts, task) => {
-    taskCounts[task.status] = (taskCounts[task.status] || 0) + 1;
-    return taskCounts;
-  }, { toDo: 0, inProgress: 0, awaitFeedback: 0, done: 0 });
+function taskAssignment(data) {
+  updateElement('howManyTodos', data.todos);
+  updateElement('howManyInProgress', data.in_progress);
+  updateElement('howManyAwaitFeedback', data.await_feedback);
+  updateElement('howManyDone', data.done);
+  updateElement('howManyTaskInBoard', data.total);
 }
 
 
@@ -170,11 +141,10 @@ function updateElement(elementId, newValue) {
  * - Determines the date of the first urgent task, formatted as a German locale string.
  * - Updates the UI elements with the number of urgent tasks and the formatted date.
  */
-function displayUrgentTasks() {
-  const urgentTaskList = urgentTasks ?? [];
-  const urgentTaskCount = urgentTaskList.length;
+function displayUrgentTasks(data) {
+  const urgentTaskCount = data.urgent;
   const urgentTaskDate = urgentTaskCount > 0
-    ? new Date(urgentTaskList[0].date).toLocaleDateString('de-DE', {
+    ? new Date(data.next_urgent_due).toLocaleDateString('de-DE', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
