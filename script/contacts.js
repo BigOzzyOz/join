@@ -1,7 +1,7 @@
-import { currentUser, contacts, toggleClass, fetchDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
-import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact } from "./contactsTemplate.js";
+import { currentUser, contacts, toggleClass, getDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, postDataToDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
+import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact, createContactUpload } from "./contactsTemplate.js";
 import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
-import { token, BASE_URL } from "./api-init.js";
+import { BASE_URL } from "./api-init.js";
 
 
 //NOTE - Global variables
@@ -42,7 +42,8 @@ export async function initContacts() {
  * contacts array after it has been updated.
  */
 export async function getContactsData() {
-  let loadItem = await fetchDataFromDatabase('api/contacts/');
+  const response = await getDataFromDatabase('api/contacts/');
+  let loadItem = await response.json();
   setContactsArray(loadItem);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
   return contacts;
@@ -112,8 +113,11 @@ function renderContactLetter(contact) {
  * Refreshes the page by re-rendering the general contact list and the details of the current contact.
  * Utilizes the `renderContactList` and `renderContactsDetails` functions, passing the current `editId`.
  */
-function refreshPage() {
+export function refreshPage() {
+  currentLetter = '';
+  currentLetterId = '';
   renderContactList();
+  setActiveContact(editId);
   renderContactsDetails(editId);
   activateListeners();
 }
@@ -185,14 +189,26 @@ export async function addContacts(id = editId) {
   const name = document.getElementById('addName').value;
   const email = document.getElementById('addMail').value;
   const phone = document.getElementById('addTel').value;
-  const newContact = await createContact(id, name, email, phone, false, false);
+  const newContact = await createContactUpload(name, email, phone, null, false);
 
   if (checkForExistingContact(newContact)) {
-    await updateDataInDatabase(`${BASE_URL}contacts/${id}.json?auth=${token}`, newContact);
-    contacts.push(pushToContacts(newContact));
-    sessionStorage.setItem('contacts', JSON.stringify(contacts));
-    refreshPage();
-  }
+    try {
+      const response = await postDataToDatabase(`api/contacts/`, newContact);
+      let newContactResponse = await response.json();
+      if (response.status !== 201) {
+        if (response.status === 400) throw new Error("Bad Request");
+        if (response.status === 401) throw new Error("Unauthorized");
+        if (response.status === 403) throw new Error("Forbidden");
+      }
+      contacts.push(pushToContacts(newContactResponse));
+      editId = newContactResponse.id;
+      sessionStorage.setItem('contacts', JSON.stringify(contacts));
+      return true;
+    } catch (error) {
+      console.error(error);
+      const errorMessage = document.querySelector('.warning');
+    }
+  } else return false;
 }
 
 
@@ -205,12 +221,10 @@ export async function addContacts(id = editId) {
  */
 function checkForExistingContact(contact) {
   const existingContact = contacts.find(
-    (c) =>
-      (c.name === contact.name && c.id !== contact.id) ||
-      (c.email === contact.email && c.id !== contact.id)
+    (c) => (c.email === contact.email && c.id !== (contact.id || -1))
   );
 
-  const warningMessage = document.querySelector(".warning");
+  const warningMessage = contact.id ? document.querySelector(".editWarning>p") : document.querySelector(".addWarning>p");
   if (existingContact) {
     warningMessage.classList.remove("d-none");
     return false;
@@ -233,9 +247,9 @@ export function pushToContacts(contact) {
     'email': contact.email,
     'firstLetters': filterFirstLetters(contact.name),
     'id': contact.id,
-    'isUser': contact.isUser,
+    'isUser': contact.is_user,
     'name': contact.name,
-    'profilePic': contact.profilePic ? contact.profilePic : generateSvgCircleWithInitials(contact.name),
+    'profilePic': contact.profile_pic ? contact.profile_pic : generateSvgCircleWithInitials(contact.name),
     'phone': contact.number,
   };
 }
@@ -250,8 +264,8 @@ export function pushToContacts(contact) {
  * @param {number} id The ID of the contact to edit.
  */
 export function openEditContacts(event, id) {
-  editId = Number(id);
-  const contact = contacts.find((c) => c.id === Number(id));
+  editId = id;
+  const contact = contacts.find((c) => c.id === id);
   const nameInput = document.getElementById('editName');
   const emailInput = document.getElementById('editMail');
   const telInput = document.getElementById('editTel');
@@ -277,28 +291,39 @@ export function openEditContacts(event, id) {
  * @returns {Promise<void>} - A promise that resolves when the contact has been edited.
  */
 export async function editContacts(id = editId) {
-  const contact = contacts.find(c => c.id === Number(id));
+  const contact = contacts.find(c => c.id === id);
   const updatedName = document.getElementById('editName').value;
   const updatedEmail = document.getElementById('editMail').value;
   const updatedPhone = document.getElementById('editTel').value;
   const isNameChanged = updatedName !== contact.name;
+  const updatedContact = await createContactUpload(
+    updatedName,
+    updatedEmail,
+    updatedPhone,
+    isNameChanged ? null : contact.profilePic,
+    contact.isUser,
+    contact.id
+  );
 
-  contact.name = updatedName;
-  contact.email = updatedEmail;
-  contact.phone = updatedPhone;
-
-  if (checkForExistingContact(contact)) {
-    const updatedContact = await createContact(
-      contact.id,
-      updatedName,
-      updatedEmail,
-      updatedPhone,
-      isNameChanged ? null : contact.profilePic,
-      contact.isUser
-    );
-    contact.profilePic = updatedContact.profilePic;
-    await updateDataInDatabase(`${BASE_URL}contacts/${id}.json?auth=${token}`, updatedContact);
-    refreshPage();
+  if (checkForExistingContact(updatedContact)) {
+    try {
+      const response = await updateDataInDatabase(`api/contacts/${id}/`, updatedContact);
+      if (response.status !== 200) {
+        if (response.status === 400) throw new Error("Bad Request");
+        if (response.status === 401) throw new Error("Unauthorized");
+        if (response.status === 403) throw new Error("Forbidden");
+      }
+      contact.name = updatedName;
+      contact.email = updatedEmail;
+      contact.phone = updatedPhone;
+      contact.profilePic = updatedContact.profile_pic;
+      sessionStorage.setItem('contacts', JSON.stringify(contacts));
+      return true;
+    } catch (error) {
+      console.error(error);
+      const errorMessage = document.querySelector('.warning');
+    }
+    return false;
   }
 }
 
@@ -317,7 +342,7 @@ export async function editContacts(id = editId) {
  * @param {number|string} [id=editId] - The ID of the contact to be deleted.
  */
 export function openDeleteContacts(event, id = editId) {
-  editId = Number(id);
+  editId = id;
   const response = document.querySelector('#deleteResponse>.deleteQuestion>p');
 
   let question;
@@ -338,10 +363,15 @@ export function openDeleteContacts(event, id = editId) {
  * @param {number|string} [id=editId] - The id of the contact to be deleted.
  */
 export async function deleteContacts(id = editId) {
+  let response = await deleteDataFromDatabase(`api/contacts/${id}/`);
+  if (response.status !== 204) {
+    console.log(response);
+    return;
+  };
   contacts.splice(contacts.findIndex(c => c.id == id), 1);
-  await deleteDataFromDatabase(`contacts/${id}`);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
-  Number(id) === currentUser.id ? logOut() : refreshPage();
+  editId = -1;
+  id === currentUser.id ? logOut() : refreshPage();
 }
 
 

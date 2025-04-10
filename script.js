@@ -72,7 +72,7 @@ async function includeHTML() {
  * @returns {Promise<Object>} - A promise that resolves to the fetched data.
  * @throws {Error} - If there is an error fetching data from the database.
  */
-export async function fetchDataFromDatabase(path = '') {
+export async function getDataFromDatabase(path = '') {
   const url = `${BASE_URL}${path}`;
 
   try {
@@ -83,10 +83,7 @@ export async function fetchDataFromDatabase(path = '') {
         'Authorization': `Token ${token}`,
       },
     });
-
-    const data = await response.json();
-
-    return data;
+    return response;
   } catch (error) {
     console.error('Error fetching data from database:', error);
   }
@@ -108,10 +105,7 @@ export async function deleteDataFromDatabase(path = '') {
         'Authorization': `Token ${token}`,
       },
     });
-
-    const deletedData = await response.json();
-
-    return deletedData;
+    return response;
   } catch (error) {
     console.error('Error deleting data from database:', error);
   }
@@ -134,8 +128,7 @@ export async function postDataToDatabase(path = "", data = {}) {
     },
     body: JSON.stringify(data),
   });
-
-  return response.json();
+  return response;
 }
 
 
@@ -145,8 +138,9 @@ export async function postDataToDatabase(path = "", data = {}) {
  * @param {Object} dataToUpdate - The data to be updated.
  * @returns {Promise<Object>} - A promise that resolves to the updated data.
  */
-export async function updateDataInDatabase(url, dataToUpdate) {
+export async function updateDataInDatabase(path = "", dataToUpdate) {
   try {
+    const url = `${BASE_URL}${path}`;
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
@@ -155,10 +149,7 @@ export async function updateDataInDatabase(url, dataToUpdate) {
       },
       body: JSON.stringify(dataToUpdate)
     });
-
-    const responseData = await response.json();
-
-    return responseData;
+    return response;
   } catch (error) {
     console.error('Error updating data in database:', error);
   }

@@ -1,4 +1,4 @@
-import { openAddContacts, renderContactsDetails, openDeleteContacts, openEditContacts, addContacts, editContacts, deleteContacts } from "./contacts.js";
+import { openAddContacts, renderContactsDetails, openDeleteContacts, openEditContacts, addContacts, editContacts, deleteContacts, refreshPage } from "./contacts.js";
 import { toggleClass, activateOutsideCheck } from "../script.js";
 
 
@@ -146,11 +146,13 @@ function contactsDetailsMore(event) {
  */
 export function activateListenersAdd() {
   const addContactX = document.querySelectorAll('#addContact .closeX');
+  const addInput = document.querySelectorAll('.addInput');
   const addContact = document.querySelector('#addContact form');
   const addContactCancel = document.getElementById('cancelAddContact');
-  addContactX.forEach(b => b.addEventListener('click', closeAddContact));
-  addContact.addEventListener('submit', submitAddContact);
-  addContactCancel.addEventListener('click', closeAddContact);
+  addContactX?.forEach(b => b.addEventListener('click', closeAddContact));
+  addInput?.forEach(input => input.addEventListener('keydown', (e) => e.key === 'Enter' && e.preventDefault()));
+  addContact?.addEventListener('submit', submitAddContact);
+  addContactCancel?.addEventListener('click', closeAddContact);
 }
 
 
@@ -162,9 +164,11 @@ export function activateListenersAdd() {
  */
 function deactivateListenersAdd() {
   const addContactX = document.querySelectorAll('#addContact .closeX');
+  const addInput = document.querySelectorAll('.addInput');
   const addContact = document.querySelector('#addContact form');
   const addContactCancel = document.getElementById('cancelAddContact');
   addContactX?.forEach(b => b?.removeEventListener('click', closeAddContact));
+  addInput?.forEach(input => input?.removeEventListener('keydown', (e) => e.key === 'Enter' && e.preventDefault()));
   addContact?.removeEventListener('submit', submitAddContact);
   addContactCancel?.removeEventListener('click', closeAddContact);
 }
@@ -188,10 +192,10 @@ function closeAddContact() {
  * - Calls the addContacts function to add the new contact.
  * @param {Event} event - The event object passed from the triggered event.
  */
-function submitAddContact(event) {
+async function submitAddContact(event) {
   event.preventDefault();
-  closeAddContact();
-  addContacts();
+  if (await addContacts()) closeAddContact();
+  refreshPage();
 }
 
 
@@ -203,9 +207,11 @@ function submitAddContact(event) {
  */
 export function activateListenersEdit() {
   const workContactX = document.querySelectorAll('#editContact .closeX');
+  const editInput = document.querySelectorAll('.editInput');
   const editContact = document.querySelector('#editContact form');
   const editContactDelete = document.getElementById('editContactDelete');
   workContactX?.forEach(b => b.addEventListener('click', closeEditContact));
+  editInput?.forEach(input => input.addEventListener('keydown', (e) => e.key === 'Enter' && e.preventDefault()));
   editContactDelete?.addEventListener('click', openDeleteContacts);
   editContact?.addEventListener('submit', submitEditContact);
 }
@@ -219,9 +225,11 @@ export function activateListenersEdit() {
  */
 function deactivateListenersEdit() {
   const workContactX = document.querySelectorAll('#editContact .closeX');
+  const editInput = document.querySelectorAll('.editInput');
   const editContact = document.querySelector('#editContact form');
   const editContactDelete = document.getElementById('editContactDelete');
   workContactX?.forEach(b => b?.removeEventListener('click', closeEditContact));
+  editInput?.forEach(input => input?.removeEventListener('keydown', (e) => e.key === 'Enter' && e.preventDefault()));
   editContactDelete?.removeEventListener('click', openDeleteContacts);
   editContact?.removeEventListener('submit', submitEditContact);
 }
@@ -244,10 +252,11 @@ function closeEditContact() {
  * - Closes the edit contact modal.
  * - Calls the editContacts function to update the contact in the contacts list and in the database.
  */
-function submitEditContact(event) {
+async function submitEditContact(event) {
   event.preventDefault();
-  closeEditContact();
   editContacts();
+  if (await editContacts()) closeEditContact();
+  refreshPage();
 }
 
 

@@ -327,7 +327,7 @@ async function signUp(data) {
  */
 async function createNewContact(data) {
     const contact = await createContact(data.id, data.name, data.email, 'Please add phone number', false, true);
-    await updateDataInDatabase(`${BASE_URL}/api/contacts/${contact.id}/`, contact);
+    await updateDataInDatabase(`${BASE_URL}api/contacts/${contact.id}/`, contact);
     contacts.push(pushToContacts(contact));
     sessionStorage.setItem("contacts", JSON.stringify(contacts));
 }

@@ -1,4 +1,4 @@
-import { currentUser, fetchDataFromDatabase } from "../script.js";
+import { currentUser, getDataFromDatabase } from "../script.js";
 import { greetingMobileHTML } from "./miscTemplate.js";
 
 
@@ -100,9 +100,10 @@ function updateGreetingDesktop(time, name) {
  */
 async function loadCategory() {
   try {
-    const data = await fetchDataFromDatabase("/api/tasks/summary/");
-    taskAssignment(data);
-    displayUrgentTasks(data);
+    const data = await getDataFromDatabase("api/tasks/summary/");
+    let dataJson = await data.json();
+    taskAssignment(dataJson);
+    displayUrgentTasks(dataJson);
   } catch (error) {
     console.error("Error loading categories:", error);
   }

@@ -182,3 +182,15 @@ export async function createContact(id, name, email, phone, profilePic, isUser) 
     'profilePic': profilePic ? profilePic : generateSvgCircleWithInitials(name),
   };
 }
+
+export async function createContactUpload(name, email, phone, profilePic, isUser, id = null) {
+  return {
+    ...(id && { 'id': id }),
+    'name': name,
+    'email': email,
+    'number': phone,
+    'first_letters': filterFirstLetters(name),
+    'is_user': isUser ? true : false,
+    'profile_pic': profilePic ? profilePic : generateSvgCircleWithInitials(name),
+  };
+}

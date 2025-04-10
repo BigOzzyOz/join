@@ -137,9 +137,19 @@ main {
   gap: 8px;
 }
 
+
 #error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ff0000;
+  height: 16px;
+  width: 0%;
   font-size: 12px;
+  overflow: hidden;
 }
+
+
 
 .checkbox {
   display: inline-flex;

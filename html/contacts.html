@@ -47,18 +47,20 @@
 
                 <form class="contactForm">
 
-                    <div class="warning d-none">Name or E-Mail already in use</div>
+                    <div class="warning addWarning">
+                        <p class="d-none">Name or E-Mail already in use</p>
+                    </div>
 
-                    <input id="addName" type="text" placeholder="Name Lastname" value=""
+                    <input id="addName" class="addInput" type="text" placeholder="Name Lastname" value=""
                         pattern="[A-Z][a-zA-Z]+(\s[A-Z][a-zA-Z]+)+"
                         title="Please enter a valid name (e.g., Max Mustermann)" minlength="5" maxlength="40" required>
 
-                    <input id="addMail" type="email" placeholder="example@example.com" value=""
+                    <input id="addMail" class="addInput" type="email" placeholder="example@example.com" value=""
                         pattern="[A-Za-z0-9._+\-']+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$"
                         title="Please enter a valid email address (e.g., example@domain.com)" minlength="6"
                         maxlength="50" required>
 
-                    <input id="addTel" type="tel" placeholder="+491234567890" pattern="\+[0-9]{6,20}"
+                    <input id="addTel" class="addInput" type="tel" placeholder="+491234567890" pattern="\+[0-9]{6,20}"
                         title="Phone number must include country prefix, phone prefix, and phone number (e.g., +491234567890)"
                         minlength="7" maxlength="17" value="" required>
 
@@ -93,18 +95,20 @@
 
                 <form class="contactForm">
 
-                    <div class="warning d-none">Name or E-Mail already in use</div>
+                    <div class="warning editWarning">
+                        <p class="d-none">Name or E-Mail already in use</p>
+                    </div>
 
-                    <input id="editName" type="text" placeholder="Name Lastname" value=""
+                    <input id="editName" class="editInput" type="text" placeholder="Name Lastname" value=""
                         pattern="[A-Z][a-zA-Z]+(\s[A-Z][a-zA-Z]+)+"
                         title="Please enter a valid name (e.g., Max Mustermann)" minlength="5" maxlength="40" required>
 
-                    <input id="editMail" type="email" placeholder="example@example.com" value=""
+                    <input id="editMail" class="editInput" type="email" placeholder="example@example.com" value=""
                         pattern="[A-Za-z0-9._+\-']+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$"
                         title="Please enter a valid email address (e.g., example@domain.com)" minlength="6"
                         maxlength="50" required>
 
-                    <input id="editTel" type="tel" placeholder="+491234567890" pattern="\+[0-9]{6,20}"
+                    <input id="editTel" class="editInput" type="tel" placeholder="+491234567890" pattern="\+[0-9]{6,20}"
                         title="Phone number must include country prefix, phone prefix, and phone number (e.g., +491234567890)"
                         minlength="7" maxlength="17" value="" required>
 

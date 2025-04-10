@@ -1,4 +1,4 @@
-import { contacts, tasks, fetchDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
+import { contacts, tasks, getDataFromDatabase, updateDataInDatabase, setTasks, toggleLoader } from "../script.js";
 import { dragDrop, deactivateDragDrop, activateListeners } from "./board-listener.js";
 import { getContactsData } from "./contacts.js";
 import { generateTodoHTML } from "./boardtemplate.js";
@@ -70,7 +70,7 @@ export async function initializeTasksData() {
  */
 async function pushDataToArray() {
   try {
-    let tasksData = await fetchDataFromDatabase("tasks");
+    let tasksData = await getDataFromDatabase("tasks");
     setTasks([]);
     for (const key in tasksData) {
       let singleTask = tasksData[key];

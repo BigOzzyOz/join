@@ -65,6 +65,7 @@ function windowNoUserContent() {
   const path = window.location.pathname;
   const noUserContentPaths = [
     '/index.html',
+    '/help.html',
     '/register.html',
     '/privacy.html',
     '/imprint.html',

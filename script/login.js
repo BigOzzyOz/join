@@ -20,23 +20,39 @@ let clickCount = -1;
  */
 function initLogin() {
     activateListener();
-
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
-        const login = loginForm.querySelector('#loginInput');
-        const passwordInput = loginForm.querySelector('#passwordInput');
-        const checkbox = loginForm.querySelector('#checkbox');
-
-        if (rememberMeChecked) {
-            login.value = localStorage.getItem('login');
-            passwordInput.value = localStorage.getItem('password');
-            checkbox.src = rememberMeChecked ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
-        }
-
-        setupPasswordToggle();
-    }
+    if (loginForm) initForm(loginForm);
 }
+
+
+function initForm(form) {
+    const login = form.querySelector('#loginInput');
+    const passwordInput = form.querySelector('#passwordInput');
+    const checkbox = form.querySelector('#checkbox');
+    initInputFocus([login, passwordInput, checkbox]);
+    initRememberMe([login, passwordInput, checkbox]);
+    setupPasswordToggle();
+}
+
+function initInputFocus([login, passwordInput, checkbox]) {
+    [login, passwordInput, checkbox].forEach((input) => {
+        input.addEventListener('focus', () => {
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.style.width = '0';
+            errorMessage.textContent = '';
+        });
+    });
+}
+
+function initRememberMe([login, passwordInput, checkbox]) {
+    const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
+    checkbox.src = rememberMeChecked ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
+    if (rememberMeChecked) {
+        login.value = localStorage.getItem('login');
+        passwordInput.value = localStorage.getItem('password');
+        document.getElementById('rememberMe').checked = true;
+    }
+};
 
 
 /**
@@ -112,7 +128,7 @@ async function loginButtonClick(event) {
         "password": password,
     };
     try {
-        let response = await fetch(`${BASE_URL}/auth/login/`, {
+        let response = await fetch(`${BASE_URL}auth/login/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -120,7 +136,12 @@ async function loginButtonClick(event) {
             body: JSON.stringify(bodyData),
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.non_field_errors ? data.non_field_errors[0] : 'An unknown error occurred.');
+        if (response.status === 400) {
+            if (data.username && data.password) throw new Error('Please enter a valid email address and password.');
+            if (data.username) throw new Error('Please enter a valid email address.');
+            if (data.password) throw new Error('Please enter a valid password.');
+            if (data.non_field_errors) throw new Error('Wrong email address or password! Try it again.');
+        }
         data.token ? setToken(data.token) : console.error('Error: No token received from the server.');
         await setCurrentUser(data);
         handleRememberMe(isRememberMeChecked);
@@ -146,7 +167,7 @@ async function loginButtonClick(event) {
 async function setCurrentUser(data) {
     let userData = { name: "Guest", firstLetters: "G" };
     try {
-        const user = await fetch(`${BASE_URL}/api/contacts/${data.id}/`, {
+        const user = await fetch(`${BASE_URL}api/contacts/${data.id}/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Token ${data.token}`,
@@ -191,6 +212,7 @@ function handleRememberMe(rememberMe) {
  */
 function continueToSummary() {
     sessionStorage.setItem('activeTab', 'summary');
+    deactivateAllListenersLogin();
     window.location.href = 'html/summary.html';
 }
 
@@ -203,8 +225,8 @@ function continueToSummary() {
  */
 function showError(error) {
     const errorMessageElement = document.getElementById('error-message');
-    errorMessageElement.textContent = error.message.includes('Unable to log in with provided credentials') ? 'Oops, wrong email address or password! Try it again.' : error[0];
-    errorMessageElement.style.display = 'block';
+    errorMessageElement.textContent = error.message;
+    errorMessageElement.style.width = '100%';
 }
 
 
@@ -215,7 +237,7 @@ function showError(error) {
  */
 async function handleGuestLogin() {
     try {
-        const response = await fetch(`${BASE_URL}/auth/guest/`, {
+        const response = await fetch(`${BASE_URL}auth/guest/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -283,6 +305,17 @@ export function deactivateAllListenersLogin() {
     document.getElementById('signup-btn')?.removeEventListener('click', forwardRegister);
     document.getElementById('privacy-policy')?.removeEventListener('click', forwardPrivacy);
     document.getElementById('legal-notice')?.removeEventListener('click', forwardLegal);
+    const loginForm = document.getElementById('login-form');
+    const login = loginForm?.querySelector('#loginInput');
+    const passwordInput = loginForm?.querySelector('#passwordInput');
+    const checkbox = loginForm?.querySelector('#checkbox');
+    [login, passwordInput, checkbox]?.forEach((input) => {
+        input?.removeEventListener('focus', () => {
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.style.width = '0';
+            errorMessage.textContent = '';
+        });
+    });
 }
 
 
