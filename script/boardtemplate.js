@@ -1,5 +1,5 @@
-import { assignedContacts, setAssignedContacts } from "./addTask.js";
-import { tasks } from "../script.js";
+// import { assignedContacts, setAssignedContacts } from "./addTask.js";
+// import { tasks } from "../script.js";
 
 /**
  * Generates the HTML for a todo item.

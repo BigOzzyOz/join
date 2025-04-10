@@ -1,6 +1,6 @@
-import { BASE_URL, token, setToken } from "./api-init.js";
-import { currentUser } from "../script.js";
-import { createContact } from "./contactsTemplate.js";
+// import { BASE_URL, token, setToken } from "./api-init.js";
+// import { currentUser } from "../script.js";
+// import { createContact } from "./contactsTemplate.js";
 
 
 //NOTE - Global Login Variables

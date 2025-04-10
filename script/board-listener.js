@@ -1,8 +1,8 @@
-import { deleteTask, deleteTaskSure, toggleClass, activateOutsideCheck } from '../script.js';
-import { searchTasks, startDragging, dragEnd } from './board.js';
-import { checkScreenWidth, openOverlay, closeModal, moveTo, enableTaskEdit, updateSubtaskStatus, saveEditedTask } from './board2.js';
-import { setPrio, toggleDropdown, assignSearchInput, addNewSubtask, handleKeyDown, clearSubtaskInput, saveSubtask, formValidation, contactAssign } from './addTask.js';
-import { activateSubtaskListeners, deactivateAllAddTaskListeners, deactivateSubtaskListeners } from './addTask-listener.js';
+// import { deleteTask, deleteTaskSure, toggleClass, activateOutsideCheck } from '../script.js';
+// import { searchTasks, startDragging, dragEnd } from './board.js';
+// import { checkScreenWidth, openOverlay, closeModal, moveTo, enableTaskEdit, updateSubtaskStatus, saveEditedTask } from './board2.js';
+// import { setPrio, toggleDropdown, assignSearchInput, addNewSubtask, handleKeyDown, clearSubtaskInput, saveSubtask, formValidation, contactAssign } from './addTask.js';
+// import { activateSubtaskListeners, deactivateAllAddTaskListeners, deactivateSubtaskListeners } from './addTask-listener.js';
 
 
 

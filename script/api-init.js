@@ -1,10 +1,10 @@
 
-import { initSummary } from "./summary.js";
-import { init, toggleLoader } from "../script.js";
-import { activateAddTaskListeners } from "./addTask-listener.js";
-import { initBoard } from "./board.js";
-import { initContacts } from "./contacts.js";
-import { initRegister } from "./register.js";
+// import { initSummary } from "./summary.js";
+// import { init, toggleLoader } from "../script.js";
+// import { activateAddTaskListeners } from "./addTask-listener.js";
+// import { initBoard } from "./board.js";
+// import { initContacts } from "./contacts.js";
+// import { initRegister } from "./register.js";
 
 
 //NOTE - API Variables
@@ -25,8 +25,8 @@ async function checkAuthStatus() {
       method: 'GET',
       headers: headers,
     });
-
     const data = await response.json();
+
     await init().then(() => {
       if (data.authenticated) initializePage();
       else redirectToLogin();
@@ -98,6 +98,6 @@ function apiLogout() {
   window.location.href = '../index.html';
 }
 
-checkAuthStatus();
+// checkAuthStatus();
 
 export { apiLogout, token, BASE_URL, setToken };

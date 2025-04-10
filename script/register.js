@@ -1,8 +1,8 @@
-import { contacts, updateDataInDatabase, toggleLoader } from "../script.js";
-import { pushToContacts } from "./contacts.js";
-import { createContact } from "./contactsTemplate.js";
-import { forwardLegal, forwardPrivacy } from "./login.js";
-import { BASE_URL, token, setToken } from "./api-init.js";
+// import { contacts, updateDataInDatabase, toggleLoader } from "../script.js";
+// import { pushToContacts } from "./contacts.js";
+// import { createContact } from "./contactsTemplate.js";
+// import { forwardLegal, forwardPrivacy } from "./login.js";
+// import { BASE_URL, token, setToken } from "./api-init.js";
 
 
 //NOTE - Global Register Variables
@@ -182,18 +182,7 @@ async function submitData(event) {
     hideErrorMessages();
     if (!await validateForm(password, confirmPassword, email)) return;
     try {
-        const response = await fetch(`${BASE_URL}auth/register/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'name': name,
-                'email': email,
-                'password': password,
-                'repeated_password': confirmPassword,
-            }),
-        });
+        const response = await Kanban.register(name, email, password, confirmPassword);
         const data = await response.json();
         if (!response.ok) throw new Error(data.email ? data.email[0] : 'An unknown error occurred.');
         setToken(data.token);

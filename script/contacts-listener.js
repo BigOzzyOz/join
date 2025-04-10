@@ -1,5 +1,5 @@
-import { openAddContacts, renderContactsDetails, openDeleteContacts, openEditContacts, addContacts, editContacts, deleteContacts, refreshPage } from "./contacts.js";
-import { toggleClass, activateOutsideCheck } from "../script.js";
+// import { openAddContacts, renderContactsDetails, openDeleteContacts, openEditContacts, addContacts, editContacts, deleteContacts, refreshPage } from "./contacts.js";
+// import { toggleClass, activateOutsideCheck } from "../script.js";
 
 
 //NOTE - Listener and handler functions
@@ -25,7 +25,7 @@ export function deactivateAllListenersContacts() {
  * - Attaches a click event listener to the "More Contacts" button to open the add contact form.
  * - Attaches a click event listener to each contact list item to open the contact details.
  */
-export function activateListeners() {
+export function activateListenersContact() {
   const moreContactsButton = document.getElementById('moreContactsButton');
   const contactsListItem = document.querySelectorAll('.contactListItem');
   moreContactsButton?.addEventListener('click', openAddContacts);

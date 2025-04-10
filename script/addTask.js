@@ -1,9 +1,9 @@
-import { activeTab, contacts, setActiveTab, toggleClass, postDataToDatabase, setTasks, } from "../script.js";
-import { closeModal } from "./board2.js";
-import { handleAssignContact } from "./board-listener.js";
-import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
-import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
-import { svgProfilePic } from "./contactsTemplate.js";
+// import { activeTab, contacts, setActiveTab, postDataToDatabase, setTasks, } from "../script.js";
+// import { closeModal } from "./board2.js";
+// import { handleAssignContact } from "./board-listener.js";
+// import { activateSubtaskListeners, deactivateSubtaskListeners } from "./addTask-listener.js";
+// import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js";
+// import { ContactHtml } from "../src/classes/class.contactHtml.js";
 
 export let assignedContacts = [];
 export let currentPrio = 'medium';
@@ -169,7 +169,8 @@ export function renderAssignedContacts() {
     if (i <= 5) {
       assignedContactsContainer.innerHTML += contact.profilePic;
     } else {
-      assignedContactsContainer.innerHTML += svgProfilePic('#2a3748', `+${assignedContacts.length - 5}`);
+      const contactHtml = new ContactHtml(contact);
+      assignedContactsContainer.innerHTML += contactHtml.svgProfilePic('#2a3748', `+${assignedContacts.length - 5}`);
       break;
     }
   }

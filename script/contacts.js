@@ -1,7 +1,7 @@
-import { currentUser, contacts, toggleClass, getDataFromDatabase, deleteDataFromDatabase, updateDataInDatabase, postDataToDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
-import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, svgProfilePic, createContact, createContactUpload } from "./contactsTemplate.js";
-import { activateListeners, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
-import { BASE_URL } from "./api-init.js";
+// import { currentUser, contacts, toggleClass, deleteDataFromDatabase, updateDataInDatabase, postDataToDatabase, logOut, activateOutsideCheck, setContacts, toggleLoader } from "../script.js";
+// import { htmlRenderAddContact, htmlRenderContactLetter, htmlRenderGeneral, htmlRenderContactDetailsEmpty, htmlRenderContactDetails, createContactUpload } from "./contactsTemplate.js";
+// import { activateListenersContacts, activateListenersDetails, activateListenersAdd, activateListenersEdit } from "./contacts-listener.js";
+// import { Database as db } from "../src/classes/class.database.js";
 
 
 //NOTE - Global variables
@@ -15,34 +15,17 @@ let editId = -1;
 //NOTE - Initialisation and rendering functions
 
 
-/**
- * Initialises the contacts view by loading the contacts data from the server and
- * rendering the contact list. Additionally, it activates the listeners for the
- * contact list.
- *
- * @returns {Promise<void>} - A promise that resolves when the contacts data
- * has been loaded and the contact list has been rendered.
- */
-export async function initContacts() {
-  toggleLoader(true);
-  await getContactsData();
-  renderContactList();
-  activateListeners();
-  toggleLoader(false);
-}
+//NOTE - Move this to class Board.js
+// export async function initContacts() {
+//   await getContactsData();
+//   renderContactList();
+//   activateListenersContacts();
+// }
 
 
-/**
- * Loads the contacts data from the server and updates the global contacts
- * array. The function will clear the existing contacts before adding new
- * ones. It will also check for duplicate contacts by ID and only add
- * unique contacts to the list. The function will return the contacts array
- * after it has been updated.
- * @returns {Promise<Array<Object>>} - A promise that resolves to the
- * contacts array after it has been updated.
- */
+
 export async function getContactsData() {
-  const response = await getDataFromDatabase('api/contacts/');
+  const response = await db.get('api/contacts/');
   let loadItem = await response.json();
   setContactsArray(loadItem);
   sessionStorage.setItem("contacts", JSON.stringify(contacts));
@@ -50,13 +33,7 @@ export async function getContactsData() {
 }
 
 
-/**
- * Updates the global contacts array with new contact data from a loadItem array.
- * Clears the existing contacts before adding new ones.
- * Checks for duplicate contacts by ID and only adds unique contacts to the list.
- *
- * @param {Array<Object>} loadItem - An array of contact data objects to be processed and added to the contacts list.
- */
+
 function setContactsArray(loadItem) {
   setContacts([]);
   for (const contactData of loadItem) {
@@ -244,9 +221,9 @@ function checkForExistingContact(contact) {
  */
 export function pushToContacts(contact) {
   return {
+    'id': contact.id,
     'email': contact.email,
     'firstLetters': filterFirstLetters(contact.name),
-    'id': contact.id,
     'isUser': contact.is_user,
     'name': contact.name,
     'profilePic': contact.profile_pic ? contact.profile_pic : generateSvgCircleWithInitials(contact.name),
@@ -378,28 +355,16 @@ export async function deleteContacts(id = editId) {
 //NOTE - User badge functions
 
 
-/**
- * Extracts the first letter from each word in a given name and uppercases them.
- *
- * @param {string} name - The full name from which first letters are extracted.
- * @returns {string} - A string of uppercased first letters.
- */
-export function filterFirstLetters(name) {
-  return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
-}
+//NOTE - Move this to class contact.js
+// export function filterFirstLetters(name) {
+//   return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
+// }
 
 
-/**
- * Generates an SVG string for a circle with the initials of a given name.
- *
- * @param {string} name - The full name from which initials are extracted.
- * @param {number} width - The width of the SVG circle.
- * @param {number} height - The height of the SVG circle.
- * @returns {string} - An SVG string representing a circular profile picture with randomly selected background color and the extracted initials.
- */
-export function generateSvgCircleWithInitials(name, width = 120, height = 120) {
-  const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
-  return svgProfilePic(randomColor, initials, height, width);
-}
+// //NOTE - move this to class contact.js
+// export function generateSvgCircleWithInitials(name, width = 120, height = 120) {
+//   const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
+//   const randomColor = colors[Math.floor(Math.random() * colors.length)];
+//   const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
+//   return svgProfilePic(randomColor, initials, height, width);
+// }

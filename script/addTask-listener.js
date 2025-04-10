@@ -1,6 +1,6 @@
-import { closeModal } from './board2.js';
-import { handleOverlayOutsideClick, handlePrioClick } from './board-listener.js';
-import { formValidation, toggleDropdown, assignSearchInput, pushNewTask, toggleCategoryDropdown, addNewSubtask, clearSubtaskInput, saveSubtask, clearAddTaskForm, deleteSubtask, editSubtask } from './addTask.js';
+// import { closeModal } from './board2.js';
+// import { handleOverlayOutsideClick, handlePrioClick } from './board-listener.js';
+// import { formValidation, toggleDropdown, assignSearchInput, pushNewTask, toggleCategoryDropdown, addNewSubtask, clearSubtaskInput, saveSubtask, clearAddTaskForm, deleteSubtask, editSubtask } from './addTask.js';
 
 
 /**

@@ -13,7 +13,6 @@ import { assignedContacts, setAssignedContacts, renderAssignedContacts, currentP
 import { getContactsData } from "./script/contacts.js";
 import { initSummary } from "./script/summary.js";
 import { greetingMobileHTML } from "./script/miscTemplate.js";
-
 import { Database } from "./src/classes/class.database.js";
 
 
@@ -35,26 +34,6 @@ export async function deleteTaskSure(taskId) {
     closeModal();
     initDragDrop();
     initializeTasksData();
-}
-
-
-export function activateOutsideCheck(event, modalName, class1, class2) {
-    event.stopPropagation();
-
-    function outsideClickHandler(e) {
-        checkOutsideModal(e, modalName, class1, class2, outsideClickHandler);
-    }
-
-    document.addEventListener('click', outsideClickHandler);
-}
-
-
-function checkOutsideModal(event, modalName, class1, class2, handler) {
-    let modal = document.getElementById(modalName);
-    if (modal.classList.contains(class1) && !modal.contains(event.target)) {
-        toggleClass(modalName, class1, class2);
-        document?.removeEventListener('click', handler);
-    };
 }
 
 
@@ -2095,13 +2074,13 @@ async function loginButtonClick(event) {
 
 
 async function setCurrentUser(data) {
-    let userData = { name: "Guest", firstLetters: "G" };
+    let userData;
     try {
         const user = await Database.get(`api/contacts/${data.id}/`);
         if (user.ok) {
             const userJson = await user.json();
-            userData = await createContact(userJson.id, userJson.name, userJson.email, userJson.number, userJson.profile_pic, userJson.is_user);
-        }
+            userData = new Contact(userJson);
+        } else userData = { name: "Guest", firstLetters: "G" };
     } catch (error) {
         console.error('Error fetching user data:', error);
     } finally {

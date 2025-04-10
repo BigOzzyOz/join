@@ -1,3 +1,6 @@
+import { Kanban } from "./src/classes/class.kanban.js";
+import { Database as db } from "./src/classes/class.database.js";
+
 import { token, BASE_URL, apiLogout } from "./script/api-init.js";
 import { initializeTasksData, initDragDrop } from "./script/board.js";
 import { closeModal } from "./script/board2.js";
@@ -497,17 +500,12 @@ export function setContacts(newContacts) {
 //NOTE - helper functions
 
 
-/**
- * Toggles the two given class names on the element with the given id.
- * @param {string} menu - The id of the element to toggle the classes on.
- * @param {string} className1 - The first class name to toggle.
- * @param {string} className2 - The second class name to toggle.
- */
-export function toggleClass(menu, className1, className2) {
-  let edit = document.getElementById(menu);
-  edit.classList.toggle(className1);
-  edit.classList.toggle(className2);
-}
+//NOTE - move to class Kanban
+// export function toggleClass(menu, className1, className2) {
+//   let edit = document.getElementById(menu);
+//   edit.classList.toggle(className1);
+//   edit.classList.toggle(className2);
+// }
 
 
 /**
@@ -547,49 +545,35 @@ export async function deleteTaskSure(taskId) {
 }
 
 
-/**
- * Activates a click event listener to check if a click occurred outside a specified modal.
- * - Stops the propagation of the click event on the initial target element.
- * - Defines an event handler to determine if a click is outside the modal and toggles classes if so.
- * - Attaches the event handler to the document to listen for subsequent clicks.
- * @param {Event} event - The initial click event object.
- * @param {string} modalName - The ID of the modal element to check.
- * @param {string} class1 - The first class name to check and toggle.
- * @param {string} class2 - The second class name to toggle.
- */
-export function activateOutsideCheck(event, modalName, class1, class2) {
-  event.stopPropagation();
+//NOTE - move to class Kanban
+// export function activateOutsideCheck(event, modalName, class1, class2) {
+//   event.stopPropagation();
 
-  /**
-   * Handles the click event to determine if it occurs outside a specified modal.
-   * - Invokes the checkOutsideModal function to verify whether the click event target
-   *   is outside the modal and to toggle the modal's classes if necessary.
-   * 
-   * @param {Event} e - The click event object.
-   */
-  function outsideClickHandler(e) {
-    checkOutsideModal(e, modalName, class1, class2, outsideClickHandler);
-  }
+//   function outsideClickHandler(e) {
+//     checkOutsideModal(e, modalName, class1, class2, outsideClickHandler);
+//   }
 
-  document.addEventListener('click', outsideClickHandler);
-}
+//   document.addEventListener('click', outsideClickHandler);
+// }
 
 
-/**
- * Checks if a click event occurred outside the specified modal and toggles its classes if so.
- * - Retrieves the modal element by the provided modal name.
- * - If the modal contains the specified class and the click event target is outside the modal,
- *   it toggles the modal's classes and removes the click event listener.
- * @param {Event} event - The click event object.
- * @param {string} modalName - The ID of the modal element to check.
- * @param {string} class1 - The first class name to check and toggle.
- * @param {string} class2 - The second class name to toggle.
- * @param {Function} handler - The event handler function to remove if the condition is met.
- */
-function checkOutsideModal(event, modalName, class1, class2, handler) {
-  let modal = document.getElementById(modalName);
-  if (modal.classList.contains(class1) && !modal.contains(event.target)) {
-    toggleClass(modalName, class1, class2);
-    document?.removeEventListener('click', handler);
-  };
-}
+//NOTE - move to class Kanban
+// function checkOutsideModal(event, modalName, class1, class2, handler) {
+//   let modal = document.getElementById(modalName);
+//   if (modal.classList.contains(class1) && !modal.contains(event.target)) {
+//     toggleClass(modalName, class1, class2);
+//     document?.removeEventListener('click', handler);
+//   };
+// }
+
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const path = window.location.pathname;
+  const noUserContentPaths = [
+    '/index.html',
+    '/register.html',
+  ];
+  if (noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/') sessionStorage.clear();
+  const join = new Kanban();
+  await join.db.checkAuthStatus();
+});

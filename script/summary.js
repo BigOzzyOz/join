@@ -1,5 +1,5 @@
-import { currentUser, getDataFromDatabase } from "../script.js";
-import { greetingMobileHTML } from "./miscTemplate.js";
+// import { currentUser, getDataFromDatabase } from "../script.js";
+// import { greetingMobileHTML } from "./miscTemplate.js";
 
 
 //NOTE - global summary variables

@@ -1,19 +1,22 @@
 import { Kanban } from './class.kanban.js';
-import { initSummary } from '../summary.js';
-import { initBoard } from '../board.js';
-import { initContacts } from '../contacts.js';
-import { initRegister } from '../register.js';
-import { activateAddTaskListeners } from '../addtask.js';
+import { Board } from './class.Board.js';
+import { LoginRegister } from './class.loginRegister.js';
+// import { initSummary } from '../summary.js';
+// import { initBoard } from '../board.js';
+// import { initRegister } from '../register.js';
+// import { activateAddTaskListeners } from '../addtask.js';
 
 
 export class Database {
-    static BASE_URL = 'http://127.0.0.1:8000/';
-    static token = sessionStorage.getItem('token') || '';
+    BASE_URL = 'http://127.0.0.1:8000/';
+    token = sessionStorage.getItem('token') || '';
 
-    constructor() { }
+    constructor(kanban) {
+        this.kanban = kanban;
+    }
 
-    static async checkAuthStatus() {
-        Kanban.toggleLoader(true);
+    async checkAuthStatus() {
+        this.kanban.toggleLoader(true);
         try {
             const headers = this.createHeaders();
             const response = await fetch(`${this.BASE_URL}auth/status/`, {
@@ -21,41 +24,42 @@ export class Database {
                 headers: headers,
             });
             const data = await response.json();
-            await Kanban.init().then(() => {
+            if (this.token) this.kanban.board = new Board();
+            await this.kanban.init().then(() => {
                 if (data.authenticated) this.initializePage();
                 else this.redirectToLogin();
             });
         } catch (error) {
             console.error('Error checking auth status:', error);
         } finally {
-            Kanban.toggleLoader(false);
+            this.kanban.toggleLoader(false);
         }
     }
 
 
-    static createHeaders() {
+    createHeaders() {
         const headers = { 'Content-Type': 'application/json' };
         if (this.token) headers['Authorization'] = `Token ${this.token}`;
         return headers;
     }
 
 
-    static initializePage() {
+    initializePage() {
         const path = window.location.pathname;
-        if (path.includes('summary.html')) initSummary();
-        else if (path.includes('addtask.html')) setTimeout(() => activateAddTaskListeners(), 500);
-        else if (path.includes('board.html')) initBoard();
-        else if (path.includes('contacts.html')) initContacts();
+        if (path.includes('summary.html')) this.kanban.board.initSummary();
+        else if (path.includes('addtask.html')) setTimeout(() => this.kanban.board.activateAddTaskListeners(), 500);//TODO - ggf andere location
+        else if (path.includes('board.html')) this.kanban.board.initBoard();
+        else if (path.includes('contacts.html')) this.kanban.board.initContacts();
     }
 
 
-    static async redirectToLogin() {
+    redirectToLogin() {
         if (this.windowNoUserContent()) return;
-        else this.apiLogout();
+        else this.logout();
     }
 
 
-    static windowNoUserContent() {
+    windowNoUserContent() {
         const path = window.location.pathname;
         const noUserContentPaths = [
             '/index.html',
@@ -64,25 +68,24 @@ export class Database {
             '/privacy.html',
             '/imprint.html',
         ];
-        if (path.includes('register.html')) initRegister();
+        if (this.shouldInitializeLoginRegister(path)) this.kanban.loginRegister = new LoginRegister(this.kanban);
         return noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/';
     }
 
 
-    static setToken(tokenValue) {
+    shouldInitializeLoginRegister(path) {
+        const excludedPaths = ['help.html', 'privacy.html', 'imprint.html'];
+        return !excludedPaths.some(excludedPath => path.includes(excludedPath));
+    }
+
+
+    setToken(tokenValue) {
         this.token = tokenValue;
         sessionStorage.setItem('token', tokenValue);
     }
 
-    static logout() {
-        sessionStorage.removeItem('currentUser');
-        sessionStorage.removeItem('activeTab');
-        sessionStorage.removeItem('token');
-        localStorage.removeItem('currentUser');
-        window.location.href = '../index.html';
-    }
 
-    static async get(path = '') {
+    async get(path = '') {
         const url = `${this.BASE_URL}${path}`;
 
         try {
@@ -100,7 +103,7 @@ export class Database {
     }
 
 
-    static async delete(path = '') {
+    async delete(path = '') {
         try {
             const url = `${this.BASE_URL}${path}`;
             const response = await fetch(url, {
@@ -117,7 +120,7 @@ export class Database {
     }
 
 
-    static async post(path = "", data = {}) {
+    async post(path = "", data = {}) {
         const url = `${this.BASE_URL}${path}`;
         const response = await fetch(url, {
             method: "POST",
@@ -131,7 +134,7 @@ export class Database {
     }
 
 
-    static async update(path = "", data = {}) {
+    async update(path = "", data = {}) {
         try {
             const url = `${this.BASE_URL}${path}`;
             const response = await fetch(url, {
@@ -140,7 +143,7 @@ export class Database {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${this.token}`,
                 },
-                body: JSON.stringify(dataToUpdate)
+                body: JSON.stringify(data)
             });
             return response;
         } catch (error) {
@@ -149,7 +152,7 @@ export class Database {
     }
 
 
-    static async patch(path = "", data = {}) {
+    async patch(path = "", data = {}) {
         try {
             const url = `${this.BASE_URL}${path}`;
             const response = await fetch(url, {
@@ -158,7 +161,7 @@ export class Database {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${this.token}`,
                 },
-                body: JSON.stringify(dataToUpdate)
+                body: JSON.stringify(data)
             });
             return response;
         } catch (error) {
@@ -167,7 +170,7 @@ export class Database {
     }
 
 
-    static async login() {
+    async login(bodyData) {
         try {
             let response = await fetch(`${this.BASE_URL}auth/login/`, {
                 method: 'POST',
@@ -187,6 +190,66 @@ export class Database {
             return data;
         } catch (error) {
             showError(error); //TODO - connect showError to the UI
+        }
+    }
+
+
+    async guestLogin() {
+        try {
+            let response = await fetch(`${this.BASE_URL}auth/guest/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (response.status === 400) {
+                if (data.username && data.password) throw new Error('Please enter a valid email address and password.');
+                if (data.username) throw new Error('Please enter a valid email address.');
+                if (data.password) throw new Error('Please enter a valid password.');
+                if (data.non_field_errors) throw new Error('Wrong email address or password! Try it again.');
+            }
+            data.token ? this.setToken(data.token) : console.error('Error: No token received from the server.');
+            return data;
+        } catch (error) {
+            showError(error); //TODO - connect showError to the UI
+        }
+    }
+
+
+    logout() {
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('activeTab');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        window.location.href = '../index.html';
+    }
+
+
+    async register(name, email, password, confirmPassword) {
+        try {
+            const response = await fetch(`${this.BASE_URL}auth/register/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'name': name,
+                    'email': email,
+                    'password': password,
+                    'repeated_password': confirmPassword,
+                }),
+            });
+            const data = await response.json();
+            if (response.status === 400) {
+                if (data.name) throw new Error('Please enter a valid name.');
+                if (data.email) throw new Error('Please enter a valid email address.');
+                if (data.password) throw new Error('Please enter a valid password.');
+                if (data.repeated_password) throw new Error('Please repeat the password correctly.');
+            }
+            return data;
+        } catch (error) {
+            console.error('Error during registration:', error);
         }
     }
 

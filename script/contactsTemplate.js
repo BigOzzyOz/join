@@ -1,5 +1,5 @@
-import { currentUser, contacts } from "../script.js";
-import { getContactsData, filterFirstLetters, generateSvgCircleWithInitials } from "./contacts.js";
+// import { currentUser, contacts } from "../script.js";
+// import { getContactsData, generateSvgCircleWithInitials } from "./contacts.js";
 
 /**
  * Returns HTML for adding a new contact.
@@ -124,23 +124,15 @@ export function htmlRenderContactDetails(id) {
 }
 
 
-/**
- * Returns an SVG string for a profile picture with the specified color and initials.
- * 
- * @param {string} color - The background color of the profile picture.
- * @param {string} initials - The initials to display in the profile picture.
- * @param {number} height - The height of the SVG.
- * @param {number} width - The width of the SVG.
- * @returns {string} - SVG string for the profile picture.
- */
-export function svgProfilePic(color, initials, height, width) {
-  return /*html*/`
-    <svg class="profilePic" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 2 - 5}" stroke="white" stroke-width="3" fill="${color}"/>
-      <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="48px">${initials}</text>
-    </svg>
-  `;
-}
+//NOTE - Move this to class contactHtml.js
+// export function svgProfilePic(color, initials, height, width) {
+//   return /*html*/`
+//     <svg class="profilePic" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+//       <circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 2 - 5}" stroke="white" stroke-width="3" fill="${color}"/>
+//       <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="48px">${initials}</text>
+//     </svg>
+//   `;
+// }
 
 
 
