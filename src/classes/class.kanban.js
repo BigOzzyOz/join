@@ -1,6 +1,6 @@
 import { Board } from "./class.Board.js";
 import { Database } from "./class.database.js";
-import { LoginRegister } from "./class.loginRegister.js";
+import { KanbanListener } from "./listeners/class.kanban-listener.js";
 
 
 export class Kanban {
@@ -14,7 +14,7 @@ export class Kanban {
 
     constructor() {
         this.db = new Database(this);
-
+        this.listener = new KanbanListener(this);
     }
 
     async init() {

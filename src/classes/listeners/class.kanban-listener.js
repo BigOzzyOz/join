@@ -1,98 +1,79 @@
+import { LoginListener } from './class.listener-login.js';
+import { RegisterListener } from './class.listener-register.js';
+import { SummaryListener } from './class.listener-summary.js';
+import { AddTaskListener } from './class.listener-addtask.js';
+import { BoardListener } from './class.listener-board.js';
+import { ContactsListener } from './class.listener-contacts.js';
+import { MenuListener } from './class.listener-menu.js';
+
 export class KanbanListener {
-    constructor() { }
+    login;
+    register;
+    summary;
+    addTask;
+    board;
+    contacts;
+
+    constructor(kanban) {
+        this.kanban = kanban;
+        this.activateListenersBasedOnPath();
+        this.menu = new MenuListener(this.kanban);
+    }
+
+    activateListenersBasedOnPath() {
+        const path = window.location.pathname;
+
+        switch (true) {
+            case path.includes('index.html') || path === '/':
+                this.login = new LoginListener(this.kanban);
+                break;
+            case path.includes('register.html'):
+                this.register = new RegisterListener(this.kanban);
+                break;
+            case path.includes('summary.html'):
+                this.summary = new SummaryListener(this.kanban);
+                break;
+            case path.includes('addtask.html'):
+                this.addTask = new AddTaskListener(this.kanban);
+                break;
+            case path.includes('board.html'):
+                this.board = new BoardListener(this.kanban);
+                break;
+            case path.includes('contacts.html'):
+                this.contacts = new ContactsListener(this.kanban);
+                break;
+            default:
+                console.error('No matching path for listener activation');
+                break;
+        }
+    }
 
     deactivateListeners() {
-        this.deactivateAllListenersLogin();
-        this.deactivateAllListenersRegister();
-        this.deactivateAllListenersSummary();
-        this.deactivateAllListenersBoard();
-        this.deactivateAllListenersContacts();
-        this.deactivateListenersScript();
-    } //TODO - this anpassen
+        this.login?.deactivateAllListenersLogin();
+        this.register?.deactivateAllListenersRegister();
+        this.summary?.deactivateAllListenersSummary();
+        this.board?.deactivateAllListenersBoard();
+        this.contacts?.deactivateAllListenersContacts();
+        this.menu?.deactivateListenersMenu();
+    }
 
-
-    deactivateListenersScript() {
-        this.headerListenerMenu('remove');
-        this.headerListenerMenuLinks('remove');
-        this.navListenerMenu('remove');
+    forwardRegister() {
+        window.location.href = 'html/register.html';
     }
 
 
-    activateListener() {
-        this.headerListenerMenu('add');
-        this.headerListenerMenuLinks('add');
-        this.navListenerMenu('add');
+    forwardLegal() {
+        sessionStorage.setItem('activeTab', "legal notice");
     }
 
 
-    headerListenerMenu(action) {
-        const headerUserBadge = document.getElementById('headerUserBadge');
-        const headerUserBadgeMobile = document.getElementById('headerUserBadgeMobile');
-
-        if (action === 'add') {
-            headerUserBadge?.addEventListener('click', this.headerUserBadgeButton);
-            headerUserBadgeMobile?.addEventListener('click', this.headerUserBadgeMobileButton);
-        } else if (action === 'remove') {
-            headerUserBadge?.removeEventListener('click', this.headerUserBadgeButton);
-            headerUserBadgeMobile?.removeEventListener('click', this.headerUserBadgeMobileButton);
-        }
+    forwardPrivacy() {
+        sessionStorage.setItem('activeTab', "privacy policy");
     }
 
-
-    headerListenerMenuLinks(action) {
-        const headerLogout = document.getElementById('header-logout');
-        const headerLegal = document.getElementById('header-legal');
-        const headerPrivacy = document.getElementById('header-privacy');
-
-        if (action === 'add') {
-            headerLogout?.addEventListener('click', db.logout);
-            headerLegal?.addEventListener('click', this.headerLegalButton);
-            headerPrivacy?.addEventListener('click', this.headerPrivacyButton);
-        } else if (action === 'remove') {
-            headerLogout?.removeEventListener('click', db.logout);
-            headerLegal?.removeEventListener('click', this.headerLegalButton);
-            headerPrivacy?.removeEventListener('click', this.headerPrivacyButton);
-        }
+    forwardToIndex() {
+        window.location.href = '../index.html';
     }
 
-
-    navListenerMenu(action) {
-        const menuBtns = document.querySelectorAll('.menuBtn');
-
-        if (action === 'add') {
-            menuBtns.forEach(btn => btn.addEventListener('click', this.handleMenuClick));
-        } else if (action === 'remove') {
-            menuBtns.forEach(btn => btn.removeEventListener('click', this.handleMenuClick));
-        }
-    }
-
-
-    headerUserBadgeButton(event) {
-        this.toggleClass('headerMenuContainer', 'ts0', 'ts1');
-        this.activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
-    }
-
-
-    headerUserBadgeMobileButton(event) {
-        event.stopPropagation();
-        this.toggleClass('headerMenuContainer', 'ts0', 'ts1');
-        this.activateOutsideCheck(event, 'headerMenuContainer', 'ts1', 'ts0');
-    }
-
-
-    headerLegalButton() {
-        this.setActive('.menuBtn[href=\'../html/imprint.html\']');
-    }
-
-
-    headerPrivacyButton() {
-        this.setActive('.menuBtn[href=\'../html/privacy.html\']');
-    }
-
-
-    handleMenuClick(event) {
-        this.deactivateListeners();
-        this.changeActive(event.target);
-    }
 
 }

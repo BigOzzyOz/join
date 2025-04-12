@@ -1,4 +1,4 @@
-import { ContactHtml as chtml } from "./class.contactHtml";
+import { ContactHtml as chtml } from "./class.contactHtml.js";
 
 export class Contact {
 

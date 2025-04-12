@@ -9,7 +9,6 @@ export class LoginRegister {
             this.clickCount1 = 0;
             this.clickCount2 = 0;
             this.page = 'register';
-            this.initRegister();
         } else {
             this.passwordInput = document.getElementById('passwordInput');
             this.isPasswordVisible = false;
@@ -20,12 +19,10 @@ export class LoginRegister {
     }
 
 
-
     //NOTE - Initial Login function
 
 
     initLogin() {
-        this.activateListener();
         const loginForm = document.getElementById('login-form');
         if (loginForm) this.initForm(loginForm);
     }
@@ -115,15 +112,14 @@ export class LoginRegister {
         }
     }
 
-
+    //TODO - Move this function to the kanban class
     async setCurrentUser(data) {
         let userData = { name: "Guest", firstLetters: "G" };
         try {
             const response = await this.kanban.db.get(`auth/contacts/${data.id}/`);
-            if (response.ok) {
-                const userJson = await user.json();
-                userData = new Contact(userJson);
-            } else userData = { name: "Guest", firstLetters: "G" };
+            if (!response.ok) throw new Error('Failed to fetch user data');
+            const user = await response.json();
+            userData = new Contact(user);
         } catch (error) {
             console.error('Error fetching user data:', error);
         } finally {
@@ -180,120 +176,8 @@ export class LoginRegister {
     }
 
 
-    //NOTE - Listener and handler functions
-
-
-    activateListener() {
-        document.getElementById('rememberMe')?.addEventListener('click', checkBoxClicked);
-        document.getElementById('loginButton')?.addEventListener('click', loginButtonClick);
-        document.getElementById('guestLogin')?.addEventListener('click', handleGuestLogin);
-        document.getElementById('signup-btn')?.addEventListener('click', forwardRegister);
-        document.getElementById('privacy-policy')?.addEventListener('click', forwardPrivacy);
-        document.getElementById('legal-notice')?.addEventListener('click', forwardLegal);
-    };
-
-
-    deactivateAllListenersLogin() {
-        document.getElementById('rememberMe')?.removeEventListener('click', checkBoxClicked);
-        document.getElementById('loginButton')?.removeEventListener('click', loginButtonClick);
-        document.getElementById('guestLogin')?.removeEventListener('click', handleGuestLogin);
-        document.getElementById('signup-btn')?.removeEventListener('click', forwardRegister);
-        document.getElementById('privacy-policy')?.removeEventListener('click', forwardPrivacy);
-        document.getElementById('legal-notice')?.removeEventListener('click', forwardLegal);
-        const loginForm = document.getElementById('login-form');
-        const login = loginForm?.querySelector('#loginInput');
-        const passwordInput = loginForm?.querySelector('#passwordInput');
-        const checkbox = loginForm?.querySelector('#checkbox');
-        [login, passwordInput, checkbox]?.forEach((input) => {
-            input?.removeEventListener('focus', () => {
-                const errorMessage = document.getElementById('error-message');
-                errorMessage.style.width = '0';
-                errorMessage.textContent = '';
-            });
-        });
-    }
-
-
-    forwardRegister() {
-        window.location.href = 'html/register.html';
-    }
-
-
-    forwardLegal() {
-        sessionStorage.setItem('activeTab', "legal notice");
-    }
-
-
-    forwardPrivacy() {
-        sessionStorage.setItem('activeTab', "privacy policy");
-    }
-
-
-
-
 
     //NOTE - Initial Register function
-
-
-
-    initRegister() {
-        activateListener();
-    }
-
-
-    addPasswordFieldToggle(inputFieldId) {
-        const passwordField = document.getElementById(inputFieldId);
-        if (!passwordField) return;
-
-        const togglePasswordVisibility = (event) => togglePassword(event, passwordField);
-        const updateBackgroundOnFocus = () => updateBackgroundImage(passwordField, false);
-        const resetOnBlur = () => resetState(passwordField);
-
-        passwordField.addEventListener('click', togglePasswordVisibility);
-        passwordField.addEventListener('focus', updateBackgroundOnFocus);
-        passwordField.addEventListener('blur', resetOnBlur);
-        passwordField._eventHandlers = { togglePasswordVisibility, updateBackgroundOnFocus, resetOnBlur };
-    }
-
-
-    removePasswordFieldToggle(inputFieldId) {
-        const passwordField = document.getElementById(inputFieldId);
-        if (!passwordField || !passwordField._eventHandlers) return;
-
-        const { togglePasswordVisibility, updateBackgroundOnFocus, resetOnBlur } = passwordField._eventHandlers;
-        passwordField.removeEventListener('click', togglePasswordVisibility);
-        passwordField.removeEventListener('focus', updateBackgroundOnFocus);
-        passwordField.removeEventListener('blur', resetOnBlur);
-        delete passwordField._eventHandlers;
-    }
-
-
-    activateListener() {
-        document.getElementById('signupForm')?.addEventListener('submit', submitData);
-        document.getElementById('privacy-policy')?.addEventListener('click', checkBoxClicked);
-        document.getElementById('back-btn')?.addEventListener('click', forwardToIndex);
-        document.getElementById('privacy-policy-link')?.addEventListener('click', forwardPrivacy);
-        document.getElementById('legal-notice-link')?.addEventListener('click', forwardLegal);
-        addPasswordFieldToggle('password');
-        addPasswordFieldToggle('confirmPassword');
-    }
-
-
-
-    deactivateAllListenersRegister() {
-        document.getElementById('signupForm')?.removeEventListener('submit', submitData);
-        document.getElementById('privacy-policy')?.removeEventListener('click', checkBoxClicked);
-        document.getElementById('back-btn')?.removeEventListener('click', forwardToIndex);
-        document.getElementById('privacy-policy-link')?.removeEventListener('click', forwardPrivacy);
-        document.getElementById('legal-notice-link')?.removeEventListener('click', forwardLegal);
-        removePasswordFieldToggle('password');
-        removePasswordFieldToggle('confirmPassword');
-    }
-
-
-    forwardToIndex() {
-        window.location.href = '../index.html';
-    }
 
 
     togglePassword(event, inputField) {

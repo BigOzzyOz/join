@@ -47,7 +47,7 @@ export class Database {
     initializePage() {
         const path = window.location.pathname;
         if (path.includes('summary.html')) this.kanban.board.initSummary();
-        else if (path.includes('addtask.html')) setTimeout(() => this.kanban.board.activateAddTaskListeners(), 500);//TODO - ggf andere location
+        else if (path.includes('addtask.html')) setTimeout(() => this.kanban.listener.addTask.activateListener(), 500);
         else if (path.includes('board.html')) this.kanban.board.initBoard();
         else if (path.includes('contacts.html')) this.kanban.board.initContacts();
     }
