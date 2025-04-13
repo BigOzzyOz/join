@@ -57,23 +57,7 @@ export class KanbanListener {
         this.menu?.deactivateListenersMenu();
     }
 
-    forwardRegister() {
-        window.location.href = 'html/register.html';
-    }
 
-
-    forwardLegal() {
-        sessionStorage.setItem('activeTab', "legal notice");
-    }
-
-
-    forwardPrivacy() {
-        sessionStorage.setItem('activeTab', "privacy policy");
-    }
-
-    forwardToIndex() {
-        window.location.href = '../index.html';
-    }
 
 
 }

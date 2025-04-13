@@ -9,7 +9,12 @@ export class Kanban {
     contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
     tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
     board = null;
-    loginRegister = null;
+    login = null;
+    register = null;
+    summary = null;
+    addTask = null;
+    board = null;
+    contacts = null;
 
 
     constructor() {
@@ -139,5 +144,23 @@ export class Kanban {
             this.toggleClass(modalName, class1, class2);
             document?.removeEventListener('click', handler);
         };
+    }
+
+    forwardRegister() {
+        window.location.href = 'html/register.html';
+    }
+
+
+    forwardLegal() {
+        sessionStorage.setItem('activeTab', "legal notice");
+    }
+
+
+    forwardPrivacy() {
+        sessionStorage.setItem('activeTab', "privacy policy");
+    }
+
+    forwardToIndex() {
+        window.location.href = '../index.html';
     }
 }

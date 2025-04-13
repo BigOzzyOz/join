@@ -1,17 +1,17 @@
 export class LoginListener {
     constructor(kanban) {
         this.kanban = kanban;
-        this.lr = kanban.loginRegister;
+        this.login = kanban.login;
         this.activateListener();
     }
 
     activateListener() {
-        document.getElementById('rememberMe')?.addEventListener('click', this.lr.checkBoxClicked);
-        document.getElementById('loginButton')?.addEventListener('click', this.lr.loginButtonClick);
-        document.getElementById('guestLogin')?.addEventListener('click', this.lr.handleGuestLogin);
-        document.getElementById('signup-btn')?.addEventListener('click', this.lr.forwardRegister);
-        document.getElementById('privacy-policy')?.addEventListener('click', this.lr.forwardPrivacy);
-        document.getElementById('legal-notice')?.addEventListener('click', this.lr.forwardLegal);
+        document.getElementById('rememberMe')?.addEventListener('click', this.login.checkBoxClicked);
+        document.getElementById('loginButton')?.addEventListener('click', this.login.loginButtonClick);
+        document.getElementById('guestLogin')?.addEventListener('click', this.login.handleGuestLogin);
+        document.getElementById('signup-btn')?.addEventListener('click', this.kanban.forwardRegister);
+        document.getElementById('privacy-policy')?.addEventListener('click', this.kanban.forwardPrivacy);
+        document.getElementById('legal-notice')?.addEventListener('click', this.kanban.forwardLegal);
     };
 
 
@@ -20,12 +20,12 @@ export class LoginListener {
         const login = loginForm?.querySelector('#loginInput');
         const passwordInput = loginForm?.querySelector('#passwordInput');
         const checkbox = loginForm?.querySelector('#checkbox');
-        document.getElementById('rememberMe')?.removeEventListener('click', this.lr.checkBoxClicked);
-        document.getElementById('loginButton')?.removeEventListener('click', this.lr.loginButtonClick);
-        document.getElementById('guestLogin')?.removeEventListener('click', this.lr.handleGuestLogin);
-        document.getElementById('signup-btn')?.removeEventListener('click', this.lr.forwardRegister);
-        document.getElementById('privacy-policy')?.removeEventListener('click', this.lr.forwardPrivacy);
-        document.getElementById('legal-notice')?.removeEventListener('click', this.lr.forwardLegal);
+        document.getElementById('rememberMe')?.removeEventListener('click', this.login.checkBoxClicked);
+        document.getElementById('loginButton')?.removeEventListener('click', this.login.loginButtonClick);
+        document.getElementById('guestLogin')?.removeEventListener('click', this.login.handleGuestLogin);
+        document.getElementById('signup-btn')?.removeEventListener('click', this.kanaban.forwardRegister);
+        document.getElementById('privacy-policy')?.removeEventListener('click', this.kanban.forwardPrivacy);
+        document.getElementById('legal-notice')?.removeEventListener('click', this.kanban.forwardLegal);
         [login, passwordInput, checkbox]?.forEach((input) => {
             input?.removeEventListener('focus', () => {
                 const errorMessage = document.getElementById('error-message');

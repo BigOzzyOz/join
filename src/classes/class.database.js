@@ -1,6 +1,7 @@
 import { Kanban } from './class.kanban.js';
 import { Board } from './class.Board.js';
-import { LoginRegister } from './class.loginRegister.js';
+import { Login } from './class.login.js';
+import { Register } from './class.register.js';
 // import { initSummary } from '../summary.js';
 // import { initBoard } from '../board.js';
 // import { initRegister } from '../register.js';
@@ -68,7 +69,10 @@ export class Database {
             '/privacy.html',
             '/imprint.html',
         ];
-        if (this.shouldInitializeLoginRegister(path)) this.kanban.loginRegister = new LoginRegister(this.kanban);
+        if (this.shouldInitializeLoginRegister(path)) {
+            if (path.includes('register.html')) this.kanban.register = new Register(this.kanban);
+            else if (path.includes('index.html') || path === '/') this.kanban.login = new Login(this.kanban);
+        }
         return noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/';
     }
 
