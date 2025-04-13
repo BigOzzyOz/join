@@ -25,7 +25,7 @@ export class Kanban {
 
 
     constructor() {
-        if (this.noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/') sessionStorage.clear();
+        if (this.noUserContentPaths.some((usedPath) => this.path.includes(usedPath)) || this.path === '/') sessionStorage.clear();
     }
 
     async _asyncInit() {

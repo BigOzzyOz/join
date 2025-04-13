@@ -1,9 +1,9 @@
 import { LoginListener } from './class.listener-login.js';
 import { RegisterListener } from './class.listener-register.js';
 import { SummaryListener } from './class.listener-summary.js';
-import { AddTaskListener } from './class.listener-addtask.js';
-import { BoardListener } from './class.listener-board.js';
-import { ContactsListener } from './class.listener-contacts.js';
+// import { AddTaskListener } from './class.listener-addtask.js';
+// import { BoardListener } from './class.listener-board.js';
+// import { ContactsListener } from './class.listener-contacts.js';
 import { MenuListener } from './class.listener-menu.js';
 
 export class KanbanListener {
@@ -34,7 +34,7 @@ export class KanbanListener {
                 this.summary = new SummaryListener(this.kanban);
                 break;
             case path.includes('addtask.html'):
-                this.addTask = new AddTaskListener(this.kanban);
+                setTimeout(() => this.addTask = new AddTaskListener(this.kanban), 500);
                 break;
             case path.includes('board.html'):
                 this.board = new BoardListener(this.kanban);
@@ -48,14 +48,14 @@ export class KanbanListener {
         }
     }
 
-    deactivateListeners() {
+    deactivateListeners = () => {
         this.login?.deactivateAllListenersLogin();
         this.register?.deactivateAllListenersRegister();
         this.summary?.deactivateAllListenersSummary();
         this.board?.deactivateAllListenersBoard();
         this.contacts?.deactivateAllListenersContacts();
         this.menu?.deactivateListenersMenu();
-    }
+    };
 
 
 

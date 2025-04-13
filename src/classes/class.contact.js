@@ -1,4 +1,4 @@
-import { ContactHtml as chtml } from "./class.contactHtml.js";
+import { TaskHtml as thtml } from "./html/class.html-task.js";
 
 export class Contact {
 
@@ -11,7 +11,7 @@ export class Contact {
         this.profilePic = contact.profile_pic ? contact.profile_pic : generateSvgCircleWithInitials(contact.name);
         this.phone = contact.number;
 
-        this.contactHtml = new chtml(this.contactObject());
+        this.contactHtml = new thtml(this.contactObject());
     }
 
     contactObject() {

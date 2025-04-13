@@ -2,6 +2,7 @@ import { Kanban } from './class.kanban.js';
 import { Board } from './class.Board.js';
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
+import { Summary } from './class.summary.js';
 // import { initSummary } from '../summary.js';
 // import { initBoard } from '../board.js';
 // import { initRegister } from '../register.js';
@@ -25,7 +26,6 @@ export class Database {
                 headers: headers,
             });
             const data = await response.json();
-            if (this.token) this.kanban.board = new Board();
             await this.kanban.init().then(() => {
                 if (data.authenticated) this.initializePage();
                 else this.redirectToLogin();
@@ -47,10 +47,22 @@ export class Database {
 
     initializePage() {
         const path = window.location.pathname;
-        if (path.includes('summary.html')) this.kanban.board.initSummary();
-        else if (path.includes('addtask.html')) setTimeout(() => this.kanban.listener.addTask.activateListener(), 500);
-        else if (path.includes('board.html')) this.kanban.board.initBoard();
-        else if (path.includes('contacts.html')) this.kanban.board.initContacts();
+        if (path.includes('summary.html')) {
+            this.kanban.summary = new Summary(this.kanban);
+            this.kanban.summary.initSummary();
+        }
+        else if (path.includes('addtask.html')) {
+            this.kanban.addTask = new AddTask(this.kanban);
+            this.kanban.addTask.initAddTask();
+        }
+        else if (path.includes('board.html')) {
+            this.kanban.board = new Board(this.kanban);
+            this.kanban.board.initBoard();
+        }
+        else if (path.includes('contacts.html')) {
+            this.kanban.contacts = new Contacts(this.kanban);
+            this.kanban.contacts.initContacts();
+        }
     }
 
 

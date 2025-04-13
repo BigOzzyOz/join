@@ -5,87 +5,86 @@ export class Login {
         this.kanban = kanban;
         this.passwordInput = document.getElementById('passwordInput');
         this.isPasswordVisible = false;
-        this.clickCount = -1;
         this.initLogin();
     }
-
 
     initLogin() {
         const loginForm = document.getElementById('login-form');
         if (loginForm) this.initForm(loginForm);
     }
 
-
     initForm(form) {
-        const login = form.querySelector('#loginInput');
+        const loginInput = form.querySelector('#loginInput');
         const passwordInput = form.querySelector('#passwordInput');
         const checkbox = form.querySelector('#checkbox');
-        this.initInputFocus([login, passwordInput, checkbox]);
-        this.initRememberMe([login, passwordInput, checkbox]);
-        this.setupPasswordToggle();
+        this.initRememberMe([loginInput, passwordInput, checkbox]);
     }
 
-
-    initInputFocus([login, passwordInput, checkbox]) {
-        [login, passwordInput, checkbox].forEach((input) => {
-            input.addEventListener('focus', () => {
-                const errorMessage = document.getElementById('error-message');
-                errorMessage.style.width = '0';
-                errorMessage.textContent = '';
-            });
-        });
-    }
-
-
-    initRememberMe([login, passwordInput, checkbox]) {
+    initRememberMe([loginInput, passwordInput, checkbox]) {
         const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
         checkbox.src = rememberMeChecked ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
         if (rememberMeChecked) {
-            login.value = localStorage.getItem('login');
+            loginInput.value = localStorage.getItem('login');
             passwordInput.value = localStorage.getItem('password');
             document.getElementById('rememberMe').checked = true;
         }
     }
 
+    handlePasswordVisibilityClick = (event) => {
+        event?.preventDefault();
+        if (!this.passwordInput) return;
 
-
-    setupPasswordToggle() {
-        this.passwordInput.addEventListener("click", this.changeVisibility);
-        this.passwordInput.addEventListener("focus", () => { this.clickCount++; });
-        this.passwordInput.addEventListener("blur", this.resetState);
-    }
-
-
-    changeVisibility(event) {
-        event.preventDefault();
         const selectionStart = this.passwordInput.selectionStart;
-        this.togglePasswordVisibility();
-        this.clickCount = this.clickCount === 0 ? 1 : 0;
-        this.passwordInput.setSelectionRange(selectionStart, selectionStart);
-    }
+        const selectionEnd = this.passwordInput.selectionEnd;
 
-
-    resetState() {
-        this.passwordInput.type = "password";
-        this.passwordInput.style.backgroundImage = "url('assets/icons/password_input.png')";
-        this.clickCount = -1;
-        this.isPasswordVisible = false;
-    }
-
-
-    togglePasswordVisibility() {
-        this.passwordInput.type = this.isPasswordVisible ? "text" : "password";
-        const image = this.isPasswordVisible ? "visibility.png" : "password_off.png";
-        this.passwordInput.style.backgroundImage = `url('assets/icons/${image}')`;
         this.isPasswordVisible = !this.isPasswordVisible;
-    }
 
+        if (this.isPasswordVisible) {
+            this.passwordInput.type = "text";
+            this.passwordInput.style.backgroundImage = "url('../assets/icons/visibility.png')";
+        } else {
+            this.passwordInput.type = "password";
+            this.passwordInput.style.backgroundImage = "url('../assets/icons/password_off.png')";
+        }
 
-    async loginButtonClick(event) {
-        event.preventDefault();
-        const login = document.getElementById('loginInput').value.trim().toLowerCase();
-        const password = document.getElementById('passwordInput').value;
-        const isRememberMeChecked = document.getElementById('rememberMe').checked;
+        this.passwordInput.focus();
+        this.passwordInput.setSelectionRange(selectionStart, selectionEnd);
+    };
+
+    resetPasswordStateOnBlur = () => {
+        if (!this.passwordInput) return;
+
+        this.isPasswordVisible = false;
+        this.passwordInput.type = "password";
+        this.passwordInput.style.backgroundImage = "url('../assets/icons/password_input.png')";
+    };
+
+    loginButtonClick = async (event) => {
+        event?.preventDefault();
+        if (!this.kanban || !this.kanban.db) {
+            console.error("Kanban oder DB nicht initialisiert!");
+            this.showError({ message: "Ein interner Fehler ist aufgetreten." });
+            return;
+        }
+        const loginInput = document.getElementById('loginInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const rememberMeCheckbox = document.getElementById('rememberMe');
+
+        if (!loginInput || !passwordInput || !rememberMeCheckbox) {
+            console.error("Formular-Elemente nicht gefunden!");
+            this.showError({ message: "Formular unvollständig." });
+            return;
+        }
+
+        const login = loginInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+        const isRememberMeChecked = rememberMeCheckbox.checked;
+
+        if (!login || !password) {
+            this.showError({ message: "Bitte E-Mail und Passwort eingeben." });
+            return;
+        }
+
         const bodyData = {
             "username": login,
             "password": password,
@@ -98,11 +97,15 @@ export class Login {
         } catch (error) {
             this.showError(error);
         }
-    }
+    };
 
-    //TODO - Move this function to the kanban class
-    async setCurrentUser(data) {
+    setCurrentUser = async (data) => {
         let userData = { name: "Guest", firstLetters: "G" };
+        if (!data || !data.id) {
+            console.error("Ungültige Benutzerdaten vom Login erhalten:", data);
+            sessionStorage.setItem('currentUser', JSON.stringify(userData));
+            return;
+        }
         try {
             const response = await this.kanban.db.get(`auth/contacts/${data.id}/`);
             if (!response.ok) throw new Error('Failed to fetch user data');
@@ -111,59 +114,74 @@ export class Login {
         } catch (error) {
             console.error('Error fetching user data:', error);
         } finally {
+            this.kanban.currentUser = userData;
             sessionStorage.setItem('currentUser', JSON.stringify(userData));
         }
-    }
+    };
 
-
-    handleRememberMe(rememberMe) {
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    handleRememberMe = (rememberMe) => {
         if (rememberMe) {
-            localStorage.setItem('login', document.getElementById('loginInput').value);
-            localStorage.setItem('password', document.getElementById('passwordInput').value);
+            localStorage.setItem('login', document.getElementById('loginInput')?.value || '');
+            localStorage.setItem('password', this.passwordInput?.value || '');
             localStorage.setItem('rememberMe', 'true');
+            if (this.kanban.currentUser) {
+                localStorage.setItem('currentUser', JSON.stringify(this.kanban.currentUser));
+            }
         } else {
             localStorage.removeItem('rememberMe');
-            localStorage.removeItem('email');
+            localStorage.removeItem('login');
             localStorage.removeItem('password');
+            localStorage.removeItem('currentUser');
         }
-    }
+    };
 
-
-    continueToSummary() {
+    continueToSummary = () => {
         sessionStorage.setItem('activeTab', 'summary');
-        this.kanban.listener.deactivateAllListenersLogin();
+        this.kanban.listener?.deactivateListeners();
         window.location.href = 'html/summary.html';
-    }
+    };
 
-
-    showError(error) {
+    showError = (error) => {
         const errorMessageElement = document.getElementById('error-message');
-        errorMessageElement.textContent = error.message;
-        errorMessageElement.style.width = '100%';
-    }
+        if (errorMessageElement) {
+            let message = "Ein unbekannter Fehler ist aufgetreten.";
+            if (error && error.message) {
+                message = error.message;
+            } else if (typeof error === 'string') {
+                message = error;
+            }
+            if (message.includes("401") || message.toLowerCase().includes("unauthorized") || message.toLowerCase().includes("credentials")) {
+                message = "Ungültige Anmeldedaten. Bitte überprüfe E-Mail und Passwort.";
+            }
 
+            errorMessageElement.textContent = message;
+            errorMessageElement.style.width = 'auto';
+            errorMessageElement.style.opacity = '1';
+        } else {
+            console.error("Fehler-Element nicht gefunden. Fehler:", error);
+        }
+    };
 
-    async handleGuestLogin() {
+    handleGuestLogin = async () => {
         try {
-            const data = await this.kanban.db.guestLogin();
-            const guestUser = { name: "Guest", firstLetters: "G" };
+            const guestUser = { name: "Guest", firstLetters: "G", id: "guest" };
+            this.kanban.currentUser = guestUser;
             sessionStorage.setItem("currentUser", JSON.stringify(guestUser));
             localStorage.clear();
             this.continueToSummary();
         } catch (error) {
             console.error('Error signing in as guest:', error);
+            this.showError({ message: "Gast-Login fehlgeschlagen." });
         }
-    }
+    };
 
-
-    checkBoxClicked() {
-        const checkedState = document.getElementById('rememberMe').checked;
+    checkBoxClicked = () => {
+        const rememberMeCheckbox = document.getElementById('rememberMe');
         const checkboxImg = document.getElementById('checkbox');
-        checkboxImg.src = checkedState ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
-    }
-
-
-
+        if (rememberMeCheckbox && checkboxImg) {
+            const checkedState = rememberMeCheckbox.checked;
+            checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
+        }
+    };
 }
 
