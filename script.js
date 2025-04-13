@@ -568,12 +568,5 @@ export async function deleteTaskSure(taskId) {
 
 
 window.addEventListener('DOMContentLoaded', async () => {
-  const path = window.location.pathname;
-  const noUserContentPaths = [
-    '/index.html',
-    '/register.html',
-  ];
-  if (noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/') sessionStorage.clear();
-  const join = new Kanban();
-  await join.db.checkAuthStatus();
+  const join = Kanban.createInstance();
 });

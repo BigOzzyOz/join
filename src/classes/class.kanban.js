@@ -8,6 +8,13 @@ export class Kanban {
     activeTab = sessionStorage.getItem('activeTab') || '';
     contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
     tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
+    path = window.location.pathname;
+    noUserContentPaths = [
+        '/index.html',
+        '/register.html',
+    ];
+    db = null;
+    listener = null;
     board = null;
     login = null;
     register = null;
@@ -18,8 +25,19 @@ export class Kanban {
 
 
     constructor() {
+        if (this.noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/') sessionStorage.clear();
+    }
+
+    async _asyncInit() {
         this.db = new Database(this);
+        await this.db.checkAuthStatus();
         this.listener = new KanbanListener(this);
+    }
+
+    static async createInstance() {
+        const instance = new Kanban();
+        await instance._asyncInit();
+        return instance;
     }
 
     async init() {
