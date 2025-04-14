@@ -107,9 +107,10 @@ export class Login {
             return;
         }
         try {
-            const response = await this.kanban.db.get(`auth/contacts/${data.id}/`);
+            const response = await this.kanban.db.get(`api/contacts/${data.id}/`);
             if (!response.ok) throw new Error('Failed to fetch user data');
             const user = await response.json();
+
             userData = new Contact(user);
         } catch (error) {
             console.error('Error fetching user data:', error);

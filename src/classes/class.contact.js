@@ -5,10 +5,10 @@ export class Contact {
     constructor(contact) {
         this.id = contact.id;
         this.email = contact.email;
-        this.firstLetters = filterFirstLetters(contact.name);
+        this.firstLetters = contact.first_letters;
         this.isUser = contact.is_user;
         this.name = contact.name;
-        this.profilePic = contact.profile_pic ? contact.profile_pic : generateSvgCircleWithInitials(contact.name);
+        this.profilePic = contact.profile_pic;
         this.phone = contact.number;
 
         this.contactHtml = new thtml(this.contactObject());
