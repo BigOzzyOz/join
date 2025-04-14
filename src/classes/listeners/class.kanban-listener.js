@@ -13,6 +13,7 @@ export class KanbanListener {
     addTask;
     board;
     contacts;
+    menu;
 
     constructor(kanban) {
         this.kanban = kanban;
@@ -20,17 +21,20 @@ export class KanbanListener {
         this.menu = new MenuListener(this.kanban);
     }
 
-    activateListenersBasedOnPath() {
+    activateListenersBasedOnPath = () => {
         const path = window.location.pathname;
 
         switch (true) {
             case path.includes('index.html') || path === '/':
+                if (!this.kanban.login) this.kanban.login = new Login(this.kanban);
                 this.login = new LoginListener(this.kanban);
                 break;
             case path.includes('register.html'):
+                if (!this.kanban.register) this.kanban.register = new Register(this.kanban);
                 this.register = new RegisterListener(this.kanban);
                 break;
             case path.includes('summary.html'):
+                if (!this.kanban.summary) this.kanban.summary = new Summary(this.kanban);
                 this.summary = new SummaryListener(this.kanban);
                 break;
             case path.includes('addtask.html'):
@@ -43,21 +47,18 @@ export class KanbanListener {
                 this.contacts = new ContactsListener(this.kanban);
                 break;
             default:
-                console.error('No matching path for listener activation');
+                console.warn('No specific page listener activated for this path:', path);
                 break;
         }
-    }
+    };
 
     deactivateListeners = () => {
         this.login?.deactivateAllListenersLogin();
         this.register?.deactivateAllListenersRegister();
         this.summary?.deactivateAllListenersSummary();
+        this.addTask?.deactivateAllListenersAddTask();
         this.board?.deactivateAllListenersBoard();
         this.contacts?.deactivateAllListenersContacts();
         this.menu?.deactivateListenersMenu();
     };
-
-
-
-
 }

@@ -3,10 +3,6 @@ import { Board } from './class.Board.js';
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
-// import { initSummary } from '../summary.js';
-// import { initBoard } from '../board.js';
-// import { initRegister } from '../register.js';
-// import { activateAddTaskListeners } from '../addtask.js';
 
 
 export class Database {
@@ -115,6 +111,7 @@ export class Database {
             return response;
         } catch (error) {
             console.error('Error fetching data from database:', error);
+            throw error;
         }
     }
 
@@ -132,21 +129,27 @@ export class Database {
             return response;
         } catch (error) {
             console.error('Error deleting data from database:', error);
+            throw error;
         }
     }
 
 
     async post(path = "", data = {}) {
         const url = `${this.BASE_URL}${path}`;
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Token ${this.token}`,
-            },
-            body: JSON.stringify(data),
-        });
-        return response;
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Token ${this.token}`,
+                },
+                body: JSON.stringify(data),
+            });
+            return response;
+        } catch (error) {
+            console.error('Error posting data to database:', error);
+            throw error;
+        }
     }
 
 
@@ -164,6 +167,7 @@ export class Database {
             return response;
         } catch (error) {
             console.error('Error updating data in database:', error);
+            throw error;
         }
     }
 
@@ -182,6 +186,7 @@ export class Database {
             return response;
         } catch (error) {
             console.error('Error updating data in database:', error);
+            throw error;
         }
     }
 
@@ -196,16 +201,20 @@ export class Database {
                 body: JSON.stringify(bodyData),
             });
             const data = await response.json();
-            if (response.status === 400) {
-                if (data.username && data.password) throw new Error('Please enter a valid email address and password.');
-                if (data.username) throw new Error('Please enter a valid email address.');
-                if (data.password) throw new Error('Please enter a valid password.');
-                if (data.non_field_errors) throw new Error('Wrong email address or password! Try it again.');
+            if (!response.ok) {
+                let errorMessage = 'Login failed.';
+                if (data.username && data.password) errorMessage = 'Please enter a valid email address and password.';
+                else if (data.username) errorMessage = 'Please enter a valid email address.';
+                else if (data.password) errorMessage = 'Please enter a valid password.';
+                else if (data.non_field_errors) errorMessage = 'Wrong email address or password! Try it again.';
+                throw new Error(errorMessage);
             }
-            data.token ? this.setToken(data.token) : console.error('Error: No token received from the server.');
+            if (!data.token) throw new Error('No token received from the server.');
+            this.setToken(data.token);
             return data;
         } catch (error) {
-            showError(error); //TODO - connect showError to the UI
+            console.error('Login error:', error);
+            throw error;
         }
     }
 
@@ -219,27 +228,28 @@ export class Database {
                 },
             });
             const data = await response.json();
-            if (response.status === 400) {
-                if (data.username && data.password) throw new Error('Please enter a valid email address and password.');
-                if (data.username) throw new Error('Please enter a valid email address.');
-                if (data.password) throw new Error('Please enter a valid password.');
-                if (data.non_field_errors) throw new Error('Wrong email address or password! Try it again.');
+            if (!response.ok) {
+                let errorMessage = 'Guest login failed.';
+                if (data.detail) errorMessage = data.detail;
+                throw new Error(errorMessage);
             }
-            data.token ? this.setToken(data.token) : console.error('Error: No token received from the server.');
+            if (!data.token) throw new Error('No token received from the server.');
+            this.setToken(data.token);
             return data;
         } catch (error) {
-            showError(error); //TODO - connect showError to the UI
+            console.error('Guest login error:', error);
+            throw error;
         }
     }
 
 
-    logout() {
-        sessionStorage.removeItem('currentUser');
-        sessionStorage.removeItem('activeTab');
-        sessionStorage.removeItem('token');
+    logout = () => {
+        sessionStorage.clear();
         localStorage.removeItem('currentUser');
+        this.token = '';
+        this.kanban.currentUser = null;
         window.location.href = '../index.html';
-    }
+    };
 
 
     async register(name, email, password, confirmPassword) {
@@ -257,15 +267,19 @@ export class Database {
                 }),
             });
             const data = await response.json();
-            if (response.status === 400) {
-                if (data.name) throw new Error('Please enter a valid name.');
-                if (data.email) throw new Error('Please enter a valid email address.');
-                if (data.password) throw new Error('Please enter a valid password.');
-                if (data.repeated_password) throw new Error('Please repeat the password correctly.');
+            if (!response.ok) {
+                let errorMessage = 'Registration failed.';
+                if (data.name) errorMessage = data.name.join(' ');
+                else if (data.email) errorMessage = data.email.join(' ');
+                else if (data.password) errorMessage = data.password.join(' ');
+                else if (data.repeated_password) errorMessage = data.repeated_password.join(' ');
+                else if (data.non_field_errors) errorMessage = data.non_field_errors.join(' ');
+                throw new Error(errorMessage);
             }
             return data;
         } catch (error) {
             console.error('Error during registration:', error);
+            throw error;
         }
     }
 

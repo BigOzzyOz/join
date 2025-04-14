@@ -1,6 +1,11 @@
 import { Board } from "./class.Board.js";
 import { Database } from "./class.database.js";
 import { KanbanListener } from "./listeners/class.kanban-listener.js";
+import { Login } from './class.login.js';
+import { Register } from './class.register.js';
+import { Summary } from './class.summary.js';
+// import { AddTask } from './class.addtask.js'; // Assuming AddTask class exists
+// import { Contacts } from './class.contacts.js'; // Assuming Contacts class exists
 
 
 export class Kanban {
@@ -20,8 +25,6 @@ export class Kanban {
     register = null;
     summary = null;
     addTask = null;
-    board = null;
-    contacts = null;
 
 
     constructor() {
@@ -60,125 +63,153 @@ export class Kanban {
                 element.innerHTML = 'Page not found';
             }
         }
-        if (elementsToInclude.length > 0) this.activateListener();
     }
 
 
-    changeActive(link) {
+    changeActive = (link) => {
         let linkBtn = document.querySelectorAll(".menuBtn");
         linkBtn.forEach(btn => btn.classList.remove("menuBtnActive"));
         this.activeTab = link.innerText.toLowerCase();
         sessionStorage.setItem("activeTab", this.activeTab);
-        sessionStorage.getItem('taskCategory');
         this.setActive();
-    }
+    };
 
 
-    setActive(link = null) {
+    setActive = (link = null) => {
         const menuButtons = document.querySelectorAll(".menuBtn");
-        const currentPage = document.querySelector('main').getAttribute('data-page').toLowerCase();
-        const activeTabName = this.activeTab || currentPage;
-        const newActiveTab = document.querySelector(link);
-        if (newActiveTab) this.changeActive(newActiveTab);
-        else menuButtons.forEach(button => {
-            const buttonName = button.innerText.toLowerCase();
-            if (buttonName === activeTabName) button.classList.add("menuBtnActive");
-        });
-    }
+        menuButtons.forEach(button => button.classList.remove("menuBtnActive"));
+
+        let targetButton = null;
+
+        if (link) {
+            targetButton = document.querySelector(link);
+        } else {
+            const currentPage = document.querySelector('main')?.getAttribute('data-page')?.toLowerCase();
+            const activeTabName = this.activeTab || currentPage;
+            if (activeTabName) {
+                menuButtons.forEach(button => {
+                    const buttonName = button.innerText.toLowerCase();
+                    if (buttonName === activeTabName) {
+                        targetButton = button;
+                    }
+                });
+            }
+        }
+
+        if (targetButton) {
+            targetButton.classList.add("menuBtnActive");
+            if (!link) {
+                this.activeTab = targetButton.innerText.toLowerCase();
+                sessionStorage.setItem("activeTab", this.activeTab);
+            }
+        }
+    };
 
 
-    checkAndShowOrHideContent() {
+    checkAndShowOrHideContent = () => {
         const forbiddenContentElements = document.querySelectorAll(".forbiddenContent");
         const menuUserContainerElement = document.getElementById("menuUserContainer");
         const headerUserContainerElement = document.getElementById("headerUserContainer");
         const headerUserBadgeElements = document.querySelectorAll(".headerUserBadge");
 
-        if (!forbiddenContentElements || !menuUserContainerElement || !headerUserContainerElement) return;
+        if (!menuUserContainerElement || !headerUserContainerElement) {
+            console.warn("Menu or Header user container not found.");
+            return;
+        }
 
         if (!this.currentUser) {
             this.hideContentWhenNoUser(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
         } else {
             this.showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
-            headerUserBadgeElements.forEach(badgeElement => badgeElement.innerText = this.currentUser.firstLetters);
+            headerUserBadgeElements.forEach(badgeElement => {
+                badgeElement.innerText = this.currentUser.firstLetters || '??';
+            });
         }
-    }
+    };
 
 
-    hideContentWhenNoUser(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) {
+    hideContentWhenNoUser = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
         forbiddenContentElements.forEach(element => element.classList.add('d-none'));
         menuUserContainerElement.classList.add('d-none');
         headerUserContainerElement.classList.add('d-none');
-    }
+    };
 
 
-    showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) {
+    showContentWhenUserIsLoggedIn = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
         forbiddenContentElements.forEach(element => element.classList.remove('d-none'));
         menuUserContainerElement.classList.remove('d-none');
         headerUserContainerElement.classList.remove('d-none');
-    }
+    };
 
 
-    //NOTE - Global functions
-
-
-    toggleLoader(status) {
+    toggleLoader = (status) => {
         const loaderElement = document.getElementById('mainLoader');
         if (!loaderElement) return;
         loaderElement.style.display = status ? 'flex' : 'none';
-    }
+    };
 
 
-    setTasks(newTasks) {
-        tasks = newTasks;
-    }
+    setTasks = (newTasks) => {
+        this.tasks = newTasks;
+    };
 
 
-    setContacts(newContacts) {
-        contacts = newContacts;
-    }
+    setContacts = (newContacts) => {
+        this.contacts = newContacts;
+    };
 
 
-    toggleClass(menu, className1, className2) {
-        let edit = document.getElementById(menu);
-        edit.classList.toggle(className1);
-        edit.classList.toggle(className2);
-    }
+    toggleClass = (menuId, className1, className2) => {
+        let element = document.getElementById(menuId);
+        if (element) {
+            element.classList.toggle(className1);
+            element.classList.toggle(className2);
+        } else {
+            console.warn(`Element with ID "${menuId}" not found for toggleClass.`);
+        }
+    };
 
 
-    activateOutsideCheck(event, modalName, class1, class2) {
+    activateOutsideCheck = (event, modalId, class1, class2) => {
         event.stopPropagation();
 
         const outsideClickHandler = (e) => {
-            this.checkOutsideModal(e, modalName, class1, class2, outsideClickHandler);
+            this.checkOutsideModal(e, modalId, class1, class2, outsideClickHandler);
         };
 
-        document.addEventListener('click', outsideClickHandler);
-    }
+        setTimeout(() => {
+            document.addEventListener('click', outsideClickHandler);
+        }, 0);
+    };
 
 
-    checkOutsideModal(event, modalName, class1, class2, handler) {
-        let modal = document.getElementById(modalName);
-        if (modal.classList.contains(class1) && !modal.contains(event.target)) {
-            this.toggleClass(modalName, class1, class2);
-            document?.removeEventListener('click', handler);
+    checkOutsideModal = (event, modalId, class1, class2, handler) => {
+        let modal = document.getElementById(modalId);
+        if (modal && modal.classList.contains(class1) && !modal.contains(event.target)) {
+            this.toggleClass(modalId, class1, class2);
+            document.removeEventListener('click', handler);
         };
-    }
+    };
 
-    forwardRegister() {
+
+    forwardRegister = () => {
         window.location.href = 'html/register.html';
-    }
+    };
 
 
-    forwardLegal() {
+    forwardLegal = () => {
         sessionStorage.setItem('activeTab', "legal notice");
-    }
+        window.location.href = 'html/imprint.html';
+    };
 
 
-    forwardPrivacy() {
+    forwardPrivacy = () => {
         sessionStorage.setItem('activeTab', "privacy policy");
-    }
+        window.location.href = 'html/privacy.html';
+    };
 
-    forwardToIndex() {
+
+    forwardToIndex = () => {
         window.location.href = '../index.html';
-    }
+    };
 }

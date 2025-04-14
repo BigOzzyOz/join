@@ -1,27 +1,28 @@
 export class SummaryListener {
     constructor(kanban) {
         this.kanban = kanban;
+        this.summaryContainer = document.getElementById('summaryMain') || document.body;
         this.activateListener();
     }
 
+    handleInteraction = (event) => {
+        const target = event.target;
+
+        if (target.closest('.summ-info-field')) {
+            this.nextPage();
+        }
+    };
+
     activateListener() {
-        document.querySelectorAll('.summ-info-field').forEach(btn => {
-            btn.addEventListener('click', nextPage);
-        });
+        this.summaryContainer.addEventListener('click', this.handleInteraction);
     }
-
-
 
     deactivateAllListenersSummary() {
-        document.querySelectorAll('.summ-info-field').forEach(btn => {
-            btn.removeEventListener('click', nextPage);
-        });
+        this.summaryContainer.removeEventListener('click', this.handleInteraction);
     }
 
-
-
-    nextPage() {
+    nextPage = () => {
         sessionStorage.setItem('activeTab', 'board');
         window.location.href = 'board.html';
-    }
+    };
 }
