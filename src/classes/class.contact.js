@@ -1,6 +1,11 @@
-import { TaskHtml as thtml } from "./html/class.html-task.js";
-
 export class Contact {
+    id;
+    name;
+    email;
+    phone;
+    isUser;
+    initials;
+    profilePic;
 
     constructor(contact) {
         this.id = contact.id;
@@ -14,38 +19,24 @@ export class Contact {
         this.contactHtml = new thtml(this.contactObject());
     }
 
-    contactObject() {
+    toObject() {
         return {
-            'id': this.id,
-            'name': this.name,
-            'email': this.email,
-            'number': this.phone,
-            'firstLetters': this.firstLetters,
-            'isUser': this.isUser,
-            'profilePic': this.profilePic,
+            id: this.id,
+            name: this.name,
+            email: this.email,
+            phone: this.phone,
+            isUser: this.isUser,
+            initials: this.initials,
+            profilePic: this.profilePic
         };
     }
 
-    uploadContactObject() {
+    toApiObject() {
         return {
-            ...(this.id && { 'id': this.id }),
-            'name': this.name,
-            'email': this.email,
-            'number': this.phone,
-            'first_letters': this.firstLetters,
-            'is_user': this.isUser,
-            'profile_pic': this.profilePic,
+            name: this.name,
+            email: this.email,
+            number: this.phone,
+            is_user: this.isUser,
         };
-    }
-
-    filterFirstLetters(name) {
-        return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
-    }
-
-    generateSvgCircleWithInitials(name, width = 120, height = 120) {
-        const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
-        return this.contactHtml.svgProfilePic(randomColor, initials, height, width);
     }
 }

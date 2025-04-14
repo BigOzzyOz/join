@@ -6,27 +6,30 @@ export class Summary {
         this.summaryHtml = new SummaryHtml(kanban);
     }
 
-    initSummary = async () => {
+    async initSummary() {
         this.displayGreeting();
         await this.loadCategory();
-    };
+    }
 
-    displayGreeting = () => {
+
+    displayGreeting() {
         const currentTime = this.getGreeting();
-        const userName = this.kanban.currentUser?.name || "Guest";
+        const userName = this.kanban.currentUser.name;
 
         const isMobile = window.matchMedia("(max-width: 1199.8px)").matches;
         const mobileElement = document.getElementById('greetingSummaryMobile');
         const mainElement = document.getElementById('summaryMain');
 
-        if (isMobile && mobileElement && mainElement) {
+        if (isMobile) {
             mobileElement.innerHTML = this.summaryHtml.greetingMobileHTML(currentTime, userName);
             this.animateGreeting(mobileElement, mainElement);
             this.updateGreetingDesktop(currentTime, userName);
         } else {
             this.updateGreetingDesktop(currentTime, userName);
         }
-    };
+    }
+
+
 
     getGreeting() {
         const currentTime = new Date().getHours();
@@ -34,6 +37,8 @@ export class Summary {
         else if (currentTime < 18) return "Good afternoon,";
         else return "Good evening,";
     }
+
+
 
     animateGreeting(mobileElement, mainElement) {
         mobileElement.style.display = 'flex';
@@ -50,59 +55,57 @@ export class Summary {
         }, 0);
     }
 
+
+
     updateGreetingDesktop(time, name) {
         let greetingDesktop = document.getElementById('greetingSumm');
         let greetingNameDesktop = document.getElementById('greetingNameDesktop');
-        if (greetingDesktop) greetingDesktop.innerText = time;
-        if (greetingNameDesktop) greetingNameDesktop.innerText = name;
+        greetingDesktop.innerText = time;
+        greetingNameDesktop.innerText = name;
     }
 
-    loadCategory = async () => {
+
+    async loadCategory() {
         try {
-            const response = await this.kanban.db.get("api/tasks/summary/");
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const dataJson = await response.json();
+            const data = await this.kanban.db.get("api/tasks/summary/");
+            let dataJson = await data.json();
             this.taskAssignment(dataJson);
             this.displayUrgentTasks(dataJson);
         } catch (error) {
-            console.error("Error loading summary data:", error);
+            console.error("Error loading categories:", error);
         }
-    };
+    }
+
+
 
     taskAssignment(data) {
-        this.updateElement('howManyTodos', data.todos);
-        this.updateElement('howManyInProgress', data.in_progress);
-        this.updateElement('howManyAwaitFeedback', data.await_feedback);
-        this.updateElement('howManyDone', data.done);
-        this.updateElement('howManyTaskInBoard', data.total);
+        updateElement('howManyTodos', data.todos);
+        updateElement('howManyInProgress', data.in_progress);
+        updateElement('howManyAwaitFeedback', data.await_feedback);
+        updateElement('howManyDone', data.done);
+        updateElement('howManyTaskInBoard', data.total);
     }
+
+
 
     updateElement(elementId, newValue) {
         const element = document.getElementById(elementId);
         if (element) {
-            element.innerText = String(newValue);
+            element.innerText = newValue;
         }
     }
 
+
+
     displayUrgentTasks(data) {
-        const urgentTaskCount = data.urgent || 0;
-        let urgentTaskDate = '';
-        if (urgentTaskCount > 0 && data.next_urgent_due) {
-            try {
-                urgentTaskDate = new Date(data.next_urgent_due).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                });
-            } catch (e) {
-                console.error("Error formatting urgent date:", e);
-                urgentTaskDate = "Invalid Date";
-            }
-        }
+        const urgentTaskCount = data.urgent;
+        const urgentTaskDate = urgentTaskCount > 0
+            ? new Date(data.next_urgent_due).toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            })
+            : '';
 
         this.updateElement('howManyUrgent', urgentTaskCount);
         this.updateElement('summUrgentDate', urgentTaskDate);
