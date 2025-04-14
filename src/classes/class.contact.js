@@ -38,14 +38,4 @@ export class Contact {
         };
     }
 
-    filterFirstLetters(name) {
-        return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
-    }
-
-    generateSvgCircleWithInitials(name, width = 120, height = 120) {
-        const colors = ['#0038FF', '#00BEE8', '#1FD7C1', '#6E52FF', '#9327FF', '#C3FF2B', '#FC71FF', '#FF4646', '#FF5EB3', '#FF745E', '#FF7A00', '#FFA35E', '#FFBB2B', '#FFC701', '#FFE62B'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
-        return this.contactHtml.svgProfilePic(randomColor, initials, height, width);
-    }
 }
