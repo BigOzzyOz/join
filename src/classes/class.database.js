@@ -57,8 +57,8 @@ export class Database {
             this.kanban.board.initBoard();
         }
         else if (path.includes('contacts.html')) {
-            this.kanban.contacts = new ContactsPage(this.kanban);
-            this.kanban.contacts.initContacts();
+            this.kanban.contactsPage = new ContactsPage(this.kanban);
+            this.kanban.contactsPage.initContacts();
         }
     }
 

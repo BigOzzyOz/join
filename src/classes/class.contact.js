@@ -6,11 +6,11 @@ export class Contact {
     constructor(contact) {
         this.id = contact.id || -1;
         this.email = contact.email || '';
-        this.firstLetters = contact.first_letters || contact.name.charAt(0).toUpperCase();
-        this.isUser = contact.is_user || false;
+        this.firstLetters = contact.first_letters || contact.firstLetters || contact.name?.charAt(0) || '';
+        this.isUser = contact.is_user || contact.isUser || false;
         this.name = contact.name || '';
-        this.profilePic = contact.profile_pic || '';
-        this.phone = contact.number || 'Add phone number';
+        this.profilePic = contact.profile_pic || contact.profilePic || '';
+        this.phone = contact.number || contact.phone || 'Add phone number';
 
         this.html = new ContactHtml(this.contactObject());
     }

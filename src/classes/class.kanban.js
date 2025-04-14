@@ -29,6 +29,7 @@ export class Kanban {
     register = null;
     summary = null;
     addTask = null;
+    contactsPage = null;
 
 
     constructor() {
@@ -231,7 +232,13 @@ export class Kanban {
     activateListenersContactsDetails() {
         this.listener?.contacts?.activateListenersDetails();
     }
+
     activateListenersContactsAdd() {
         this.listener?.contacts?.activateListenersAdd();
     }
+
+    activateListenersContactsDelete() {
+        this.listener?.contacts?.activateListenersDelete();
+    }
+
 }

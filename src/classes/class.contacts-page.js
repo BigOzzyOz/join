@@ -5,24 +5,25 @@ export class ContactsPage {
     currentLetter = '';
     currentLetterId = '';
     editId = -1;
+
+
     constructor(kanban) {
         this.kanban = kanban;
-        this.contactsInstance = kanban.contacts || new ContactsPage(kanban);
 
         this.html = new ContactsPageHtml(kanban);
     }
 
 
 
-    async addContacts(id = editId) {
+    async addContacts(id = this.editId) {
         const name = document.getElementById('addName').value;
         const email = document.getElementById('addMail').value;
         const phone = document.getElementById('addTel').value;
-        const newContact = new Contact({ 'name': name, 'email': email, 'phone': phone, 'isUser': false });
+        const newContact = { 'name': name, 'email': email, 'number': phone, 'isUser': false };
 
         if (this.checkForExistingContact(newContact)) {
             try {
-                const response = await this.kanban.db.post(`api/contacts/`, newContact.html.uploadContactObject());
+                const response = await this.kanban.db.post(`api/contacts/`, newContact);
                 let newContactResponse = await response.json();
                 if (response.status !== 201) {
                     if (response.status === 400) throw new Error("Bad Request");
@@ -30,8 +31,8 @@ export class ContactsPage {
                     if (response.status === 403) throw new Error("Forbidden");
                 }
                 const addedContact = new Contact(newContactResponse);
-                this.kanban.contacts.push(pushToContacts(addedContact.contactObject()));
-                editId = addedContact.id;
+                this.kanban.contacts.push(addedContact);
+                this.editId = addedContact.id;
                 sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
                 return true;
             } catch (error) {
@@ -59,7 +60,7 @@ export class ContactsPage {
 
 
     openEditContacts(event, id) {
-        editId = id;
+        this.editId = id;
         const contact = this.kanban.contacts.find((c) => c.id === id);
         const nameInput = document.getElementById('editName');
         const emailInput = document.getElementById('editMail');
@@ -77,20 +78,19 @@ export class ContactsPage {
     }
 
 
-    async editContacts(id = editId) {
+    async editContacts(id = this.editId) {
         const contact = this.kanban.contacts.find(c => c.id === id);
         const updatedName = document.getElementById('editName').value;
         const updatedEmail = document.getElementById('editMail').value;
         const updatedPhone = document.getElementById('editTel').value;
-        const updatedContact = new Contact({
-            'name': updatedName,
-            'email': updatedEmail,
-            'phone': updatedPhone,
-        });
+        const updatedContact = new Contact(contact);
+        updatedContact.name = updatedName;
+        updatedContact.email = updatedEmail;
+        updatedContact.phone = updatedPhone;
 
-        if (checkForExistingContact(updatedContact)) {
+        if (this.checkForExistingContact(updatedContact)) {
             try {
-                const response = await this.kanban.db.patch(`api/contacts/${id}/`, updatedContact);
+                const response = await this.kanban.db.patch(`api/contacts/${id}/`, updatedContact.uploadContactObject());
                 if (response.status !== 200) {
                     if (response.status === 400) throw new Error("Bad Request");
                     if (response.status === 401) throw new Error("Unauthorized");
@@ -99,7 +99,7 @@ export class ContactsPage {
                 let updatedContactResponse = await response.json();
                 const updatedContactInstance = new Contact(updatedContactResponse);
                 const existingContactIndex = this.kanban.contacts.findIndex(c => c.id === id);
-                this.kanban.contacts[existingContactIndex] = updatedContactInstance.contactObject();
+                this.kanban.contacts[existingContactIndex] = updatedContactInstance;
                 sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
                 contact.id === this.kanban.currentUser.id ? this.kanban.db.logout() : this.refreshPage();
                 return true;
@@ -112,17 +112,17 @@ export class ContactsPage {
     }
 
 
-    async deleteContacts(id = editId) {
+    deleteContacts = async (id = this.editId) => {
         let response = await this.kanban.db.delete(`api/contacts/${id}/`);
+
         if (response.status !== 204) {
-            console.log(response);
             return;
         };
         this.kanban.contacts.splice(this.kanban.contacts.findIndex(c => c.id == id), 1);
         sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
-        editId = -1;
+        this.editId = -1;
         id === this.kanban.currentUser.id ? this.kanban.db.logout() : this.refreshPage();
-    }
+    };
 
 
     async initContacts() {
@@ -159,11 +159,13 @@ export class ContactsPage {
 
         contactListElement.innerHTML = this.html.htmlRenderAddContact();
 
-        for (const contact of sortedContacts) {
+        for (let contact of sortedContacts) {
+            if (!(contact instanceof Contact)) contact = new Contact(contact);
             this.renderContactLetter(contact);
             const contactSection = document.getElementById(this.currentLetterId);
             contactSection.innerHTML += contact.html.htmlRenderGeneral(this.kanban.currentUser.id);
         }
+        this.kanban.activateListenersContacts();
     }
 
 
@@ -181,12 +183,13 @@ export class ContactsPage {
 
 
     refreshPage() {
+        const contactsDetail = document.getElementById('contactsDetail');
         this.currentLetter = '';
         this.currentLetterId = '';
+        if (contactsDetail.classList.contains('tt0')) this.kanban.toggleClass('contactsDetail', 'tt0', 'tty100');
         this.renderContactList();
-        this.setActiveContact(editId);
-        this.renderContactsDetails(editId);
-        this.kanban.activateListenersContacts();
+        this.setActiveContact(this.editId);
+        this.renderContactsDetails(this.editId);
     }
 
 
@@ -194,19 +197,20 @@ export class ContactsPage {
     renderContactsDetails(contactId = '') {
         const detailsElement = document.getElementById('contactsDetail');
         this.editId = contactId;
-        const contact = this.kanban.contacts.find(contact => contact.id == this.editId);
-
-        detailsElement.innerHTML = contact && this.editId != -1
-            ? contact.html.htmlRenderContactDetails()
-            : this.html.htmlRenderContactDetailsEmpty();
-
+        let contact = this.kanban.contacts.find(contact => contact.id == this.editId);
+        if (!contact) {
+            detailsElement.innerHTML = this.html.htmlRenderContactDetailsEmpty();
+            return;
+        }
+        if (!(contact instanceof Contact)) contact = new Contact(contact);
+        detailsElement.innerHTML = contact.html.htmlRenderContactDetails();
         this.setActiveContact(contactId);
         this.kanban.activateListenersContactsDetails();
     }
 
 
 
-    setActiveContact(id = editId) {
+    setActiveContact(id = this.editId) {
         const contactElementId = `contact${id}`;
         const activeContactElement = document.querySelector('.activeContact');
         const contactElement = document.getElementById(contactElementId);
@@ -218,7 +222,7 @@ export class ContactsPage {
 
 
 
-    openAddContacts(event) {
+    openAddContacts = (event) => {
         const nameInput = document.getElementById('addName');
         const emailInput = document.getElementById('addMail');
         const telInput = document.getElementById('addTel');
@@ -228,19 +232,21 @@ export class ContactsPage {
         this.kanban.toggleClass('addContact', 'tt0', 'tty100');
         this.kanban.activateListenersContactsAdd();
         this.kanban.activateOutsideCheck(event, 'addContact', 'tt0', 'tty100');
-    }
+    };
 
-    openDeleteContacts(event, id = editId) {
-        editId = id;
+    openDeleteContacts = (event, id = this.editId) => {
+        this.editId = id;
         const response = document.querySelector('#deleteResponse>.deleteQuestion>p');
 
         let question;
-        if (id === currentUser.id) question = 'Are you sure you want to delete your own account?';
+        if (id === this.kanban.currentUser.id) question = 'Are you sure you want to delete your own account?';
         else if (this.kanban.contacts.find((c) => c.id === id).isUser)
             question = 'You are not allowed to delete this user\'s account!';
         else question = 'Are you sure you want to delete this contact?';
 
         response.textContent = question;
         this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
-    }
+        this.kanban.activateOutsideCheck(event, 'deleteResponse', 'ts1', 'ts0');
+        this.kanban.activateListenersContactsDelete();
+    };
 }
