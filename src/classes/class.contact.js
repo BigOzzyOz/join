@@ -1,17 +1,18 @@
-import { ContactHtml as chtml } from "./html/class.html-contact.js";
+import { ContactHtml } from "./html/class.html-contact.js";
 
 export class Contact {
+    html = null;
 
     constructor(contact) {
-        this.id = contact.id;
-        this.email = contact.email;
-        this.firstLetters = contact.first_letters;
-        this.isUser = contact.is_user;
-        this.name = contact.name;
-        this.profilePic = contact.profile_pic;
-        this.phone = contact.number;
+        this.id = contact.id || -1;
+        this.email = contact.email || '';
+        this.firstLetters = contact.first_letters || contact.name.charAt(0).toUpperCase();
+        this.isUser = contact.is_user || false;
+        this.name = contact.name || '';
+        this.profilePic = contact.profile_pic || '';
+        this.phone = contact.number || 'Add phone number';
 
-        this.contactHtml = new chtml(this.contactObject());
+        this.html = new ContactHtml(this.contactObject());
     }
 
     contactObject() {

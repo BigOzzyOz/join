@@ -3,6 +3,7 @@ import { Board } from './class.Board.js';
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
+import { ContactsPage } from './class.contacts-page.js';
 
 
 export class Database {
@@ -56,7 +57,7 @@ export class Database {
             this.kanban.board.initBoard();
         }
         else if (path.includes('contacts.html')) {
-            this.kanban.contacts = new Contacts(this.kanban);
+            this.kanban.contacts = new ContactsPage(this.kanban);
             this.kanban.contacts.initContacts();
         }
     }

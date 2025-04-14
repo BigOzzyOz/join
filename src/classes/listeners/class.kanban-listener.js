@@ -3,7 +3,7 @@ import { RegisterListener } from './class.listener-register.js';
 import { SummaryListener } from './class.listener-summary.js';
 // import { AddTaskListener } from './class.listener-addtask.js';
 // import { BoardListener } from './class.listener-board.js';
-// import { ContactsListener } from './class.listener-contacts.js';
+import { ContactsListener } from './class.listener-contacts.js';
 import { MenuListener } from './class.listener-menu.js';
 
 export class KanbanListener {

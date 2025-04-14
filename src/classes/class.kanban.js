@@ -4,15 +4,19 @@ import { KanbanListener } from "./listeners/class.kanban-listener.js";
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
+import { Contact } from "./class.contact.js";
 // import { AddTask } from './class.addtask.js'; // Assuming AddTask class exists
 // import { Contacts } from './class.contacts.js'; // Assuming Contacts class exists
 
 
 export class Kanban {
-    currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
+    currentUserStorage = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
+    currentUser;
     activeTab = sessionStorage.getItem('activeTab') || '';
-    contacts = JSON.parse(sessionStorage.getItem('contact')) || [];
-    tasks = JSON.parse(sessionStorage.getItem('tasks')) || [];
+    contactsStorage = JSON.parse(sessionStorage.getItem('contact')) || [];
+    contacts;
+    tasksStorage = JSON.parse(sessionStorage.getItem('tasks')) || [];
+    tasks;
     path = window.location.pathname;
     noUserContentPaths = [
         '/index.html',
@@ -29,6 +33,9 @@ export class Kanban {
 
     constructor() {
         if (this.noUserContentPaths.some((usedPath) => this.path.includes(usedPath)) || this.path === '/') sessionStorage.clear();
+        this.currentUser = new Contact(this.currentUserStorage);
+        this.contacts = this.contactsStorage.map(contact => new Contact(contact));
+        this.tasks = this.tasksStorage.map(task => new Task(task));
     }
 
     async _asyncInit() {
@@ -212,4 +219,19 @@ export class Kanban {
     forwardToIndex = () => {
         window.location.href = '../index.html';
     };
+
+    activateListenersContacts() {
+        this.listener?.contacts?.activateListenersContact();
+    }
+
+    activateListenersContactsEdit() {
+        this.listener?.contacts?.activateListenersEdit();
+    }
+
+    activateListenersContactsDetails() {
+        this.listener?.contacts?.activateListenersDetails();
+    }
+    activateListenersContactsAdd() {
+        this.listener?.contacts?.activateListenersAdd();
+    }
 }

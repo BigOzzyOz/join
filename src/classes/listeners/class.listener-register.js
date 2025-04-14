@@ -1,3 +1,5 @@
+import { Register } from '../class.register.js';
+
 export class RegisterListener {
     constructor(kanban) {
         this.kanban = kanban;
