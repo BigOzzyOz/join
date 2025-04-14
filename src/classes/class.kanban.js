@@ -1,10 +1,11 @@
-import { Board } from "./class.Board.js";
 import { Database } from "./class.database.js";
 import { KanbanListener } from "./listeners/class.kanban-listener.js";
+import { Contact } from "./class.contact.js";
+import { Board } from "./class.Board.js";
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
-import { Contact } from "./class.contact.js";
+// import { Task } from './class.task.js';
 // import { AddTask } from './class.addtask.js'; // Assuming AddTask class exists
 // import { Contacts } from './class.contacts.js'; // Assuming Contacts class exists
 
@@ -31,24 +32,24 @@ export class Kanban {
     addTask = null;
     contactsPage = null;
 
-
+    //NOTE - Initialization and Setup
     constructor() {
         if (this.noUserContentPaths.some((usedPath) => this.path.includes(usedPath)) || this.path === '/') sessionStorage.clear();
-        this.currentUser = new Contact(this.currentUserStorage);
+        this.currentUser = this.currentUserStorage ? new Contact(this.currentUserStorage) : null;
         this.contacts = this.contactsStorage.map(contact => new Contact(contact));
         this.tasks = this.tasksStorage.map(task => new Task(task));
-    }
-
-    async _asyncInit() {
-        this.db = new Database(this);
-        await this.db.checkAuthStatus();
-        this.listener = new KanbanListener(this);
     }
 
     static async createInstance() {
         const instance = new Kanban();
         await instance._asyncInit();
         return instance;
+    }
+
+    async _asyncInit() {
+        this.db = new Database(this);
+        await this.db.checkAuthStatus();
+        this.listener = new KanbanListener(this);
     }
 
     async init() {
@@ -58,7 +59,6 @@ export class Kanban {
         if (!sessionStorage.getItem('taskCategory')) sessionStorage.setItem('taskCategory', 'toDo');
         document.getElementById('backArrow')?.addEventListener('click', () => { window.history.back(); });
     }
-
 
     async includeHTML() {
         const elementsToInclude = document.querySelectorAll('[w3-include-html]');
@@ -73,15 +73,18 @@ export class Kanban {
         }
     }
 
-
-    changeActive = (link) => {
-        let linkBtn = document.querySelectorAll(".menuBtn");
-        linkBtn.forEach(btn => btn.classList.remove("menuBtnActive"));
-        this.activeTab = link.innerText.toLowerCase();
-        sessionStorage.setItem("activeTab", this.activeTab);
-        this.setActive();
+    //NOTE - State Management
+    setTasks = (newTasks) => {
+        this.tasks = newTasks;
+        sessionStorage.setItem('tasks', JSON.stringify(newTasks));
     };
 
+    setContacts = (newContacts) => {
+        this.contacts = newContacts;
+        sessionStorage.setItem('contact', JSON.stringify(newContacts));
+    };
+
+    //NOTE - UI Updates & Interaction
 
     setActive = (link = null) => {
         const menuButtons = document.querySelectorAll(".menuBtn");
@@ -113,6 +116,13 @@ export class Kanban {
         }
     };
 
+    changeActive = (linkElement) => {
+        let linkBtn = document.querySelectorAll(".menuBtn");
+        linkBtn.forEach(btn => btn.classList.remove("menuBtnActive"));
+        this.activeTab = linkElement.innerText.toLowerCase();
+        sessionStorage.setItem("activeTab", this.activeTab);
+        linkElement.classList.add("menuBtnActive");
+    };
 
     checkAndShowOrHideContent = () => {
         const forbiddenContentElements = document.querySelectorAll(".forbiddenContent");
@@ -130,11 +140,10 @@ export class Kanban {
         } else {
             this.showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
             headerUserBadgeElements.forEach(badgeElement => {
-                badgeElement.innerText = this.currentUser.firstLetters || '??';
+                badgeElement.innerText = this.currentUser?.firstLetters || '??';
             });
         }
     };
-
 
     hideContentWhenNoUser = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
         forbiddenContentElements.forEach(element => element.classList.add('d-none'));
@@ -142,30 +151,17 @@ export class Kanban {
         headerUserContainerElement.classList.add('d-none');
     };
 
-
     showContentWhenUserIsLoggedIn = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
         forbiddenContentElements.forEach(element => element.classList.remove('d-none'));
         menuUserContainerElement.classList.remove('d-none');
         headerUserContainerElement.classList.remove('d-none');
     };
 
-
     toggleLoader = (status) => {
         const loaderElement = document.getElementById('mainLoader');
         if (!loaderElement) return;
         loaderElement.style.display = status ? 'flex' : 'none';
     };
-
-
-    setTasks = (newTasks) => {
-        this.tasks = newTasks;
-    };
-
-
-    setContacts = (newContacts) => {
-        this.contacts = newContacts;
-    };
-
 
     toggleClass = (menuId, className1, className2) => {
         let element = document.getElementById(menuId);
@@ -177,7 +173,6 @@ export class Kanban {
         }
     };
 
-
     activateOutsideCheck = (event, modalId, class1, class2) => {
         event.stopPropagation();
 
@@ -186,41 +181,38 @@ export class Kanban {
         };
 
         setTimeout(() => {
-            document.addEventListener('click', outsideClickHandler);
+            document.addEventListener('click', outsideClickHandler, { once: true });
         }, 0);
     };
 
-
     checkOutsideModal = (event, modalId, class1, class2, handler) => {
         let modal = document.getElementById(modalId);
+
         if (modal && modal.classList.contains(class1) && !modal.contains(event.target)) {
             this.toggleClass(modalId, class1, class2);
-            document.removeEventListener('click', handler);
         };
     };
 
-
+    //NOTE - Navigation
     forwardRegister = () => {
         window.location.href = 'html/register.html';
     };
-
 
     forwardLegal = () => {
         sessionStorage.setItem('activeTab', "legal notice");
         window.location.href = 'html/imprint.html';
     };
 
-
     forwardPrivacy = () => {
         sessionStorage.setItem('activeTab', "privacy policy");
         window.location.href = 'html/privacy.html';
     };
 
-
     forwardToIndex = () => {
-        window.location.href = '../index.html';
+        window.location.href = this.path.includes('/html/') ? '../index.html' : './index.html';
     };
 
+    //NOTE - Listener Activation (Delegation)
     activateListenersContacts() {
         this.listener?.contacts?.activateListenersContact();
     }
@@ -240,5 +232,4 @@ export class Kanban {
     activateListenersContactsDelete() {
         this.listener?.contacts?.activateListenersDelete();
     }
-
 }
