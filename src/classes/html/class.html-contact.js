@@ -1,4 +1,4 @@
-export class TaskHtml {
+export class ContactHtml {
   constructor(contact) {
     this.id = contact.id;
     this.email = contact.email;

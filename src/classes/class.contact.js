@@ -1,17 +1,17 @@
-import { TaskHtml as thtml } from "./html/class.html-task.js";
+import { ContactHtml as chtml } from "./html/class.html-contact.js";
 
 export class Contact {
 
     constructor(contact) {
         this.id = contact.id;
         this.email = contact.email;
-        this.firstLetters = filterFirstLetters(contact.name);
+        this.firstLetters = contact.first_letters;
         this.isUser = contact.is_user;
         this.name = contact.name;
-        this.profilePic = contact.profile_pic ? contact.profile_pic : generateSvgCircleWithInitials(contact.name);
+        this.profilePic = contact.profile_pic;
         this.phone = contact.number;
 
-        this.contactHtml = new thtml(this.contactObject());
+        this.contactHtml = new chtml(this.contactObject());
     }
 
     contactObject() {
