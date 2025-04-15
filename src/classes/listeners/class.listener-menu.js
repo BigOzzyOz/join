@@ -1,4 +1,6 @@
 export class MenuListener {
+    //NOTE - Constructor & Initialization
+
     constructor(kanban) {
         this.kanban = kanban;
         this.headerContainer = document.querySelector('header') || document.body;
@@ -7,6 +9,22 @@ export class MenuListener {
 
         this.activateListener();
     }
+
+    //NOTE - Listener Management
+
+    activateListener() {
+        this.headerContainer.addEventListener('click', this.handleInteraction);
+        this.navContainer.addEventListener('click', this.handleInteraction);
+        this.headerMenuContainer?.addEventListener('click', this.handleInteraction);
+    }
+
+    deactivateListenersMenu() {
+        this.headerContainer.removeEventListener('click', this.handleInteraction);
+        this.navContainer.removeEventListener('click', this.handleInteraction);
+        this.headerMenuContainer?.removeEventListener('click', this.handleInteraction);
+    }
+
+    //NOTE - Main Event Handling
 
     handleInteraction = (event) => {
         const target = event.target;
@@ -44,17 +62,7 @@ export class MenuListener {
         }
     };
 
-    activateListener() {
-        this.headerContainer.addEventListener('click', this.handleInteraction);
-        this.navContainer.addEventListener('click', this.handleInteraction);
-        this.headerMenuContainer?.addEventListener('click', this.handleInteraction);
-    }
-
-    deactivateListenersMenu() {
-        this.headerContainer.removeEventListener('click', this.handleInteraction);
-        this.navContainer.removeEventListener('click', this.handleInteraction);
-        this.headerMenuContainer?.removeEventListener('click', this.handleInteraction);
-    }
+    //NOTE - Specific Event Handlers (Header Menu)
 
     headerUserBadgeButton = (event) => {
         this.kanban.toggleClass('headerMenuContainer', 'ts0', 'ts1');
@@ -81,11 +89,13 @@ export class MenuListener {
         }
     };
 
+    //NOTE - Specific Event Handlers (Navigation Menu)
+
     handleMenuClick = (event, clickedButton) => {
         this.kanban.changeActive(clickedButton);
         const href = clickedButton.getAttribute('href');
         if (href && href !== '#') {
-            // Navigation logic can be added here if needed
+            // Additional logic could be added here if needed (e.g., preventing default and using JS navigation).
         }
     };
 }

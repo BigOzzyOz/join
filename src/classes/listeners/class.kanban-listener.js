@@ -1,3 +1,4 @@
+//NOTE - Imports
 import { LoginListener } from './class.listener-login.js';
 import { RegisterListener } from './class.listener-register.js';
 import { SummaryListener } from './class.listener-summary.js';
@@ -5,8 +6,16 @@ import { SummaryListener } from './class.listener-summary.js';
 // import { BoardListener } from './class.listener-board.js';
 import { ContactsListener } from './class.listener-contacts.js';
 import { MenuListener } from './class.listener-menu.js';
+import { Login } from '../class.login.js';
+import { Register } from '../class.register.js';
+import { Summary } from '../class.summary.js';
+// import { AddTask } from '../addtask/class.addtask.js';
+// import { Board } from '../board/class.board.js';
+import { Contacts } from '../contacts/class.contacts-page.js';
+import { ContactsPage } from '../class.contacts-page.js';
 
 export class KanbanListener {
+    //NOTE - Properties
     login;
     register;
     summary;
@@ -15,12 +24,14 @@ export class KanbanListener {
     contacts;
     menu;
 
+    //NOTE - Constructor & Initialization
     constructor(kanban) {
         this.kanban = kanban;
-        this.activateListenersBasedOnPath();
         this.menu = new MenuListener(this.kanban);
+        this.activateListenersBasedOnPath();
     }
 
+    //NOTE - Listener Lifecycle Management
     activateListenersBasedOnPath = () => {
         const path = window.location.pathname;
 
@@ -38,12 +49,17 @@ export class KanbanListener {
                 this.summary = new SummaryListener(this.kanban);
                 break;
             case path.includes('addtask.html'):
-                setTimeout(() => this.addTask = new AddTaskListener(this.kanban), 500);
+                // Ensure AddTaskListener is imported
+                // The setTimeout seems unusual here. Is there a reason for the delay?
+                // If AddTaskListener depends on elements loaded later, consider using DOMContentLoaded or similar.
+                // setTimeout(() => this.addTask = new AddTaskListener(this.kanban), 500);
                 break;
             case path.includes('board.html'):
-                this.board = new BoardListener(this.kanban);
+                // Ensure BoardListener is imported
+                // this.board = new BoardListener(this.kanban);
                 break;
             case path.includes('contacts.html'):
+                if (!this.kanban.contacts) this.kanban.contacts = new ContactsPage(this.kanban);
                 this.contacts = new ContactsListener(this.kanban);
                 break;
             default:
