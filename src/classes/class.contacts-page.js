@@ -33,7 +33,7 @@ export class ContactsPage {
                 const addedContact = new Contact(newContactResponse);
                 this.kanban.contacts.push(addedContact);
                 this.editId = addedContact.id;
-                sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
+                this.kanban.setContacts(this.kanban.contacts);
                 return true;
             } catch (error) {
                 console.error(error);
@@ -100,7 +100,7 @@ export class ContactsPage {
                 const updatedContactInstance = new Contact(updatedContactResponse);
                 const existingContactIndex = this.kanban.contacts.findIndex(c => c.id === id);
                 this.kanban.contacts[existingContactIndex] = updatedContactInstance;
-                sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
+                this.kanban.setContacts(this.kanban.contacts);
                 contact.id === this.kanban.currentUser.id ? this.kanban.db.logout() : this.refreshPage();
                 return true;
             } catch (error) {
@@ -119,7 +119,7 @@ export class ContactsPage {
             return;
         };
         this.kanban.contacts.splice(this.kanban.contacts.findIndex(c => c.id == id), 1);
-        sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
+        this.kanban.setContacts(this.kanban.contacts);
         this.editId = -1;
         id === this.kanban.currentUser.id ? this.kanban.db.logout() : this.refreshPage();
     };
@@ -136,7 +136,7 @@ export class ContactsPage {
         const response = await this.kanban.db.get('api/contacts/');
         let loadItem = await response.json();
         this.setContactsArray(loadItem);
-        sessionStorage.setItem('contacts', JSON.stringify(this.kanban.contacts));
+        this.kanban.setContacts(this.kanban.contacts);
     }
 
 
