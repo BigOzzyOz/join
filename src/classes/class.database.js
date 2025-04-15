@@ -4,11 +4,14 @@ import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
 import { ContactsPage } from './class.contacts-page.js';
-
+//import { AddTask } from './class.addtask.js';
 
 export class Database {
     BASE_URL = 'http://127.0.0.1:8000/';
     token = sessionStorage.getItem('token') || '';
+    kanban = null;
+
+    //NOTE - Initialization & Setup
 
     constructor(kanban) {
         this.kanban = kanban;
@@ -23,51 +26,39 @@ export class Database {
                 headers: headers,
             });
             const data = await response.json();
-            await this.kanban.init().then(() => {
-                if (data.authenticated) this.initializePage();
-                else this.redirectToLogin();
-            });
+            await this.kanban.init();
+            if (response.ok && data.authenticated) this.initializePage();
+            else this.redirectToLogin();
         } catch (error) {
             console.error('Error checking auth status:', error);
+            await this.kanban.init();
+            this.redirectToLogin();
         } finally {
             this.kanban.toggleLoader(false);
         }
     }
 
-
-    createHeaders() {
-        const headers = { 'Content-Type': 'application/json' };
-        if (this.token) headers['Authorization'] = `Token ${this.token}`;
-        return headers;
-    }
-
-
     initializePage() {
         const path = window.location.pathname;
+        // Consider using a more scalable approach like a router or factory pattern
         if (path.includes('summary.html')) {
             this.kanban.summary = new Summary(this.kanban);
             this.kanban.summary.initSummary();
-        }
-        else if (path.includes('addtask.html')) {
+        } else if (path.includes('addtask.html')) {
             this.kanban.addTask = new AddTask(this.kanban);
             this.kanban.addTask.initAddTask();
-        }
-        else if (path.includes('board.html')) {
+        } else if (path.includes('board.html')) {
             this.kanban.board = new Board(this.kanban);
             this.kanban.board.initBoard();
-        }
-        else if (path.includes('contacts.html')) {
+        } else if (path.includes('contacts.html')) {
             this.kanban.contactsPage = new ContactsPage(this.kanban);
             this.kanban.contactsPage.initContacts();
         }
     }
 
-
     redirectToLogin() {
-        if (this.windowNoUserContent()) return;
-        else this.logout();
+        if (!this.windowNoUserContent()) this.logout();
     }
-
 
     windowNoUserContent() {
         const path = window.location.pathname;
@@ -78,160 +69,56 @@ export class Database {
             '/privacy.html',
             '/imprint.html',
         ];
-        if (this.shouldInitializeLoginRegister(path)) {
-            if (path.includes('register.html')) this.kanban.register = new Register(this.kanban);
-            else if (path.includes('index.html') || path === '/') this.kanban.login = new Login(this.kanban);
-        }
-        return noUserContentPaths.some((usedPath) => path.includes(usedPath)) || path === '/';
-    }
+        const isPublicPage = path === '/' || noUserContentPaths.some((publicPath) => path.includes(publicPath));
 
+        if (isPublicPage && this.shouldInitializeLoginRegister(path)) {
+            if (path.includes('register.html')) {
+                this.kanban.register = new Register(this.kanban);
+            } else if (path.includes('index.html') || path === '/') {
+                this.kanban.login = new Login(this.kanban);
+            }
+        }
+        return isPublicPage;
+    }
 
     shouldInitializeLoginRegister(path) {
         const excludedPaths = ['help.html', 'privacy.html', 'imprint.html'];
         return !excludedPaths.some(excludedPath => path.includes(excludedPath));
     }
 
-
-    setToken(tokenValue) {
-        this.token = tokenValue;
-        sessionStorage.setItem('token', tokenValue);
-    }
-
-
-    async get(path = '') {
-        const url = `${this.BASE_URL}${path}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${this.token}`,
-                },
-            });
-            return response;
-        } catch (error) {
-            console.error('Error fetching data from database:', error);
-            throw error;
-        }
-    }
-
-
-    async delete(path = '') {
-        try {
-            const url = `${this.BASE_URL}${path}`;
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${this.token}`,
-                },
-            });
-            return response;
-        } catch (error) {
-            console.error('Error deleting data from database:', error);
-            throw error;
-        }
-    }
-
-
-    async post(path = "", data = {}) {
-        const url = `${this.BASE_URL}${path}`;
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Token ${this.token}`,
-                },
-                body: JSON.stringify(data),
-            });
-            return response;
-        } catch (error) {
-            console.error('Error posting data to database:', error);
-            throw error;
-        }
-    }
-
-
-    async update(path = "", data = {}) {
-        try {
-            const url = `${this.BASE_URL}${path}`;
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${this.token}`,
-                },
-                body: JSON.stringify(data)
-            });
-            return response;
-        } catch (error) {
-            console.error('Error updating data in database:', error);
-            throw error;
-        }
-    }
-
-
-    async patch(path = "", data = {}) {
-        try {
-            const url = `${this.BASE_URL}${path}`;
-            const response = await fetch(url, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${this.token}`,
-                },
-                body: JSON.stringify(data)
-            });
-            return response;
-        } catch (error) {
-            console.error('Error updating data in database:', error);
-            throw error;
-        }
-    }
-
-
+    //NOTE - Authentication Methods
     async login(bodyData) {
         try {
             let response = await fetch(`${this.BASE_URL}auth/login/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData),
             });
             const data = await response.json();
             if (!response.ok) {
-                let errorMessage = 'Login failed.';
-                if (data.username && data.password) errorMessage = 'Please enter a valid email address and password.';
-                else if (data.username) errorMessage = 'Please enter a valid email address.';
-                else if (data.password) errorMessage = 'Please enter a valid password.';
-                else if (data.non_field_errors) errorMessage = 'Wrong email address or password! Try it again.';
+                let errorMessage = data.non_field_errors?.[0] || data.detail || 'Login failed. Please check credentials.';
+                if (data.username) errorMessage = `Username: ${data.username.join(' ')}`;
+                if (data.password) errorMessage = `Password: ${data.password.join(' ')}`;
                 throw new Error(errorMessage);
             }
             if (!data.token) throw new Error('No token received from the server.');
             this.setToken(data.token);
-            return data;
+            return data; // Return full data which might include user info
         } catch (error) {
             console.error('Login error:', error);
             throw error;
         }
     }
 
-
     async guestLogin() {
         try {
             let response = await fetch(`${this.BASE_URL}auth/guest/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
             const data = await response.json();
             if (!response.ok) {
-                let errorMessage = 'Guest login failed.';
-                if (data.detail) errorMessage = data.detail;
+                let errorMessage = data.detail || 'Guest login failed.';
                 throw new Error(errorMessage);
             }
             if (!data.token) throw new Error('No token received from the server.');
@@ -243,40 +130,39 @@ export class Database {
         }
     }
 
-
     logout = () => {
         sessionStorage.clear();
         localStorage.removeItem('currentUser');
         this.token = '';
-        this.kanban.currentUser = null;
-        window.location.href = '../index.html';
+        if (this.kanban) this.kanban.currentUser = null;
+        window.location.href = '/index.html';
     };
-
 
     async register(name, email, password, confirmPassword) {
         try {
             const response = await fetch(`${this.BASE_URL}auth/register/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     'name': name,
                     'email': email,
                     'password': password,
-                    'repeated_password': confirmPassword,
+                    'repeated_password': confirmPassword
                 }),
             });
             const data = await response.json();
             if (!response.ok) {
                 let errorMessage = 'Registration failed.';
-                if (data.name) errorMessage = data.name.join(' ');
-                else if (data.email) errorMessage = data.email.join(' ');
-                else if (data.password) errorMessage = data.password.join(' ');
-                else if (data.repeated_password) errorMessage = data.repeated_password.join(' ');
-                else if (data.non_field_errors) errorMessage = data.non_field_errors.join(' ');
+                const errorKeys = ['name', 'email', 'password', 'repeated_password', 'non_field_errors'];
+                for (const key of errorKeys) {
+                    if (data[key]) {
+                        errorMessage = data[key].join(' ');
+                        break;
+                    }
+                }
                 throw new Error(errorMessage);
             }
+
             return data;
         } catch (error) {
             console.error('Error during registration:', error);
@@ -284,4 +170,132 @@ export class Database {
         }
     }
 
+    setToken(tokenValue) {
+        this.token = tokenValue;
+        sessionStorage.setItem('token', tokenValue);
+    }
+
+    //NOTE - Generic HTTP Methods
+
+    async get(path = '') {
+        const url = `${this.BASE_URL}${path}`;
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: this.createHeaders(),
+            });
+            if (!response.ok && response.status === 401) {
+                console.warn('Unauthorized request. Logging out.');
+                this.logout();
+                throw new Error('Unauthorized');
+            }
+            return response;
+        } catch (error) {
+            console.error(`Error fetching data from ${path}:`, error);
+            if (error.message !== 'Unauthorized') {
+                throw error;
+            }
+            return null;
+        }
+    }
+
+    async post(path = "", data = {}) {
+        const url = `${this.BASE_URL}${path}`;
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: this.createHeaders(),
+                body: JSON.stringify(data),
+            });
+            if (!response.ok && response.status === 401) {
+                console.warn('Unauthorized request. Logging out.');
+                this.logout();
+                throw new Error('Unauthorized');
+            }
+            return response;
+        } catch (error) {
+            console.error(`Error posting data to ${path}:`, error);
+            if (error.message !== 'Unauthorized') {
+                throw error;
+            }
+            return null;
+        }
+    }
+
+    async update(path = "", data = {}) {
+        const url = `${this.BASE_URL}${path}`;
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: this.createHeaders(),
+                body: JSON.stringify(data)
+            });
+            if (!response.ok && response.status === 401) {
+                console.warn('Unauthorized request. Logging out.');
+                this.logout();
+                throw new Error('Unauthorized');
+            }
+            return response;
+        } catch (error) {
+            console.error(`Error updating data at ${path} (PUT):`, error);
+            if (error.message !== 'Unauthorized') {
+                throw error;
+            }
+            return null;
+        }
+    }
+
+    async patch(path = "", data = {}) {
+        const url = `${this.BASE_URL}${path}`;
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: this.createHeaders(),
+                body: JSON.stringify(data)
+            });
+            if (!response.ok && response.status === 401) {
+                console.warn('Unauthorized request. Logging out.');
+                this.logout();
+                throw new Error('Unauthorized');
+            }
+            return response;
+        } catch (error) {
+            console.error(`Error patching data at ${path} (PATCH):`, error);
+            if (error.message !== 'Unauthorized') {
+                throw error;
+            }
+            return null;
+        }
+    }
+
+    async delete(path = '') {
+        const url = `${this.BASE_URL}${path}`;
+        try {
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: this.createHeaders(),
+            });
+            if (!response.ok && response.status === 401) {
+                console.warn('Unauthorized request. Logging out.');
+                this.logout();
+                throw new Error('Unauthorized');
+            }
+            return response;
+        } catch (error) {
+            console.error(`Error deleting data from ${path}:`, error);
+            if (error.message !== 'Unauthorized') {
+                throw error;
+            }
+            return null;
+        }
+    }
+
+    //NOTE - Helper Methods
+    createHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.token) {
+            headers['Authorization'] = `Token ${this.token}`;
+        }
+        return headers;
+    }
 }
