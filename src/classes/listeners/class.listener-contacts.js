@@ -241,7 +241,7 @@ export class ContactsListener {
     };
 
     handleCloseDeleteResponse = () => {
-        this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
+        this.kanban.toggleClass('deleteResponse', 'ts0', 'ttcts1');
         this.deactivateListenersDelete();
     };
 

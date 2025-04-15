@@ -229,7 +229,11 @@ export class ContactsPage {
         try {
             const response = await this.kanban.db.update(`api/contacts/${id}/`, uploadData);
             if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                if (response.status === 401) {
+                    this.kanban.db.logout();
+                    return false;
+                } if (response.status === 403) throw new Error("You are not allowed to edit this contact.");
+                else throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
             }
             let updatedContactResponse = await response.json();
 
@@ -254,7 +258,7 @@ export class ContactsPage {
 
         } catch (error) {
             console.error("Error editing contact:", error);
-            this.showWarning('.editWarning>p', `Fehler beim Bearbeiten: ${error.message}`);
+            this.showWarning('.editWarning>p', `${error.message}`);
             return false;
         }
     }
@@ -287,7 +291,7 @@ export class ContactsPage {
             const wasCurrentUser = (id === this.kanban.currentUser?.id);
             this.editId = -1;
 
-            this.kanban.toggleClass('deleteResponse', 'ts1', 'ts0');
+            this.kanban.toggleClass('deleteResponse', 'ttcts1', 'ts0');
 
             if (wasCurrentUser) {
                 this.kanban.db.logout();
@@ -406,8 +410,8 @@ export class ContactsPage {
         responseElement.textContent = question;
         deleteButton.disabled = !allowDelete;
 
-        this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
-        this.kanban.activateOutsideCheck(event, 'deleteResponse', 'ts1', 'ts0');
+        this.kanban.toggleClass('deleteResponse', 'ts0', 'ttcts1');
+        this.kanban.activateOutsideCheck(event, 'deleteResponse', 'ttcts1', 'ts0');
         this.kanban.activateListenersContactsDelete();
     };
 }

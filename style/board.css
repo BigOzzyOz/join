@@ -351,12 +351,11 @@ input:focus {
 
 .deleteResponse {
   position: fixed;
-  top: 0;
-  left: 0;
-  height: 100dvh;
-  width: 100dvw;
+  top: 50%;
+  left: 50%;
+  box-shadow: #2a3647 0px 0px 24px 8px;
+  border-radius: 8px;
   z-index: 99;
-  background-color: rgba(42, 54, 71, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;

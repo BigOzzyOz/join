@@ -545,7 +545,6 @@ import { Kanban } from "./src/classes/class.kanban.js";
 // }
 
 
-//NOTE - move to class Kanban
 // export function activateOutsideCheck(event, modalName, class1, class2) {
 //   event.stopPropagation();
 
@@ -557,7 +556,6 @@ import { Kanban } from "./src/classes/class.kanban.js";
 // }
 
 
-//NOTE - move to class Kanban
 // function checkOutsideModal(event, modalName, class1, class2, handler) {
 //   let modal = document.getElementById(modalName);
 //   if (modal.classList.contains(class1) && !modal.contains(event.target)) {
