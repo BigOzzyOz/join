@@ -1,6 +1,13 @@
 import { ContactsPage } from '../class.contacts-page.js';
 
 export class ContactsListener {
+    //NOTE - Properties
+
+    kanban;
+    contactsInstance;
+
+    //NOTE - Constructor & Initialization
+
     constructor(kanban) {
         this.kanban = kanban;
         this.contactsInstance = kanban.contactsPage;
@@ -11,13 +18,17 @@ export class ContactsListener {
         }
     }
 
+    //NOTE - Master Listener Control
+
     deactivateAllListenersContacts() {
         this.deactivateListenersContact();
         this.deactivateListenersDetails();
+        this.deactivateListenersAdd();
         this.deactivateListenersEdit();
         this.deactivateListenersDelete();
-        this.deactivateListenersAdd();
     }
+
+    //NOTE - Contact List Listeners & Handlers
 
     activateListenersContact() {
         const moreContactsButton = document.getElementById('moreContactsButton');
@@ -45,10 +56,14 @@ export class ContactsListener {
         const listItem = event.target.closest('li.contactListItem');
         if (listItem && this.contactsInstance) {
             const contactId = listItem.dataset.id;
-            this.contactsInstance.renderContactsDetails(contactId);
-            this.kanban.toggleClass('contactsDetail', 'tt0', 'ttx100');
+            if (contactId) {
+                this.contactsInstance.renderContactsDetails(contactId);
+                this.kanban.toggleClass('contactsDetail', 'tt0', 'ttx100');
+            }
         }
     };
+
+    //NOTE - Contact Details Listeners & Handlers
 
     activateListenersDetails() {
         const backArrowContacts = document.getElementById('backArrow-contacts');
@@ -100,11 +115,16 @@ export class ContactsListener {
         this.kanban.activateOutsideCheck(event, 'editMenu', 'ts1', 'ts0');
     };
 
+    //NOTE - Add Contact Modal Listeners & Handlers
+
     activateListenersAdd() {
-        const addContactX = document.querySelectorAll('#addContact .closeX');
-        const addInput = document.querySelectorAll('.addInput');
-        const addContactForm = document.querySelector('#addContact form');
-        const addContactCancel = document.getElementById('cancelAddContact');
+        const addContactModal = document.getElementById('addContact');
+        if (!addContactModal) return;
+
+        const addContactX = addContactModal.querySelectorAll('.closeX');
+        const addInput = addContactModal.querySelectorAll('.addInput');
+        const addContactForm = addContactModal.querySelector('form');
+        const addContactCancel = addContactModal.querySelector('#cancelAddContact');
 
         addContactX?.forEach(b => b.addEventListener('click', this.handleCloseAddContact));
         addInput?.forEach(input => input.addEventListener('keydown', this.preventEnterSubmit));
@@ -113,10 +133,13 @@ export class ContactsListener {
     }
 
     deactivateListenersAdd() {
-        const addContactX = document.querySelectorAll('#addContact .closeX');
-        const addInput = document.querySelectorAll('.addInput');
-        const addContactForm = document.querySelector('#addContact form');
-        const addContactCancel = document.getElementById('cancelAddContact');
+        const addContactModal = document.getElementById('addContact');
+        if (!addContactModal) return;
+
+        const addContactX = addContactModal.querySelectorAll('.closeX');
+        const addInput = addContactModal.querySelectorAll('.addInput');
+        const addContactForm = addContactModal.querySelector('form');
+        const addContactCancel = addContactModal.querySelector('#cancelAddContact');
 
         addContactX?.forEach(b => b?.removeEventListener('click', this.handleCloseAddContact));
         addInput?.forEach(input => input?.removeEventListener('keydown', this.preventEnterSubmit));
@@ -125,32 +148,27 @@ export class ContactsListener {
     }
 
     handleCloseAddContact = () => {
-        this.kanban.toggleClass('addContact', 'tt0', 'tty100');
-        this.deactivateListenersAdd();
+        this.kanban.toggleClass('addContact', 'tt0', 'tty100'); // Hide modal
+        this.deactivateListenersAdd(); // Clean up listeners
     };
 
     handleSubmitAddContact = async (event) => {
         event.preventDefault();
         if (this.contactsInstance) {
-            const success = await this.contactsInstance.addContacts();
-            if (success) {
-                this.handleCloseAddContact();
-                this.contactsInstance.refreshPage();
-            }
+            await this.contactsInstance.addContacts();
         }
     };
 
-    preventEnterSubmit = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-        }
-    };
+    //NOTE - Edit Contact Modal Listeners & Handlers
 
     activateListenersEdit() {
-        const workContactX = document.querySelectorAll('#editContact .closeX');
-        const editInput = document.querySelectorAll('.editInput');
-        const editContactForm = document.querySelector('#editContact form');
-        const editContactDelete = document.getElementById('editContactDelete');
+        const editContactModal = document.getElementById('editContact');
+        if (!editContactModal) return;
+
+        const workContactX = editContactModal.querySelectorAll('.closeX');
+        const editInput = editContactModal.querySelectorAll('.editInput');
+        const editContactForm = editContactModal.querySelector('form');
+        const editContactDelete = editContactModal.querySelector('#editContactDelete');
 
         workContactX?.forEach(b => b.addEventListener('click', this.handleCloseEditContact));
         editInput?.forEach(input => input.addEventListener('keydown', this.preventEnterSubmit));
@@ -159,10 +177,13 @@ export class ContactsListener {
     }
 
     deactivateListenersEdit() {
-        const workContactX = document.querySelectorAll('#editContact .closeX');
-        const editInput = document.querySelectorAll('.editInput');
-        const editContactForm = document.querySelector('#editContact form');
-        const editContactDelete = document.getElementById('editContactDelete');
+        const editContactModal = document.getElementById('editContact');
+        if (!editContactModal) return;
+
+        const workContactX = editContactModal.querySelectorAll('.closeX');
+        const editInput = editContactModal.querySelectorAll('.editInput');
+        const editContactForm = editContactModal.querySelector('form');
+        const editContactDelete = editContactModal.querySelector('#editContactDelete');
 
         workContactX?.forEach(b => b?.removeEventListener('click', this.handleCloseEditContact));
         editInput?.forEach(input => input?.removeEventListener('keydown', this.preventEnterSubmit));
@@ -171,17 +192,14 @@ export class ContactsListener {
     }
 
     handleCloseEditContact = () => {
-        this.kanban.toggleClass('editContact', 'tt0', 'tty100');
-        this.deactivateListenersEdit();
+        this.kanban.toggleClass('editContact', 'tt0', 'tty100'); // Hide modal
+        this.deactivateListenersEdit(); // Clean up listeners
     };
 
     handleSubmitEditContact = async (event) => {
         event.preventDefault();
         if (this.contactsInstance) {
-            const success = await this.contactsInstance.editContacts();
-            if (success) {
-                this.handleCloseEditContact();
-            }
+            await this.contactsInstance.editContacts();
         }
     };
 
@@ -191,17 +209,25 @@ export class ContactsListener {
         }
     };
 
+    //NOTE - Delete Contact Modal Listeners & Handlers
+
     activateListenersDelete() {
-        const deleteResponseForm = document.querySelector('#deleteResponse form');
-        const closeDeleteResponseBtn = document.getElementById('closeDeleteResponse');
+        const deleteResponseModal = document.getElementById('deleteResponse');
+        if (!deleteResponseModal) return;
+
+        const deleteResponseForm = deleteResponseModal.querySelector('form');
+        const closeDeleteResponseBtn = deleteResponseModal.querySelector('#closeDeleteResponse');
 
         deleteResponseForm?.addEventListener('submit', this.handleSubmitDeleteContact);
         closeDeleteResponseBtn?.addEventListener('click', this.handleCloseDeleteResponse);
     }
 
     deactivateListenersDelete() {
-        const deleteResponseForm = document.querySelector('#deleteResponse form');
-        const closeDeleteResponseBtn = document.getElementById('closeDeleteResponse');
+        const deleteResponseModal = document.getElementById('deleteResponse');
+        if (!deleteResponseModal) return;
+
+        const deleteResponseForm = deleteResponseModal.querySelector('form');
+        const closeDeleteResponseBtn = deleteResponseModal.querySelector('#closeDeleteResponse');
 
         deleteResponseForm?.removeEventListener('submit', this.handleSubmitDeleteContact);
         closeDeleteResponseBtn?.removeEventListener('click', this.handleCloseDeleteResponse);
@@ -210,7 +236,6 @@ export class ContactsListener {
     handleSubmitDeleteContact = async (event) => {
         event.preventDefault();
         if (this.contactsInstance) {
-            this.handleCloseDeleteResponse();
             await this.contactsInstance.deleteContacts();
         }
     };
@@ -218,5 +243,12 @@ export class ContactsListener {
     handleCloseDeleteResponse = () => {
         this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
         this.deactivateListenersDelete();
+    };
+
+    //NOTE - Helper Functions
+    preventEnterSubmit = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Stop Enter from submitting the form
+        }
     };
 };
