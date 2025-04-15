@@ -1,63 +1,30 @@
 export class Register {
+    //NOTE - Properties
+
+    kanban;
+    passwordVisible = false;
+    confirmPasswordVisible = false;
+
+    //NOTE - Constructor & Initialization
+
     constructor(kanban) {
         this.kanban = kanban;
-        this.passwordVisible = false;
-        this.confirmPasswordVisible = false;
     }
 
-    handlePasswordVisibilityClick = (event, inputFieldId) => {
-        event?.preventDefault();
-        const inputField = document.getElementById(inputFieldId);
-        if (!inputField) return;
-
-        const selectionStart = inputField.selectionStart;
-        const selectionEnd = inputField.selectionEnd;
-
-        let isVisible;
-        if (inputFieldId === 'password') {
-            this.passwordVisible = !this.passwordVisible;
-            isVisible = this.passwordVisible;
-        } else {
-            this.confirmPasswordVisible = !this.confirmPasswordVisible;
-            isVisible = this.confirmPasswordVisible;
-        }
-
-        inputField.type = isVisible ? "text" : "password";
-        this.updateBackgroundImage(inputField, isVisible);
-
-        inputField.focus();
-        inputField.setSelectionRange(selectionStart, selectionEnd);
-    };
-
-    resetPasswordStateOnBlur = (inputFieldId) => {
-        const inputField = document.getElementById(inputFieldId);
-        if (!inputField) return;
-
-        if (inputFieldId === 'password') {
-            this.passwordVisible = false;
-        } else {
-            this.confirmPasswordVisible = false;
-        }
-
-        inputField.type = "password";
-        inputField.style.backgroundImage = "url('../assets/icons/password_input.png')";
-    };
-
-    updateBackgroundImage(field, isVisible) {
-        const image = isVisible ? "visibility.png" : "password_off.png";
-        field.style.backgroundImage = `url('../assets/icons/${image}')`;
-    }
+    //NOTE - Core Registration Action
 
     submitData = async (event) => {
         event.preventDefault();
+
         const nameInput = document.getElementById('userName');
         const emailInput = document.getElementById('userEmail');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
+        const privacyCheckbox = document.getElementById('privacy-policy');
 
-        if (!nameInput || !emailInput || !passwordInput || !confirmPasswordInput) {
+        if (!nameInput || !emailInput || !passwordInput || !confirmPasswordInput || !privacyCheckbox) {
             console.error("Registrierungsformular-Elemente nicht gefunden!");
-            this.showError('Ein interner Fehler ist aufgetreten. Bitte versuche es erneut.');
+            this.showError('Ein interner Fehler ist aufgetreten (Formular unvollständig). Bitte versuche es erneut.');
             return;
         }
 
@@ -65,10 +32,11 @@ export class Register {
         const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value;
         const confirmPassword = confirmPasswordInput.value;
+        const isPrivacyChecked = privacyCheckbox.checked;
 
         this.hideErrorMessages();
 
-        if (!this.validateForm(password, confirmPassword, email)) {
+        if (!this.validateForm(password, confirmPassword, email, isPrivacyChecked)) {
             return;
         }
 
@@ -86,71 +54,28 @@ export class Register {
         }
     };
 
-    checkBoxClicked = () => {
-        const privacyCheckbox = document.getElementById('privacy-policy');
-        const checkboxImg = document.getElementById('checkbox');
-        const submitButton = document.getElementById('signup-btn-register');
+    //NOTE - Input Validation
 
-        if (!privacyCheckbox || !checkboxImg || !submitButton) return;
+    validateForm(password, confirmPassword, email, isPrivacyChecked) {
+        let isValid = true;
 
-        const checkedState = privacyCheckbox.checked;
-        submitButton.disabled = !checkedState;
-        checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
-    };
-
-    validateForm(password, confirmPassword, email) {
-        const privacyCheckbox = document.getElementById('privacy-policy');
-        if (!privacyCheckbox || !privacyCheckbox.checked) {
+        if (!isPrivacyChecked) {
             this.showErrorById('privacyCheck');
-            return false;
+            isValid = false;
         }
         if (!this.isValidEmail(email)) {
             this.showErrorById('mailErrorMessage');
-            return false;
+            isValid = false;
         }
         if (!this.isValidPassword(password)) {
             this.showErrorById('criteriaMessage');
-            return false;
+            isValid = false;
         }
         if (password !== confirmPassword) {
             this.showErrorById('passwordErrorMessage');
-            return false;
+            isValid = false;
         }
-        return true;
-    }
-
-    handleRegistrationError(error) {
-        const message = error.message || "Ein unbekannter Fehler ist aufgetreten.";
-        if (message.toLowerCase().includes('email') && message.toLowerCase().includes('already exists')) {
-            this.showErrorById('emailExistsMessage');
-        } else if (message.toLowerCase().includes('password') && message.toLowerCase().includes('common')) {
-            this.showError("Das Passwort ist zu unsicher oder zu gebräuchlich.");
-        } else {
-            this.showError(message);
-        }
-    }
-
-    hideErrorMessages() {
-        const errorMessages = document.querySelectorAll('#signupForm .error');
-        errorMessages.forEach(el => el.style.display = 'none');
-    }
-
-    showErrorById(messageId) {
-        const errorElement = document.getElementById(messageId);
-        if (errorElement) {
-            errorElement.style.display = 'block';
-        }
-    }
-
-    showError(message) {
-        const generalErrorElement = document.getElementById('emailExistsMessage');
-        if (generalErrorElement) {
-            generalErrorElement.textContent = message;
-            generalErrorElement.style.display = 'block';
-        } else {
-            alert("Fehler: " + message);
-            console.error("Fehler angezeigt via alert:", message);
-        }
+        return isValid;
     }
 
     isValidPassword(password) {
@@ -163,6 +88,74 @@ export class Register {
         return regex.test(email);
     }
 
+    //NOTE - UI Event Handlers & Updates
+
+    handlePasswordVisibilityClick = (event, inputFieldId) => {
+        event?.preventDefault();
+        const inputField = document.getElementById(inputFieldId);
+        if (!inputField) return;
+
+        const selectionStart = inputField.selectionStart;
+        const selectionEnd = inputField.selectionEnd;
+
+        let isVisible;
+
+        if (inputFieldId === 'password') {
+            this.passwordVisible = !this.passwordVisible;
+            isVisible = this.passwordVisible;
+        } else if (inputFieldId === 'confirmPassword') {
+            this.confirmPasswordVisible = !this.confirmPasswordVisible;
+            isVisible = this.confirmPasswordVisible;
+        } else return;
+
+        inputField.type = isVisible ? "text" : "password";
+        this.updateBackgroundImage(inputField, isVisible);
+
+        inputField.focus();
+
+        requestAnimationFrame(() => {
+            inputField.setSelectionRange(selectionStart, selectionEnd);
+        });
+    };
+
+    updateBackgroundImage(field, isVisible) {
+        const image = isVisible ? "visibility.png" : "password_off.png";
+        field.style.backgroundImage = `url('../assets/icons/${image}')`;
+    }
+
+    resetPasswordStateOnBlur = (inputFieldId) => {
+        const inputField = document.getElementById(inputFieldId);
+        if (!inputField) return;
+
+        let shouldReset = false;
+        if (inputFieldId === 'password' && this.passwordVisible) {
+            this.passwordVisible = false;
+            shouldReset = true;
+        } else if (inputFieldId === 'confirmPassword' && this.confirmPasswordVisible) {
+            this.confirmPasswordVisible = false;
+            shouldReset = true;
+        }
+
+        if (shouldReset) {
+            inputField.type = "password";
+            inputField.style.backgroundImage = "url('../assets/icons/password_input.png')";
+        }
+    };
+
+    checkBoxClicked = () => {
+        const privacyCheckbox = document.getElementById('privacy-policy');
+        const checkboxImg = document.getElementById('checkbox');
+        const submitButton = document.getElementById('signup-btn-register');
+
+        if (!privacyCheckbox || !checkboxImg || !submitButton) return;
+
+        const checkedState = privacyCheckbox.checked;
+        submitButton.disabled = !checkedState;
+        checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
+    };
+
+    //NOTE - UI Feedback & Error Handling
+
     showSuccessPopup() {
         const popup = document.getElementById('successPopup');
         if (popup) {
@@ -170,6 +163,42 @@ export class Register {
             popup.addEventListener('click', () => {
                 window.location.href = '../index.html';
             }, { once: true });
+        }
+    }
+
+    handleRegistrationError(error) {
+        const message = error?.message || error?.detail || "Ein unbekannter Registrierungsfehler ist aufgetreten.";
+
+        if (message.toLowerCase().includes('email') && (message.toLowerCase().includes('exist') || message.toLowerCase().includes('already in use'))) {
+            this.showErrorById('emailExistsMessage');
+        } else if (message.toLowerCase().includes('password') && message.toLowerCase().includes('common')) {
+            this.showError("Das Passwort ist zu unsicher oder zu gebräuchlich.");
+        } else {
+            this.showError(message);
+        }
+    }
+
+    hideErrorMessages() {
+
+        const errorMessages = document.querySelectorAll('#signupForm .error');
+        errorMessages.forEach(el => el.style.display = 'none');
+    }
+
+    showErrorById(messageId) {
+        const errorElement = document.getElementById(messageId);
+        if (errorElement) {
+            errorElement.style.display = 'block';
+        }
+    }
+
+    showError(message) {
+        const generalErrorElement = document.getElementById('generalErrorMessage');
+        if (generalErrorElement) {
+            generalErrorElement.textContent = message;
+            generalErrorElement.style.display = 'block';
+        } else {
+            alert("Fehler: " + message);
+            console.error("Fehler angezeigt via alert:", message);
         }
     }
 }
