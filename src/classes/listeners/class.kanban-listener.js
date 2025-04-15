@@ -11,7 +11,6 @@ import { Register } from '../class.register.js';
 import { Summary } from '../class.summary.js';
 // import { AddTask } from '../addtask/class.addtask.js';
 // import { Board } from '../board/class.board.js';
-import { Contacts } from '../contacts/class.contacts-page.js';
 import { ContactsPage } from '../class.contacts-page.js';
 
 export class KanbanListener {

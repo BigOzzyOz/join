@@ -200,12 +200,10 @@ export class Kanban {
 
     forwardLegal = () => {
         sessionStorage.setItem('activeTab', "legal notice");
-        window.location.href = 'html/imprint.html';
     };
 
     forwardPrivacy = () => {
         sessionStorage.setItem('activeTab', "privacy policy");
-        window.location.href = 'html/privacy.html';
     };
 
     forwardToIndex = () => {
