@@ -1,6 +1,6 @@
 // import { assignedContacts } from "../addTask.js"; // Dependency removed from function
 
-export class AddTaskHtml {
+class HtmlAddTask {
     /**
      * Generates HTML for assigning a single contact in the dropdown list.
      * 

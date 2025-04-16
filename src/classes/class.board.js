@@ -3,7 +3,7 @@
 // import { AddTask } from "./class.add-task.js"; // Dependency for opening edit
 // import { fetchAddTaskTemplate, generateOpenOverlayHTML, generateTaskEditHTML } from "./boardtemplate.js"; // HTML Templates -> HtmlTask, HtmlAddTask
 
-export class Board {
+class Board {
     constructor() {
         this.currentDraggedElement = null;
         this.currentSearchInput = '';
@@ -371,27 +371,6 @@ export class Board {
         const task = this.tasks.find(t => t.id === taskId);
         if (task && task.status !== newStatus) {
             await this.moveTo(newStatus); // Reuse moveTo logic
-        }
-    }
-
-    async updateSubtaskStatus(taskId, subtaskIndex) {
-        // Dependency: tasks array (global or passed), updateDataInDatabase, createTaskArray, updateSubtaskStatusInDOM, updateSubtaskProgressBar
-        // NOTE: This function needs access to the global 'tasks' array and several functions 
-        //       that will likely belong to other classes (Board, HtmlBoard). 
-        //       This indicates potential refactoring needs later to manage dependencies.
-        let task = tasks.find((task) => task.id === taskId);
-        if (task) {
-            let subtask = task.subtasks[subtaskIndex];
-            if (subtask) {
-                updateSubtaskStatusInDOM(subtask, subtaskIndex); // Belongs likely to Board or HtmlBoard class
-                updateSubtaskProgressBar(task.subtasks, taskId); // Belongs likely to Board or HtmlBoard class
-                await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task); // Global function/dependency
-                let taskIndex = tasks.findIndex(t => taskId === t.id);
-                // The next line uses 'createTaskArray' which is now part of this class, 
-                // but it also modifies the global 'tasks' array.
-                tasks.splice(taskIndex, 1, await this.createTaskArray(taskId, task));
-                sessionStorage.setItem("tasks", JSON.stringify(tasks)); // Global state management
-            }
         }
     }
 }

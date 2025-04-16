@@ -1,4 +1,4 @@
-export class AddTaskListener {
+class AddTaskListener {
     /**
      * @param {AddTask} addTaskInstance - An instance of the AddTask class.
      */
