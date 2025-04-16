@@ -1,4 +1,4 @@
-export class Board {
+export class BoardHtml {
     constructor(kanban) {
         this.kanban = kanban;
     }

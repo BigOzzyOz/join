@@ -1,5 +1,4 @@
-export class Task {
+export class Subtask {
     constructor(data) {
-
     }
 }
