@@ -1,4 +1,4 @@
-class HtmlSubtask {
+export class SubtaskHtml {
     /**
      * Generates HTML for a subtask item in the list during task creation/editing.
      * 

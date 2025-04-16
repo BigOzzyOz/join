@@ -1,6 +1,7 @@
+//TODO - | .boardTask listener for ondragstart="startDragging('${task.id}')" ondragend="dragEnd()" onclick="openOverlay('${task.id}')" | class="closeBtn" onclick="closeModal()" | onclick="updateSubtaskStatus('${task.id}', ${subtask.id})"
 // import { Task } from '../class.task.js'; // Dependency for updateSubtaskStatus logic if moved
 
-class BoardListener {
+export class BoardListener {
     /**
      * @param {Board} boardInstance - An instance of the Board class.
      * @param {Task} taskInstance - An instance of the Task class (for subtask updates).

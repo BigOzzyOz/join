@@ -5,7 +5,7 @@
 // import { htmlRenderContactsAssign, generateSaveSubtaskHTML } from "./addTaskTemplate.js"; // HTML Templates, belong elsewhere (HtmlAddTask, HtmlSubtask)
 // import { ContactHtml } from "../src/classes/class.contactHtml.js"; // HTML Template dependency
 
-class AddTask {
+export class AddTask {
     constructor() {
         this.assignedContacts = [];
         this.currentPrio = 'medium';
