@@ -9,8 +9,8 @@ import { MenuListener } from './class.listener-menu.js';
 import { Login } from '../class.login.js';
 import { Register } from '../class.register.js';
 import { Summary } from '../class.summary.js';
-import { AddTask } from '../addtask/class.addtask.js';
-import { Board } from '../board/class.board.js';
+import { AddTask } from '../class.add-task.js';
+import { Board } from '../class.board.js';
 import { ContactsPage } from '../class.contacts-page.js';
 
 export class KanbanListener {
