@@ -232,4 +232,16 @@ export class Kanban {
         this.listener?.contacts?.activateListenersDelete();
     }
 
+    activateListenerAddTask(listener) {
+        if (listener === 'openAssignDropdown') {
+            this.listener?.addTask?.addTaskListenerOpenAssignDropdown('add');
+        }
+    }
+
+    deactivateListenerAddTask(listener) {
+        if (listener === 'closeAssignDropdown') {
+            this.listener?.addTask?.addTaskListenerOpenAssignDropdown('remove');
+        }
+    }
+
 }

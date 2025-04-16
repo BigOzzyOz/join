@@ -9,10 +9,6 @@ export class AddTask {
     }
 
 
-
-    //NOTE - Dropdown functions
-
-
     toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
         document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await this.openAssignDropdown() : this.closeAssignDropdown();
@@ -28,9 +24,7 @@ export class AddTask {
         document.getElementById('assignDropArrow').style.transform = 'rotate(180deg)';
         searchInput.value = '';
         searchInput.removeAttribute('readonly');
-        const contactsAssign = document.querySelectorAll('.assignContactToProject');
-        //contactsAssign.forEach((element) => element.addEventListener('click', handleAssignContact));//TODO - move to utils
-        document.addEventListener('click', this.checkOutsideAssign);
+        this.kanban.activateListenerAddTask('openAssignDropdown');
     }
 
 
@@ -41,9 +35,7 @@ export class AddTask {
         document.getElementById('assignDropArrow').style.transform = 'rotate(0deg)';
         searchInput.value = 'Select contacts to assign';
         searchInput.setAttribute('readonly', true);
-        const contactsAssign = document.querySelectorAll('.assignContactToProject');
-        contactsAssign?.forEach((element) => element.removeEventListener('click', handleAssignContact));
-        document?.removeEventListener('click', checkOutsideAssign);
+        this.kanban.deactivateListenerAddTask('closeAssignDropdown');
     };
 
 
@@ -70,21 +62,21 @@ export class AddTask {
     }
 
 
-    checkOutsideAssign({ target }) {
+    checkOutsideAssign = ({ target }) => {
         let assignMenu = document.getElementById('assignDropdown');
         if (assignMenu.classList.contains('open') && !assignMenu.contains(target)) {
             this.toggleDropdown();
         };
-    }
+    };
 
 
     assignSearchInput = () => {
         const searchInput = document.getElementById('assignSearch');
         const contactsContainer = document.getElementById('contactsToAssign');
         const searchText = searchInput.value.toLowerCase();
-        const contactsSorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
+        const contactsSorted = [...this.kanban.contacts].sort((a, b) => a.name.localeCompare(b.name));
         const filteredContacts = contactsSorted.filter(c => c.name.toLowerCase().includes(searchText));
-        contactsContainer.innerHTML = filteredContacts.map(c => htmlRenderContactsAssign(c)).join('');
+        contactsContainer.innerHTML = filteredContacts.map(c => c.html.htmlRenderContactsAssign(this.assignedContacts)).join('');
     };
 
 
@@ -94,8 +86,8 @@ export class AddTask {
         const contactLabel = document.getElementById(`contact${id}`).parentElement;
         contactLabel.classList.toggle('contactsToAssignCheck', !inAssignedContacts);
         if (inAssignedContacts) this.assignedContacts.splice(index, 1);
-        else this.assignedContacts.push(contacts.find(c => c.id === id));
-        renderAssignedContacts();
+        else this.assignedContacts.push(this.kanban.contacts.find(c => c.id === id));
+        this.renderAssignedContacts();
     }
 
 
@@ -107,8 +99,7 @@ export class AddTask {
             if (i <= 5) {
                 assignedContactsContainer.innerHTML += contact.profilePic;
             } else {
-                const contactHtml = new ContactHtml(contact);
-                assignedContactsContainer.innerHTML += contactHtml.svgProfilePic('#2a3748', `+${this.assignedContacts.length - 5}`);
+                assignedContactsContainer.innerHTML += this.html.svgProfilePic('#2a3748', `+${this.assignedContacts.length - 5}`);
                 break;
             }
         }

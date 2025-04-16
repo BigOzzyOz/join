@@ -350,14 +350,6 @@ export class BoardListener {
     };
 
 
-    handleAssignContact = (event) => {
-        event.preventDefault();
-        const contact = event.target.closest('.assignContactToProject').dataset.id;
-        contactAssign(contact);
-    };
-
-
-
     initDragDrop() {
         deactivateDragDrop();
         this.boardInstance.updateAllTaskCategories();

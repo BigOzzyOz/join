@@ -186,4 +186,21 @@ export class AddTaskListener {
         else if (action === "edit") this.addTaskInstance.editSubtask(subtask);
         else if (action === "delete") this.addTaskInstance.deleteSubtask(subtask);
     };
+
+    handleAssignContact = (event) => {
+        event.preventDefault();
+        const contact = event.target.closest('.assignContactToProject').dataset.id;
+        this.addTaskInstance.contactAssign(contact);
+    };
+
+    addTaskListenerOpenAssignDropdown(action) {
+        const contactsAssign = document.querySelectorAll('.assignContactToProject');
+        if (action === "add") {
+            contactsAssign.forEach((element) => element.addEventListener('click', this.handleAssignContact));//TODO - move to utils
+            document.addEventListener('click', this.addTaskInstance.checkOutsideAssign);
+        } else if (action === "remove") {
+            contactsAssign.forEach((element) => element.removeEventListener('click', this.handleAssignContact));
+            document.removeEventListener('click', this.addTaskInstance.checkOutsideAssign);
+        }
+    }
 }
