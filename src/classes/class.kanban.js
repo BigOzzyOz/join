@@ -230,4 +230,5 @@ export class Kanban {
     activateListenersContactsDelete() {
         this.listener?.contacts?.activateListenersDelete();
     }
+
 }

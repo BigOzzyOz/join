@@ -1,5 +1,3 @@
-import { ContactsPage } from '../class.contacts-page.js';
-
 export class ContactsListener {
     //NOTE - Properties
 
