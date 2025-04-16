@@ -1,10 +1,10 @@
 import { Kanban } from './class.kanban.js';
-import { Board } from './class.Board.js';
+import { Board } from './class.board.js';
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
 import { ContactsPage } from './class.contacts-page.js';
-//import { AddTask } from './class.addtask.js';
+import { AddTask } from './class.add-task.js';
 
 export class Database {
     BASE_URL = 'http://127.0.0.1:8000/';

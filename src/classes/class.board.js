@@ -1,4 +1,4 @@
-class Board {
+export class Board {
     constructor(kanban) {
         this.kanban = kanban;
         this.currentDraggedElement;

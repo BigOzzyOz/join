@@ -1,13 +1,13 @@
 import { Database } from "./class.database.js";
 import { KanbanListener } from "./listeners/class.kanban-listener.js";
 import { Contact } from "./class.contact.js";
-import { Board } from "./class.Board.js";
+import { Board } from "./class.board.js";
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
-// import { Task } from './class.task.js';
-// import { AddTask } from './class.addtask.js'; // Assuming AddTask class exists
-// import { Contacts } from './class.contacts.js'; // Assuming Contacts class exists
+import { Contacts } from './class.contacts.js'; // Assuming Contacts class exists
+import { AddTask } from './class.addtask.js'; // Assuming AddTask class exists
+import { Task } from './class.task.js';
 
 
 export class Kanban {

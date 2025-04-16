@@ -1,5 +1,5 @@
 export class AddTaskHtml {
     constructor(kanban) {
-        thiis.kanban = kanban;
+        this.kanban = kanban;
     }
 }
