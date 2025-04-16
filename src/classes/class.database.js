@@ -5,6 +5,8 @@ import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
 import { ContactsPage } from './class.contacts-page.js';
 import { AddTask } from './class.add-task.js';
+import { Contact } from './class.contact.js';
+import { Task } from './class.task.js';
 
 export class Database {
     BASE_URL = 'http://127.0.0.1:8000/';
@@ -27,7 +29,7 @@ export class Database {
             });
             const data = await response.json();
             await this.kanban.init();
-            if (response.ok && data.authenticated) this.initializePage();
+            if (response.ok && data.authenticated) await this.initializePage();
             else this.redirectToLogin();
         } catch (error) {
             console.error('Error checking auth status:', error);
@@ -38,21 +40,34 @@ export class Database {
         }
     }
 
-    initializePage() {
+    async initializePage() {
         const path = window.location.pathname;
-        // Consider using a more scalable approach like a router or factory pattern
+
+        await this.loadInitialData();
+
         if (path.includes('summary.html')) {
             this.kanban.summary = new Summary(this.kanban);
             this.kanban.summary.initSummary();
         } else if (path.includes('addtask.html')) {
             this.kanban.addTask = new AddTask(this.kanban);
-            this.kanban.addTask.initAddTask();
         } else if (path.includes('board.html')) {
             this.kanban.board = new Board(this.kanban);
             this.kanban.board.initBoard();
         } else if (path.includes('contacts.html')) {
             this.kanban.contactsPage = new ContactsPage(this.kanban);
             this.kanban.contactsPage.initContacts();
+        }
+    }
+
+    async loadInitialData() {
+        if (this.kanban.tasks.length > 0 && this.kanban.contacts.length > 0) return;
+        try {
+            await Promise.all([
+                this.getContactsData(),
+                this.getTasksData(),
+            ]);
+        } catch (error) {
+            console.error('Error loading initial data:', error);
         }
     }
 
@@ -297,5 +312,51 @@ export class Database {
             headers['Authorization'] = `Token ${this.token}`;
         }
         return headers;
+    }
+
+    async getContactsData() {
+        try {
+            const response = await this.kanban.db.get('api/contacts/');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let loadItem = await response.json();
+            this.setContactsArray(loadItem);
+            this.kanban.setContacts(this.kanban.contacts);
+        } catch (error) {
+            console.error("Error fetching contacts data:", error);
+        }
+    }
+
+    setContactsArray(loadItem) {
+        this.kanban.setContacts([]);
+        for (const contactData of loadItem) {
+            if (!contactData) continue;
+            const newContact = new Contact(contactData);
+            this.kanban.contacts.push(newContact);
+        }
+    }
+
+    async getTasksData() {
+        try {
+            const response = await this.kanban.db.get('api/tasks/');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let loadItem = await response.json();
+            this.setTasksArray(loadItem);
+            this.kanban.setTasks(this.kanban.contacts);
+        } catch (error) {
+            console.error("Error fetching contacts data:", error);
+        }
+    }
+
+    setTasksArray(loadItem) {
+        this.kanban.setTasks([]);
+        for (const taskData of loadItem) {
+            if (!taskData) continue;
+            const newTask = new Task(taskData);
+            this.kanban.tasks.push(newTask);
+        }
     }
 }

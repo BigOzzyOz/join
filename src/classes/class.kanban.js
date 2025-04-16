@@ -23,6 +23,7 @@ export class Kanban {
         '/index.html',
         '/register.html',
     ];
+
     db = null;
     listener = null;
     board = null;

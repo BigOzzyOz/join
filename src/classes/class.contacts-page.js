@@ -17,33 +17,8 @@ export class ContactsPage {
         this.html = new ContactsPageHtml(kanban);
     }
 
-
     async initContacts() {
-        await this.getContactsData();
         this.renderContactList();
-    }
-
-    async getContactsData() {
-        try {
-            const response = await this.kanban.db.get('api/contacts/');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            let loadItem = await response.json();
-            this.setContactsArray(loadItem);
-            this.kanban.setContacts(this.kanban.contacts);
-        } catch (error) {
-            console.error("Error fetching contacts data:", error);
-        }
-    }
-
-    setContactsArray(loadItem) {
-        this.kanban.setContacts([]);
-        for (const contactData of loadItem) {
-            if (!contactData) continue;
-            const newContact = new Contact(contactData);
-            this.kanban.contacts.push(newContact);
-        }
     }
 
     //NOTE - Rendering Logic

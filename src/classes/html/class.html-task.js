@@ -3,21 +3,6 @@ class TaskHtml {
 
     }
 
-    htmlRenderContactsAssign(contact) {
-        return /*html*/`
-          <label for="contact${contact.id}" class="${assignedContacts.some(c => c.name == contact.name) ? 'contactsToAssignCheck' : ''}">
-            ${contact.profilePic}
-            <p>${contact.name}</p>
-            <input class="assignContactToProject" 
-              data-id="${contact.id}" 
-              type="checkbox" 
-              id="contact${contact.id}"  
-              ${assignedContacts.some(c => c.name == contact.name) ? 'checked' : ''}>
-            <span class="checkMark"></span>
-          </label>
-          `;
-    }
-
 
     generateSaveSubtaskHTML(inputText, index) {
         return /*html*/`

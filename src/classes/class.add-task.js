@@ -1,8 +1,11 @@
+import { AddTaskHtml } from "./html/class.html-add-task.js";
+
 export class AddTask {
     constructor(kanban) {
         this.kanban = kanban;
-        assignedContacts = [];
-        currentPrio = 'medium';
+        this.assignedContacts = [];
+        this.currentPrio = 'medium';
+        this.html = new AddTaskHtml(kanban);
     }
 
 
@@ -12,22 +15,22 @@ export class AddTask {
 
     toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
-        document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await openAssignDropdown() : closeAssignDropdown();
-        toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
+        document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await this.openAssignDropdown() : this.closeAssignDropdown();
+        this.kanban.toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
     };
 
 
     async openAssignDropdown() {
         const searchInput = document.getElementById('assignSearch');
         const contactsContainer = document.getElementById('contactsToAssign');
-        const contactsSorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
-        contactsContainer.innerHTML = contactsSorted.map(c => htmlRenderContactsAssign(c)).join('');
+        const contactsSorted = [...this.kanban.contacts].sort((a, b) => a.name.localeCompare(b.name));
+        contactsContainer.innerHTML = contactsSorted.map(c => c.html.htmlRenderContactsAssign(this.assignedContacts)).join('');
         document.getElementById('assignDropArrow').style.transform = 'rotate(180deg)';
         searchInput.value = '';
         searchInput.removeAttribute('readonly');
         const contactsAssign = document.querySelectorAll('.assignContactToProject');
-        contactsAssign.forEach((element) => element.addEventListener('click', handleAssignContact));
-        document.addEventListener('click', checkOutsideAssign);
+        //contactsAssign.forEach((element) => element.addEventListener('click', handleAssignContact));//TODO - move to utils
+        document.addEventListener('click', this.checkOutsideAssign);
     }
 
 
@@ -63,14 +66,14 @@ export class AddTask {
 
 
     setAssignedContacts(contactsArray) {
-        assignedContacts = contactsArray;
+        this.assignedContacts = contactsArray;
     }
 
 
     checkOutsideAssign({ target }) {
         let assignMenu = document.getElementById('assignDropdown');
         if (assignMenu.classList.contains('open') && !assignMenu.contains(target)) {
-            toggleDropdown();
+            this.toggleDropdown();
         };
     }
 
@@ -86,12 +89,12 @@ export class AddTask {
 
 
     contactAssign(id) {
-        const index = assignedContacts.findIndex(c => c.id === id);
+        const index = this.assignedContacts.findIndex(c => c.id === id);
         const inAssignedContacts = index > -1;
         const contactLabel = document.getElementById(`contact${id}`).parentElement;
         contactLabel.classList.toggle('contactsToAssignCheck', !inAssignedContacts);
-        if (inAssignedContacts) assignedContacts.splice(index, 1);
-        else assignedContacts.push(contacts.find(c => c.id === id));
+        if (inAssignedContacts) this.assignedContacts.splice(index, 1);
+        else this.assignedContacts.push(contacts.find(c => c.id === id));
         renderAssignedContacts();
     }
 
@@ -99,13 +102,13 @@ export class AddTask {
     renderAssignedContacts() {
         let assignedContactsContainer = document.getElementById('contactsAssigned');
         assignedContactsContainer.innerHTML = '';
-        for (let i = 0; i < assignedContacts.length; i++) {
-            const contact = assignedContacts[i];
+        for (let i = 0; i < this.assignedContacts.length; i++) {
+            const contact = this.assignedContacts[i];
             if (i <= 5) {
                 assignedContactsContainer.innerHTML += contact.profilePic;
             } else {
                 const contactHtml = new ContactHtml(contact);
-                assignedContactsContainer.innerHTML += contactHtml.svgProfilePic('#2a3748', `+${assignedContacts.length - 5}`);
+                assignedContactsContainer.innerHTML += contactHtml.svgProfilePic('#2a3748', `+${this.assignedContacts.length - 5}`);
                 break;
             }
         }
@@ -328,7 +331,7 @@ export class AddTask {
             prio: currentPrio,
             status: currentTaskStatus,
             subtasks: subtasks,
-            assignedTo: assignedContacts,
+            assignedTo: this.assignedContacts,
             category: originalTask.category,
         };
     }

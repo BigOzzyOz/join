@@ -4,7 +4,7 @@ export class Login {
     //NOTE - Properties
 
     kanban;
-    passwordInput;
+    passwordInput = document.getElementById('passwordInput');
     isPasswordVisible = false;
 
     //NOTE - Constructor & Initialization
@@ -18,10 +18,10 @@ export class Login {
         const loginForm = document.getElementById('login-form');
 
         if (loginForm) {
-            this.initForm(loginForm);
             if (!this.passwordInput) {
                 this.passwordInput = document.getElementById('passwordInput');
             }
+            this.initForm(loginForm);
         } else {
             console.warn("Login form not found during initialization.");
         }

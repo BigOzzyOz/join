@@ -88,4 +88,21 @@ export class ContactHtml {
       </li>
     `;
   }
+
+  htmlRenderContactsAssign(assignedContacts) {
+    const safeName = this.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    return /*html*/`
+      <label for="contact${this.id}" class="${assignedContacts.some(c => c.name === this.name) ? 'contactsToAssignCheck' : ''}">
+        ${this.profilePic}
+        <p>${safeName}</p>
+        <input class="assignContactToProject" 
+          data-id="${this.id}" 
+          type="checkbox" 
+          id="contact${this.id}"  
+          ${assignedContacts.some(c => c.name == this.name) ? 'checked' : ''}>
+        <span class="checkMark"></span>
+      </label>
+      `;
+  }
 }

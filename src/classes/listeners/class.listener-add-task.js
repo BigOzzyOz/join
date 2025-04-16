@@ -3,6 +3,7 @@ export class AddTaskListener {
         this.kanban = kanban;
         this.addTaskInstance = kanban.addTask;
         this.boardInstance = kanban.board || null;
+        this.activateAddTaskListeners();
     }
 
 
@@ -86,12 +87,12 @@ export class AddTaskListener {
         if (action === "add") {
             subtasksInputContainer?.addEventListener('keypress', this.addTaskInstance.addNewSubtask);
             subtaskInputPlus?.addEventListener('click', this.addTaskInstance.addNewSubtask);
-            subtaskDeleteIcon?.addEventListener('click', clearSubtaskInput);
+            subtaskDeleteIcon?.addEventListener('click', this.addTaskInstance.clearSubtaskInput);
             subtaskSaveIcon?.addEventListener('click', this.addTaskInstance.saveSubtask);
         } else if (action === "remove") {
             subtasksInputContainer?.removeEventListener('keypress', this.addTaskInstance.addNewSubtask);
             subtaskInputPlus?.removeEventListener('click', this.addTaskInstance.addNewSubtask);
-            subtaskDeleteIcon?.removeEventListener('click', clearSubtaskInput);
+            subtaskDeleteIcon?.removeEventListener('click', this.addTaskInstance.clearSubtaskInput);
             subtaskSaveIcon?.removeEventListener('click', this.addTaskInstance.saveSubtask);
         }
     }
