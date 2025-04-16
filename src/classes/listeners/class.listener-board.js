@@ -1,11 +1,4 @@
 //TODO - | .boardTask listener for ondragstart="startDragging('${task.id}')" ondragend="dragEnd()" onclick="openOverlay('${task.id}')" | class="closeBtn" onclick="closeModal()" | onclick="updateSubtaskStatus('${task.id}', ${subtask.id})"
-// TODO: Handle Subtask List Interactions (Delegated from #addedSubtasksList)
-
-// TODO: Handle ondblclick on '.subtaskListLabel' -> call editSubtask(index) logic
-// TODO: Handle onclick on '.subtaskListIcon[src*="editDark.svg"]' -> call editSubtask(index) logic
-// TODO: Handle onclick on '.subtaskListIcon[src*="delete.svg"]' -> call deleteSubtask(index) logic
-// TODO: Handle onclick on '.subtaskEditIcon[src*="delete.svg"]' -> call deleteSubtask(index) logic
-// TODO: Handle onclick on '.subtaskEditIcon[src*="checkDark.svg"]' -> call saveEditedSubtask(index) logic
 // import { Task } from '../class.task.js'; // Dependency for updateSubtaskStatus logic if moved
 
 export class BoardListener {

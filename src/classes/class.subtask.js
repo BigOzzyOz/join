@@ -1,32 +1,6 @@
-import { SubtaskHtml } from './html/class.html-subtask.js';
-
 export class Subtask {
-    //NOTE - Properties
-    id;
-    text;
-    status;
-    html;
-
-    //NOTE - Constructor
-    constructor(data) {
-        this.id = data.id || null;
-        this.text = data.text || '';
-        this.status = data.status || 'unchecked';
-        this.html = new SubtaskHtml(this.toSubtaskObject());
-    }
-
-    toSubtaskObject() {
-        return {
-            id: this.id,
-            text: this.text,
-            status: this.status,
-        };
-    }
-
-    toSubtaskUpdateObject() {
-        return {
-            text: this.text,
-            status: this.status,
-        };
-    }
+    // Currently no functions identified that belong exclusively to the logic of a single subtask object.
+    // Logic related to managing subtasks during task creation/editing will be in AddTask.
+    // Logic related to updating subtask status within a saved task is in Task.
+    // HTML templating for subtasks will be in HtmlSubtask.
 }

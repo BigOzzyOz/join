@@ -32,8 +32,7 @@ export function htmlRenderContactsAssign(contact) {
  * @param {number} index - The index of the subtask.
  * @returns {string} The HTML string for the subtask.
  */
-export function generateSaveSubtaskHTML(index) {
-  let inputText = document.getElementById('subtaskInput').value.trim();
+export function generateSaveSubtaskHTML(inputText, index) {
   return /*html*/`
       <li class="subtaskEditList" id="subtask-${index}">
         <div class="subtaskItem">
