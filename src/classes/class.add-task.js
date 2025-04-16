@@ -10,11 +10,11 @@ class AddTask {
     //NOTE - Dropdown functions
 
 
-    async toggleDropdown() {
+    toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
         document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await openAssignDropdown() : closeAssignDropdown();
         toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
-    }
+    };
 
 
     async openAssignDropdown() {
@@ -75,14 +75,14 @@ class AddTask {
     }
 
 
-    assignSearchInput() {
+    assignSearchInput = () => {
         const searchInput = document.getElementById('assignSearch');
         const contactsContainer = document.getElementById('contactsToAssign');
         const searchText = searchInput.value.toLowerCase();
         const contactsSorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
         const filteredContacts = contactsSorted.filter(c => c.name.toLowerCase().includes(searchText));
         contactsContainer.innerHTML = filteredContacts.map(c => htmlRenderContactsAssign(c)).join('');
-    }
+    };
 
 
     contactAssign(id) {
@@ -115,7 +115,7 @@ class AddTask {
     //NOTE - Subtask functions
 
 
-    addNewSubtask(event) {
+    addNewSubtask = (event) => {
         handleKeyDown(event);
         const input = document.getElementById('subtaskInput').value.length;
         if (input > -1) {
@@ -125,12 +125,12 @@ class AddTask {
             document.getElementById('subtaskIconContainer').classList.add('dNone');
             document.getElementById('subtaskPlusIcon').classList.remove('dNone');
         }
-    }
+    };
 
 
-    clearSubtaskInput() {
+    clearSubtaskInput = () => {
         document.getElementById('subtaskInput').value = '';
-    }
+    };
 
 
     handleKeyDown(event) {

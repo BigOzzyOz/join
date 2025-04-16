@@ -46,7 +46,7 @@ class Board {
     }
 
 
-    closeModal() {
+    closeModal = () => {
         const overlay = document.getElementById("overlay");
         const addTaskOverlay = document.getElementById("addTaskOverlay");
         deactivateOverlayListeners();
@@ -55,7 +55,7 @@ class Board {
             addTaskOverlay.style.display = "none";
         }
         document.body.classList.remove("modalOpen");
-    }
+    };
 
 
 

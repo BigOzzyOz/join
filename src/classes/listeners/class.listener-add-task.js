@@ -84,15 +84,15 @@ export class AddTaskListener {
         const subtaskSaveIcon = document.getElementById('subtaskSaveIcon');
 
         if (action === "add") {
-            subtasksInputContainer?.addEventListener('keypress', addNewSubtask);
-            subtaskInputPlus?.addEventListener('click', addNewSubtask);
+            subtasksInputContainer?.addEventListener('keypress', this.addTaskInstance.addNewSubtask);
+            subtaskInputPlus?.addEventListener('click', this.addTaskInstance.addNewSubtask);
             subtaskDeleteIcon?.addEventListener('click', clearSubtaskInput);
-            subtaskSaveIcon?.addEventListener('click', saveSubtask);
+            subtaskSaveIcon?.addEventListener('click', this.addTaskInstance.saveSubtask);
         } else if (action === "remove") {
-            subtasksInputContainer?.removeEventListener('keypress', addNewSubtask);
-            subtaskInputPlus?.removeEventListener('click', addNewSubtask);
+            subtasksInputContainer?.removeEventListener('keypress', this.addTaskInstance.addNewSubtask);
+            subtaskInputPlus?.removeEventListener('click', this.addTaskInstance.addNewSubtask);
             subtaskDeleteIcon?.removeEventListener('click', clearSubtaskInput);
-            subtaskSaveIcon?.removeEventListener('click', saveSubtask);
+            subtaskSaveIcon?.removeEventListener('click', this.addTaskInstance.saveSubtask);
         }
     }
 
@@ -100,9 +100,9 @@ export class AddTaskListener {
     addTaskListenerCategory(action) {
         const categoryValue = document.querySelectorAll(".categoryValue");
         if (action === "add") {
-            categoryValue?.forEach((element) => element.addEventListener('click', handleWrapperClick));
+            categoryValue?.forEach((element) => element.addEventListener('click', this.handleWrapperClick));
         } else if (action === "remove") {
-            categoryValue?.forEach((element) => element.removeEventListener('click', handleWrapperClick));
+            categoryValue?.forEach((element) => element.removeEventListener('click', this.handleWrapperClick));
         }
     }
 
@@ -110,9 +110,9 @@ export class AddTaskListener {
     addTaskListenerPrio(action) {
         const prio = document.querySelectorAll('.prioBtn');
         if (action === "add") {
-            prio?.forEach((element) => element.addEventListener('click', handlePrioClick));
+            prio?.forEach((element) => element.addEventListener('click', this.handlePrioClick));
         } else if (action === "remove") {
-            prio?.forEach((element) => element.removeEventListener('click', handlePrioClick));
+            prio?.forEach((element) => element.removeEventListener('click', this.handlePrioClick));
         }
     }
 
@@ -121,32 +121,38 @@ export class AddTaskListener {
     addTaskListenerDate(action) {
         const dateInput = document.getElementById("dateInputContainer");
         if (action === "add") {
-            dateInput?.addEventListener('click', setActualDate);
+            dateInput?.addEventListener('click', this.setActualDate);
         } else if (action === "remove") {
-            dateInput?.removeEventListener('click', setActualDate);
+            dateInput?.removeEventListener('click', this.setActualDate);
         }
     }
 
 
-    handleSubmitBtnClick(event) {
+    handleSubmitBtnClick = (event) => {
         event.preventDefault();
-        if (formValidation()) pushNewTask();
-    }
+        if (formValidation()) this.addTaskInstance.pushNewTask();
+    };
 
 
-    handleWrapperClick(event) {
+    handleWrapperClick = (event) => {
         event.stopPropagation();
         event.preventDefault();
         let category = event.target.closest('.categoryValue').dataset.value;
-        toggleCategoryDropdown(category);
-    }
+        this.addTaskInstance.toggleCategoryDropdown(category);
+    };
+
+    handlePrioClick = (event) => {
+        const prioElement = event.target.closest('.prioBtn');
+        if (!prioElement) return;
+        setPrio(prioElement);//TODO - combine with task.js
+    };
 
 
-    setActualDate() {
+    setActualDate = () => {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').setAttribute('min', today);
         document.getElementById('update-date') && document.getElementById('update-date').setAttribute('min', today);
-    }
+    };
 
 
     //NOTE - Subtask listener and handler
@@ -156,9 +162,9 @@ export class AddTaskListener {
         const subtaskEditList = document.querySelectorAll('.subtaskEditList');
         const subtaskEditBtns = document.querySelectorAll('.editSubtaskBtns');
         const subtaskDeleteBtns = document.querySelectorAll('.deleteSubtaskBtns');
-        subtaskEditList?.forEach((element) => element.addEventListener('dblclick', handleSubtaskList));
-        subtaskEditBtns?.forEach((element) => element.addEventListener('click', handleSubtaskList));
-        subtaskDeleteBtns?.forEach((element) => element.addEventListener('click', handleSubtaskList));
+        subtaskEditList?.forEach((element) => element.addEventListener('dblclick', this.handleSubtaskList));
+        subtaskEditBtns?.forEach((element) => element.addEventListener('click', this.handleSubtaskList));
+        subtaskDeleteBtns?.forEach((element) => element.addEventListener('click', this.handleSubtaskList));
     }
 
 
@@ -166,17 +172,17 @@ export class AddTaskListener {
         const subtaskEditList = document.querySelectorAll('.subtaskEditList');
         const subtaskEditBtns = document.querySelectorAll('.editSubtaskBtns');
         const subtaskDeleteBtns = document.querySelectorAll('.deleteSubtaskBtns');
-        subtaskEditList?.forEach((element) => element.removeEventListener('dblclick', handleSubtaskList));
-        subtaskEditBtns?.forEach((element) => element.removeEventListener('click', handleSubtaskList));
-        subtaskDeleteBtns?.forEach((element) => element.removeEventListener('click', handleSubtaskList));
+        subtaskEditList?.forEach((element) => element.removeEventListener('dblclick', this.handleSubtaskList));
+        subtaskEditBtns?.forEach((element) => element.removeEventListener('click', this.handleSubtaskList));
+        subtaskDeleteBtns?.forEach((element) => element.removeEventListener('click', this.handleSubtaskList));
     }
 
 
-    handleSubtaskList({ target, type }) {
+    handleSubtaskList = ({ target, type }) => {
         const subtask = target.closest('.subtaskEditList');
         const action = target.closest('img').dataset.action;
-        if (type === "dblclick") editSubtask(subtask);
-        else if (action === "edit") editSubtask(subtask);
-        else if (action === "delete") deleteSubtask(subtask);
-    }
+        if (type === "dblclick") this.addTaskInstance.editSubtask(subtask);
+        else if (action === "edit") this.addTaskInstance.editSubtask(subtask);
+        else if (action === "delete") this.addTaskInstance.deleteSubtask(subtask);
+    };
 }
