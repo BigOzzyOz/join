@@ -33,7 +33,7 @@
 
 .inputContainer {
   display: flex;
-  gap: 48px;
+  gap: 32px;
   flex-direction: column;
 }
 
@@ -313,6 +313,7 @@ input:focus {
   transition: all 125ms ease-in-out;
   position: relative;
   width: 100%;
+  z-index: 5;
 }
 
 .imgContainer {
@@ -348,7 +349,7 @@ input:focus {
 
 .contactsToAssign {
   position: absolute;
-  top: 40px;
+  top: 0;
   left: 0;
   background-color: white;
   z-index: 3;
@@ -360,6 +361,8 @@ input:focus {
   align-items: center;
   gap: 4px;
   border-radius: 10px;
+  border: unset;
+  padding-top: 40px;
 }
 
 .contactsToAssign label {
@@ -425,22 +428,9 @@ input:focus {
   background: url('../assets/icons/checkboxcheckedWhite.svg') no-repeat center;
 }
 
-.assignContainer {
-  position: absolute;
-  top: 32px;
-  left: 0;
-  border: 1px solid #d1d1d1;
-  border-radius: 10px;
-  background-color: white;
-  height: 38px;
-}
-
-.open {
-  height: 240px !important;
-}
-
 .open>.contactsToAssign {
-  height: 79.8%;
+  border: 1px solid #d1d1d1;
+  height: 200px;
 }
 
 .contactsAssigned {
@@ -448,10 +438,10 @@ input:focus {
   gap: 8px;
   width: 100%;
   flex-wrap: nowrap;
-  max-height: 50px;
+  height: 50px;
   overflow: hidden;
   padding: 8px 16px;
-  margin-top: 48px;
+  z-index: 2;
 }
 
 .contactsAssigned>svg {
@@ -568,18 +558,32 @@ ul {
 }
 
 .select-wrapper {
-  position: absolute;
-  top: 32px;
-  left: 0;
+  position: relative;
   z-index: 5;
   display: inline-block;
-  height: 38px;
-  overflow: hidden;
   transition: all 125ms ease-in-out;
   border-radius: 10px;
   background-color: white;
   border: 1px solid #d1d1d1;
 }
+
+.select-wrapper>.category-options {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  z-index: 3;
+  overflow: hidden auto;
+  height: 0%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 10px;
+  border: unset;
+  padding-top: 40px;
+}
+
 
 .select-wrapper input[type="text"] {
   position: relative;
@@ -593,8 +597,9 @@ ul {
   opacity: 1;
 }
 
-.select-wrapperOpen {
+.select-wrapperOpen>.category-options {
   height: auto !important;
+  border: 1px solid #d1d1d1;
 }
 
 .select-wrapper p {
@@ -724,9 +729,6 @@ ul {
     width: 100%;
   }
 
-  .contactsToAssign {
-    top: 48px;
-  }
 }
 
 @media (min-width: 1440px) {
