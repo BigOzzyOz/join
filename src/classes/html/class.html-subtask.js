@@ -1,10 +1,15 @@
 export class SubtaskHtml {
+    //NOTE Properties
+
+    text;
+    status;
+
     constructor(subtask) {
         this.text = subtask.text;
         this.status = subtask.status;
     }
 
-
+    //NOTE Subtask HTML Generation
 
     generateSaveSubtaskHTML(index) {
         const safeText = this.text.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
@@ -23,4 +28,6 @@ export class SubtaskHtml {
             </li>
         `;
     }
+
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

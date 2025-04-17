@@ -1,9 +1,28 @@
 class TaskHtml {
+    //NOTE Properties
+    id;
+    title;
+    description;
+    date;
+    prio;
+    status;
+    assignedTo;
+    category;
+    subtasks;
+
     constructor(task) {
-        this.task = task;
-        this.taskId = task.id;
+        this.id = task.id || null;
+        this.title = task.title || '';
+        this.description = task.description || '';
+        this.date = task.date || '';
+        this.prio = task.prio || 'low';
+        this.status = task.status || 'toDo';
+        this.assignedTo = task.assignedTo || task.assigned_to || [];
+        this.category = task.category || 'General';
+        this.subtasks = task.subtasks || task.subtasks || [];
     }
 
+    //NOTE Board Card HTML Generation
 
     generateTodoHTML(element) {
         let categoryHTML = generateCategoryHTML(element.category);
@@ -31,7 +50,6 @@ class TaskHtml {
           `;
     }
 
-
     generateCategoryHTML(category) {
         let categoryHTML = '';
         if (category == 'User Story') {
@@ -41,7 +59,6 @@ class TaskHtml {
         }
         return categoryHTML;
     }
-
 
     generateTitleHTML(title) {
         let titleHTML = '';
@@ -53,7 +70,6 @@ class TaskHtml {
         return titleHTML;
     }
 
-
     generateDescriptionHTML(description) {
         let descriptionHTML = '';
         if (description.length < 60) {
@@ -63,7 +79,6 @@ class TaskHtml {
         }
         return descriptionHTML;
     }
-
 
     generateSubtasksHTML(subtasks, id) {
         let subtasksHTML = "";
@@ -78,7 +93,6 @@ class TaskHtml {
         }
         return subtasksHTML;
     }
-
 
     generateAssignedToHTML(assignedTo) {
         let assignedToHTML = '';
@@ -95,7 +109,6 @@ class TaskHtml {
         return assignedToHTML;
     }
 
-
     generatePrioHTML(prio) {
         let prioHTML = '';
         if (prio == 'urgent') {
@@ -108,6 +121,7 @@ class TaskHtml {
         return prioHTML;
     }
 
+    //NOTE Add Task Modal Template
 
     async fetchAddTaskTemplate() {
         let response = await fetch("../assets/templates/html/addtasktemplate.html");
@@ -119,6 +133,7 @@ class TaskHtml {
             `;
     }
 
+    //NOTE Modal/Overlay HTML Generation
 
     generateModalCategoryHTML(category) {
         let modalCategoryHTML = '';
@@ -129,7 +144,6 @@ class TaskHtml {
         }
         return modalCategoryHTML;
     }
-
 
     generateModalAssignedToHTML(assignedTo) {
         if (!assignedTo) return '';
@@ -144,7 +158,6 @@ class TaskHtml {
         }
         return modalAssignedToHTML;
     }
-
 
     generateModalSubtasksHTML(element) {
         let modalSubtasksHTML = "";
@@ -164,7 +177,6 @@ class TaskHtml {
         }
         return modalSubtasksHTML;
     }
-
 
     generateOpenOverlayHTML(element) {
         let modalCategoryHTML = generateModalCategoryHTML(element.category);
@@ -218,6 +230,7 @@ class TaskHtml {
           `;
     }
 
+    //NOTE Edit Task Modal HTML Generation
 
     generateTaskEditHTML(taskId) {
         let task = tasks.find(task => task.id === taskId);
@@ -320,6 +333,5 @@ class TaskHtml {
           `;
     }
 
-
-
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

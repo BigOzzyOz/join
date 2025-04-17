@@ -11,6 +11,8 @@ import { AddTask } from './class.add-task.js';
 
 
 export class Kanban {
+    //NOTE Properties
+
     currentUserStorage = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser')) || null;
     currentUser;
     activeTab = sessionStorage.getItem('activeTab') || '';
@@ -33,7 +35,6 @@ export class Kanban {
     addTask = null;
     contactsPage = null;
 
-    //NOTE - Initialization and Setup
     constructor() {
         if (this.noUserContentPaths.some((usedPath) => this.path.includes(usedPath)) || this.path === '/') sessionStorage.clear();
         this.currentUser = this.currentUserStorage ? new Contact(this.currentUserStorage) : null;
@@ -74,7 +75,8 @@ export class Kanban {
         }
     }
 
-    //NOTE - State Management
+    //NOTE Kanban Data Methods
+
     setTasks = (newTasks) => {
         this.tasks = newTasks;
         sessionStorage.setItem('tasks', JSON.stringify(newTasks));
@@ -85,7 +87,7 @@ export class Kanban {
         sessionStorage.setItem('contact', JSON.stringify(newContacts));
     };
 
-    //NOTE - UI Updates & Interaction
+    //NOTE UI Updates & Interaction
 
     setActive = (link = null) => {
         const menuButtons = document.querySelectorAll(".menuBtn");
@@ -194,7 +196,8 @@ export class Kanban {
         };
     };
 
-    //NOTE - Navigation
+    //NOTE Navigation
+
     forwardRegister = () => {
         window.location.href = 'html/register.html';
     };
@@ -211,7 +214,8 @@ export class Kanban {
         window.location.href = this.path.includes('/html/') ? '../index.html' : './index.html';
     };
 
-    //NOTE - Listener Activation (Delegation)
+    //NOTE Listener Activation/Deactivation
+
     activateListenersContacts() {
         this.listener?.contacts?.activateListenersContact();
     }
@@ -250,4 +254,5 @@ export class Kanban {
         }
     }
 
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

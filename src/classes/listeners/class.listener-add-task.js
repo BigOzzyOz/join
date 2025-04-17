@@ -1,4 +1,10 @@
 export class AddTaskListener {
+    //NOTE Properties
+
+    kanban;
+    addTaskInstance;
+    boardInstance;
+
     constructor(kanban) {
         this.kanban = kanban;
         this.addTaskInstance = kanban.addTask;
@@ -6,6 +12,7 @@ export class AddTaskListener {
         this.activateAddTaskListeners();
     }
 
+    //NOTE Listener Activation/Deactivation
 
     activateAddTaskListeners() {
         this.addTaskListenerGeneral("add");
@@ -18,8 +25,6 @@ export class AddTaskListener {
             window.addEventListener('click', this.boardInstance.handleOverlayOutsideClick);
         }
     }
-
-
 
     deactivateAllAddTaskListeners() {
         this.addTaskListenerGeneral("remove");
@@ -46,7 +51,7 @@ export class AddTaskListener {
         }
     }
 
-
+    //NOTE Listener Methods (General, Assign, Subtasks, Category, Prio, Date)
 
     addTaskListenerGeneral(action) {
         const clearBtn = document.getElementById("clearBtn");
@@ -60,7 +65,6 @@ export class AddTaskListener {
             addTaskForm?.removeEventListener('submit', this.handleSubmitBtnClick);
         }
     }
-
 
     addTaskListenerAssign(action) {
         const assignSearchInputField = document.getElementById("assignSearch");
@@ -76,7 +80,6 @@ export class AddTaskListener {
             assignSearchDropdown?.removeEventListener('click', this.addTaskInstance.toggleDropdown);
         }
     }
-
 
     addTaskListenerSubtasks(action) {
         const subtasksInputContainer = document.getElementById("subtasksInputContainer");
@@ -97,7 +100,6 @@ export class AddTaskListener {
         }
     }
 
-
     addTaskListenerCategory(action) {
         const categoryValue = document.querySelectorAll(".categoryValue");
         if (action === "add") {
@@ -106,7 +108,6 @@ export class AddTaskListener {
             categoryValue?.forEach((element) => element.removeEventListener('click', this.handleWrapperClick));
         }
     }
-
 
     addTaskListenerPrio(action) {
         const prio = document.querySelectorAll('.prioBtn');
@@ -117,8 +118,6 @@ export class AddTaskListener {
         }
     }
 
-
-
     addTaskListenerDate(action) {
         const dateInput = document.getElementById("dateInputContainer");
         if (action === "add") {
@@ -128,12 +127,12 @@ export class AddTaskListener {
         }
     }
 
+    //NOTE Handler Methods
 
     handleSubmitBtnClick = (event) => {
         event.preventDefault();
         if (this.addTaskInstance.formValidation()) this.addTaskInstance.pushNewTask();
     };
-
 
     handleWrapperClick = (event) => {
         event.stopPropagation();
@@ -148,16 +147,13 @@ export class AddTaskListener {
         this.addTaskInstance.setPrio(prioElement);
     };
 
-
     setActualDate = () => {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').setAttribute('min', today);
         document.getElementById('update-date') && document.getElementById('update-date').setAttribute('min', today);
     };
 
-
-    //NOTE - Subtask listener and handler
-
+    //NOTE Subtask Listeners & Handlers
 
     activateSubtaskListeners() {
         const subtaskEditList = document.querySelectorAll('.subtaskEditList');
@@ -168,7 +164,6 @@ export class AddTaskListener {
         subtaskDeleteBtns?.forEach((element) => element.addEventListener('click', this.handleSubtaskList));
     }
 
-
     deactivateSubtaskListeners() {
         const subtaskEditList = document.querySelectorAll('.subtaskEditList');
         const subtaskEditBtns = document.querySelectorAll('.editSubtaskBtns');
@@ -177,7 +172,6 @@ export class AddTaskListener {
         subtaskEditBtns?.forEach((element) => element.removeEventListener('click', this.handleSubtaskList));
         subtaskDeleteBtns?.forEach((element) => element.removeEventListener('click', this.handleSubtaskList));
     }
-
 
     handleSubtaskList = ({ target, type }) => {
         const subtask = target.closest('.subtaskEditList');
@@ -189,6 +183,8 @@ export class AddTaskListener {
         if (action === "edit") this.addTaskInstance.editSubtask(subtask);
         else if (action === "delete") this.addTaskInstance.deleteSubtask(subtask);
     };
+
+    //NOTE Assign Contact Listener
 
     handleAssignContact = (event) => {
         event.preventDefault();
@@ -206,4 +202,6 @@ export class AddTaskListener {
             document.removeEventListener('click', this.addTaskInstance.checkOutsideAssign);
         }
     }
+
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

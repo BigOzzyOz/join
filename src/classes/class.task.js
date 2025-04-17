@@ -1,6 +1,18 @@
 import { Subtask } from "./class.subtask.js";
 
 export class Task {
+    //NOTE Properties
+
+    id;
+    title;
+    description;
+    date;
+    prio;
+    status;
+    assignedTo;
+    category;
+    subtasks;
+
     constructor(data) {
         this.id = data.id || null;
         this.title = data.title || '';
@@ -16,6 +28,8 @@ export class Task {
             this.subtasks = [];
         }
     }
+
+    //NOTE Task Object Methods
 
     toTaskObject() {
         return {
@@ -44,10 +58,7 @@ export class Task {
         };
     }
 
-
-    //NOTE - priority functions
-
-
+    //NOTE Task Edit & Save Methods
     enableTaskEdit(taskId) {
         let modalContainer = document.getElementById("modalContainer");
         modalContainer.innerHTML = generateTaskEditHTML(taskId);
@@ -61,7 +72,6 @@ export class Task {
         renderAssignedContacts();
         activateEditTaskListeners();
     }
-
 
     createEditedTask(taskId) {
         let originalTask = tasks.find(task => task.id === taskId);
@@ -78,7 +88,6 @@ export class Task {
         return createEditedTaskReturn(subtasks, originalTask);
     }
 
-
     createEditedTaskReturn(subtasks, originalTask) {
         return {
             title: document.getElementById('editTaskTitle').value,
@@ -92,7 +101,6 @@ export class Task {
         };
     }
 
-
     async saveEditedTask(taskId) {
         const task = createEditedTask(taskId);
         await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
@@ -104,6 +112,7 @@ export class Task {
         applyCurrentSearchFilter();
     }
 
+    //NOTE Board/Move Methods
 
     async moveTo(newStatus) {
         document.querySelectorAll(".taskDragArea").forEach((area) => {
@@ -123,6 +132,8 @@ export class Task {
             applyCurrentSearchFilter();
         }
     }
+
+    //NOTE Subtask Methods
 
     updateSubtaskStatusInDOM(subtask, index) {
         subtask.status = subtask.status === "checked" ? "unchecked" : "checked";
@@ -149,4 +160,6 @@ export class Task {
             }
         }
     }
+
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

@@ -3,6 +3,13 @@ import { Subtask } from "./class.subtask.js";
 import { Task } from "./class.task.js";
 
 export class AddTask {
+    //NOTE Properties 
+
+    kanban;
+    assignedContacts = [];
+    currentPrio = 'medium';
+    html;
+
     constructor(kanban) {
         this.kanban = kanban;
         this.assignedContacts = [];
@@ -10,13 +17,13 @@ export class AddTask {
         this.html = new AddTaskHtml(kanban);
     }
 
+    //NOTE Assign/Dropdown/Contact Methods
 
     toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
         document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await this.openAssignDropdown() : this.closeAssignDropdown();
         this.kanban.toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
     };
-
 
     async openAssignDropdown() {
         const searchInput = document.getElementById('assignSearch');
@@ -29,7 +36,6 @@ export class AddTask {
         this.kanban.activateListenerAddTask('openAssignDropdown');
     }
 
-
     closeAssignDropdown() {
         let searchInput = document.getElementById('assignSearch');
         let contactsContainer = document.getElementById('contactsToAssign');
@@ -40,7 +46,6 @@ export class AddTask {
         this.kanban.deactivateListenerAddTask('closeAssignDropdown');
     };
 
-
     toggleCategoryDropdown(value) {
         let input = document.getElementById('categoryInput');
         let wrapper = document.getElementById('selectWrapper');
@@ -50,19 +55,13 @@ export class AddTask {
         wrapper.classList.contains('select-wrapperOpen') ? arrow.style.transform = 'rotate(180deg)' : arrow.style.transform = 'rotate(0deg)';
     }
 
-
-    //NOTE - Assign functions
-
-
     getId(id) {
         return document.getElementById(id).value;
     }
 
-
     setAssignedContacts(contactsArray) {
         this.assignedContacts = contactsArray;
     }
-
 
     checkOutsideAssign = ({ target }) => {
         let assignMenu = document.getElementById('assignDropdown');
@@ -70,7 +69,6 @@ export class AddTask {
             this.toggleDropdown();
         };
     };
-
 
     assignSearchInput = () => {
         const searchInput = document.getElementById('assignSearch');
@@ -81,7 +79,6 @@ export class AddTask {
         contactsContainer.innerHTML = filteredContacts.map(c => c.html.htmlRenderContactsAssign(this.assignedContacts)).join('');
     };
 
-
     contactAssign(id) {
         const index = this.assignedContacts.findIndex(c => c.id === id);
         const inAssignedContacts = index > -1;
@@ -91,7 +88,6 @@ export class AddTask {
         else this.assignedContacts.push(this.kanban.contacts.find(c => c.id === id));
         this.renderAssignedContacts();
     }
-
 
     renderAssignedContacts() {
         let assignedContactsContainer = document.getElementById('contactsAssigned');
@@ -107,9 +103,7 @@ export class AddTask {
         }
     }
 
-
-    //NOTE - Subtask functions
-
+    //NOTE Subtask Methods
 
     addNewSubtask = (event) => {
         this.handleKeyDown(event);
@@ -123,11 +117,9 @@ export class AddTask {
         }
     };
 
-
     clearSubtaskInput = () => {
         document.getElementById('subtaskInput').value = '';
     };
-
 
     handleKeyDown(event) {
         if (event.key === 'Enter') {
@@ -135,7 +127,6 @@ export class AddTask {
             this.saveSubtask();
         }
     }
-
 
     saveSubtask = () => {
         let subtaskList = document.getElementById('subtaskList');
@@ -154,7 +145,6 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     };
 
-
     editSubtask(editIcon) {
         let subtaskItem = editIcon.closest('.subtaskEditList');
         let subtaskText = subtaskItem.querySelector('.subtaskItemText');
@@ -167,13 +157,11 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     }
 
-
     saveEditedSubtask = (subtaskText, editInput) => {
         subtaskText.textContent = editInput.value.trim();
         subtaskText.classList.remove('dNone');
         editInput.classList.add('dNone');
     };
-
 
     deleteSubtask(deleteIcon) {
         let subtaskItem = deleteIcon.closest('.subtaskEditList');
@@ -182,11 +170,9 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     }
 
-
     clearSubtaskList() {
         document.getElementById('subtaskList').innerHTML = '';
     }
-
 
     getSubtasks() {
         const subtaskItems = document.querySelectorAll('.subtaskList .subtaskItemText');
@@ -195,6 +181,7 @@ export class AddTask {
         return subtasks;
     }
 
+    //NOTE Task Creation & Edit Methods
 
     async pushNewTask() {
         let data = this.createNewTask();
@@ -204,7 +191,6 @@ export class AddTask {
         this.kanban.setTasks(this.kanban.tasks);
         this.closeAddTaskModal();
     }
-
 
     createNewTask() {
         return {
@@ -219,10 +205,60 @@ export class AddTask {
         };
     }
 
+    enableTaskEdit(taskId) {
+        let modalContainer = document.getElementById("modalContainer");
+        modalContainer.innerHTML = generateTaskEditHTML(taskId);
+        let task = tasks.find((task) => task.id === taskId);
+        if (task.assignedTo) setAssignedContacts(task.assignedTo);
+        currentTaskStatus = task.status;
+        document.getElementById("editTaskTitle").value = task.title;
+        document.getElementById("editTaskDescription").value = task.description;
+        document.getElementById("editDateInput").value = task.date;
+        updatePrioActiveBtn(task.prio);
+        renderAssignedContacts();
+        activateEditTaskListeners();
+    }
 
+    createEditedTask(taskId) {
+        let originalTask = tasks.find(task => task.id === taskId);
+        if (!originalTask) return;
+        let subtasks = [];
+        document.querySelectorAll('#subtaskList .subtaskItem').forEach((subtaskItem, index) => {
+            const subtaskText = subtaskItem.querySelector('span').innerText;
+            let status = 'unchecked';
+            if (originalTask.subtasks && originalTask.subtasks[index]) {
+                status = originalTask.subtasks[index].status ? originalTask.subtasks[index].status : 'unchecked';
+            }
+            subtasks.push({ text: subtaskText, status: status });
+        });
+        return this.createEditedTaskReturn(subtasks, originalTask);
+    }
 
-    //NOTE - Validation functions
+    createEditedTaskReturn(subtasks, originalTask) {
+        return {
+            title: document.getElementById('editTaskTitle').value,
+            description: document.getElementById('editTaskDescription').value,
+            date: document.getElementById('editDateInput').value,
+            prio: currentPrio,
+            status: currentTaskStatus,
+            subtasks: subtasks,
+            assignedTo: this.assignedContacts,
+            category: originalTask.category,
+        };
+    }
 
+    async saveEditedTask(taskId) {
+        const task = this.createEditedTask(taskId);
+        await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
+        const taskIndex = tasks.findIndex((t) => t.id === taskId);
+        tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
+        sessionStorage.setItem("tasks", JSON.stringify(tasks));
+        openOverlay(taskId);
+        initDragDrop();
+        applyCurrentSearchFilter();
+    }
+
+    //NOTE Validation Methods
 
     formValidation = () => {
         const inputs = document.querySelectorAll('.singleInputContainer input[required]');
@@ -239,18 +275,15 @@ export class AddTask {
         return isValid;
     };
 
-
     formValidationTrue(input, validationText) {
         validationText.style.display = 'block';
         input.classList.add('formValidationInputBorder');
     }
 
-
     formValidationFalse(input, validationText) {
         validationText.style.display = 'none';
         input.classList.remove('formValidationInputBorder');
     }
-
 
     formValidationListener(input, validationText) {
         input.addEventListener('input', () => {
@@ -264,6 +297,7 @@ export class AddTask {
         });
     }
 
+    //NOTE UI/Modal/Animation Methods
 
     closeAddTaskModal() {
         if (this.kanban.activeTab == 'add task') {
@@ -276,7 +310,6 @@ export class AddTask {
         }
     }
 
-
     showTaskAddedAnimation() {
         if (window.location.href.endsWith('addtask.html')) {
             this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
@@ -286,12 +319,10 @@ export class AddTask {
         } else this.showTaskAddedAnimationModal();
     }
 
-
     showTaskAddedAnimationModal() {
         this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
         setTimeout(() => { closeModal(); }, 2000);
     }
-
 
     clearAddTaskForm = () => {
         document.getElementById('taskTitle').value = '';
@@ -302,62 +333,40 @@ export class AddTask {
         this.clearSubtaskList();
     };
 
-    enableTaskEdit(taskId) {
-        let modalContainer = document.getElementById("modalContainer");
-        modalContainer.innerHTML = generateTaskEditHTML(taskId);
-        let task = tasks.find((task) => task.id === taskId);
-        if (task.assignedTo) setAssignedContacts(task.assignedTo);
-        currentTaskStatus = task.status;
-        document.getElementById("editTaskTitle").value = task.title;
-        document.getElementById("editTaskDescription").value = task.description;
-        document.getElementById("editDateInput").value = task.date;
-        updatePrioActiveBtn(task.prio);
-        renderAssignedContacts();
-        activateEditTaskListeners();
+    //NOTE Priority Methods
+
+    setPrio(element) {
+        const prio = element.getAttribute('data-prio');
+        this.currentPrio = prio;
+        this.updatePrioActiveBtn(prio);
     }
 
-
-    createEditedTask(taskId) {
-        let originalTask = tasks.find(task => task.id === taskId);
-        if (!originalTask) return;
-        let subtasks = [];
-        document.querySelectorAll('#subtaskList .subtaskItem').forEach((subtaskItem, index) => {
-            const subtaskText = subtaskItem.querySelector('span').innerText;
-            let status = 'unchecked';
-            if (originalTask.subtasks && originalTask.subtasks[index]) {
-                status = originalTask.subtasks[index].status ? originalTask.subtasks[index].status : 'unchecked';
-            }
-            subtasks.push({ text: subtaskText, status: status });
+    updatePrioActiveBtn(prio) {
+        const buttons = document.querySelectorAll('.prioBtn');
+        buttons.forEach(button => {
+            button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
+            const imgs = button.querySelectorAll('img');
+            imgs.forEach(img => { img.classList.add('hidden'); });
         });
-        return createEditedTaskReturn(subtasks, originalTask);
+        this.changeActiveBtn(prio);
     }
 
-
-    createEditedTaskReturn(subtasks, originalTask) {
-        return {
-            title: document.getElementById('editTaskTitle').value,
-            description: document.getElementById('editTaskDescription').value,
-            date: document.getElementById('editDateInput').value,
-            prio: currentPrio,
-            status: currentTaskStatus,
-            subtasks: subtasks,
-            assignedTo: this.assignedContacts,
-            category: originalTask.category,
-        };
+    changeActiveBtn(prio) {
+        const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
+        if (activeButton) {
+            activeButton.classList.add(`prioBtn${this.capitalize(prio)}Active`);
+            const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
+            if (whiteIcon) {
+                whiteIcon.classList.remove('hidden');
+            }
+        }
     }
 
-
-    async saveEditedTask(taskId) {
-        const task = createEditedTask(taskId);
-        await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
-        const taskIndex = tasks.findIndex((t) => t.id === taskId);
-        tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
-        sessionStorage.setItem("tasks", JSON.stringify(tasks));
-        openOverlay(taskId);
-        initDragDrop();
-        applyCurrentSearchFilter();
+    capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    //NOTE Board/Move Methods
 
     async moveTo(newStatus) {
         document.querySelectorAll(".taskDragArea").forEach((area) => {
@@ -394,7 +403,7 @@ export class AddTask {
         if (task) {
             let subtask = task.subtasks[subtaskIndex];
             if (subtask) {
-                updateSubtaskStatusInDOM(subtask, subtaskIndex);
+                this.updateSubtaskStatusInDOM(subtask, subtaskIndex);
                 updateSubtaskProgressBar(task.subtasks, taskId);
                 await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
                 let taskIndex = tasks.findIndex(t => taskId === t.id);
@@ -404,35 +413,6 @@ export class AddTask {
         }
     }
 
-    setPrio(element) {
-        const prio = element.getAttribute('data-prio');
-        this.currentPrio = prio;
-        this.updatePrioActiveBtn(prio);
-    }
-
-    updatePrioActiveBtn(prio) {
-        const buttons = document.querySelectorAll('.prioBtn');
-        buttons.forEach(button => {
-            button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
-            const imgs = button.querySelectorAll('img');
-            imgs.forEach(img => { img.classList.add('hidden'); });
-        });
-        this.changeActiveBtn(prio);
-    }
-
-    changeActiveBtn(prio) {
-        const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
-        if (activeButton) {
-            activeButton.classList.add(`prioBtn${this.capitalize(prio)}Active`);
-            const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
-            if (whiteIcon) {
-                whiteIcon.classList.remove('hidden');
-            }
-        }
-    }
-
-    capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
+    // === Doppelte oder nicht benötigte Methoden ===
+    // FIXME: Hier doppelte oder nicht benötigte Methoden ans Ende verschieben
 }
