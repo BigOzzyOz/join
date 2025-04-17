@@ -1,4 +1,4 @@
-class TaskHtml {
+export class TaskHtml {
     //NOTE Properties
     id;
     title;
@@ -18,22 +18,22 @@ class TaskHtml {
         this.prio = task.prio || 'low';
         this.status = task.status || 'toDo';
         this.assignedTo = task.assignedTo || task.assigned_to || [];
-        this.category = task.category || 'General';
+        this.category = task.category || 'User Story';
         this.subtasks = task.subtasks || task.subtasks || [];
     }
 
     //NOTE Board Card HTML Generation
 
-    generateTodoHTML(element) {
-        let categoryHTML = generateCategoryHTML(element.category);
-        let titleHTML = generateTitleHTML(element.title);
-        let descriptionHTML = generateDescriptionHTML(element.description);
-        let subtasksHTML = generateSubtasksHTML(element.subtasks, element.id);
-        let assignedToHTML = generateAssignedToHTML(element.assignedTo);
-        let prioHTML = generatePrioHTML(element.prio);
+    generateTodoHTML() {
+        let categoryHTML = this.generateCategoryHTML();
+        let titleHTML = this.generateTitleHTML();
+        let descriptionHTML = this.generateDescriptionHTML();
+        let subtasksHTML = this.generateSubtasksHTML();
+        let assignedToHTML = this.generateAssignedToHTML();
+        let prioHTML = this.generatePrioHTML();
 
         return /*html*/ `
-              <div draggable="true" id="${element.id}" class="todoContainer" data-id="${element.id}">
+              <div draggable="true" id="${this.id}" class="todoContainer" data-id="${this.id}">
                   <div class="toDoContent">
                       ${categoryHTML}
                       <div class="toDoHeaderContainer">
@@ -50,9 +50,9 @@ class TaskHtml {
           `;
     }
 
-    generateCategoryHTML(category) {
+    generateCategoryHTML() {
         let categoryHTML = '';
-        if (category == 'User Story') {
+        if (this.category == 'User Story') {
             categoryHTML = `<div class="userStoryBadge">User Story</div>`;
         } else {
             categoryHTML = `<div class="technicalTaskBadge">Technical Task</div>`;
@@ -60,50 +60,52 @@ class TaskHtml {
         return categoryHTML;
     }
 
-    generateTitleHTML(title) {
+    generateTitleHTML() {
+        let safeTitle = this.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let titleHTML = '';
-        if (title.length < 20) {
-            titleHTML = `<div class="toDoHeader">${title}</div>`;
+        if (safeTitle.length < 20) {
+            titleHTML = `<div class="toDoHeader">${safeTitle}</div>`;
         } else {
-            titleHTML = `<div class="toDoHeader">${title.substring(0, 20) + '...'}</div>`;
+            titleHTML = `<div class="toDoHeader">${safeTitle.substring(0, 20) + '...'}</div>`;
         }
         return titleHTML;
     }
 
-    generateDescriptionHTML(description) {
+    generateDescriptionHTML() {
+        let safeDescription = this.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let descriptionHTML = '';
-        if (description.length < 60) {
-            descriptionHTML = `<div class="toDoDescription">${description}</div>`;
+        if (safeDescription.length < 60) {
+            descriptionHTML = `<div class="toDoDescription">${safeDescription}</div>`;
         } else {
-            descriptionHTML = `<div class="toDoDescription">${description.substring(0, 40) + '...'}</div>`;
+            descriptionHTML = `<div class="toDoDescription">${safeDescription.substring(0, 40) + '...'}</div>`;
         }
         return descriptionHTML;
     }
 
-    generateSubtasksHTML(subtasks, id) {
+    generateSubtasksHTML() {
         let subtasksHTML = "";
-        if (subtasks && subtasks.length > 0) {
+        if (this.subtasks && this.subtasks.length > 0) {
             subtasksHTML = /*html*/ `
               <div class="toDoSubtasksContainer">
                   <div class="subtasksProgressbar">
-                      <div id="subtasksProgressbarProgress${id}" class="subtasksProgressbarProgress" style="width: 0%;" role="progressbar"></div>
+                      <div id="subtasksProgressbarProgress${this.id}" class="subtasksProgressbarProgress" style="width: 0%;" role="progressbar"></div>
                   </div>
-                  <div id="subtasksProgressbarText${id}">0/${subtasks.length} Subtasks</div>
+                  <div id="subtasksProgressbarText${this.id}">0/${this.subtasks.length} Subtasks</div>
               </div>`;
         }
         return subtasksHTML;
     }
 
-    generateAssignedToHTML(assignedTo) {
+    generateAssignedToHTML() {
         let assignedToHTML = '';
-        if (!assignedTo) {
+        if (!this.assignedTo) {
             return '';
         }
-        for (let i = 0; i < Math.min(assignedTo.length, 4); i++) {
-            assignedToHTML += `<div class="assignedToBadge">${assignedTo[i].profilePic}</div>`;
+        for (let i = 0; i < Math.min(this.assignedTo.length, 4); i++) {
+            assignedToHTML += `<div class="assignedToBadge">${this.assignedTo[i].profilePic}</div>`;
         }
-        if (assignedTo.length > 4) {
-            let assignedNum = assignedTo.length - 4;
+        if (this.assignedTo.length > 4) {
+            let assignedNum = this.assignedTo.length - 4;
             assignedToHTML += `<div class="assignedToMoreBadge">+${assignedNum}</div>`;
         }
         return assignedToHTML;
@@ -111,26 +113,14 @@ class TaskHtml {
 
     generatePrioHTML(prio) {
         let prioHTML = '';
-        if (prio == 'urgent') {
+        if (this.prio == 'urgent') {
             prioHTML = `<img src="../assets/icons/priourgent.png">`;
-        } else if (prio == 'medium') {
+        } else if (this.prio == 'medium') {
             prioHTML = `<img src="../assets/icons/priomedium.png">`;
         } else {
             prioHTML = `<img src="../assets/icons/priolow.png">`;
         }
         return prioHTML;
-    }
-
-    //NOTE Add Task Modal Template
-
-    async fetchAddTaskTemplate() {
-        let response = await fetch("../assets/templates/html/addtasktemplate.html");
-        let html = await response.text();
-        return `
-              <div class="addTaskModalContainer">
-                ${html}
-              </div>
-            `;
     }
 
     //NOTE Modal/Overlay HTML Generation

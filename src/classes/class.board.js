@@ -1,10 +1,23 @@
+import { Task } from './class.task.js';
+import { Subtask } from './class.subtask.js';
+import { Contact } from './class.contact.js';
+
 export class Board {
+    //NOTE Properties
+
+    kanban;
+    currentDraggedElement;
+    currentSearchInput = '';
+    currentTaskStatus;
+
     constructor(kanban) {
         this.kanban = kanban;
         this.currentDraggedElement;
         this.currentSearchInput = '';
         this.currentTaskStatus;
     }
+
+    //NOTE Overlay & Modal Methods
 
     handleOverlayOutsideClick = (event) => {
         const overlay = document.getElementById("overlay");
@@ -26,7 +39,6 @@ export class Board {
         } else openAddTaskOverlay();
     }
 
-
     async openAddTaskOverlay() {
         let addTaskOverlay = document.getElementById("addTaskOverlay");
         setAssignedContacts([]);
@@ -34,7 +46,6 @@ export class Board {
         addTaskOverlay.style.display = "block";
         activateAddTaskListeners();
     }
-
 
     openOverlay(elementId) {
         let element = tasks.find((task) => task.id === elementId);
@@ -44,7 +55,6 @@ export class Board {
         activateOverlayListeners(elementId);
         overlay.style.display = "block";
     }
-
 
     closeModal = () => {
         const overlay = document.getElementById("overlay");
@@ -57,135 +67,97 @@ export class Board {
         document.body.classList.remove("modalOpen");
     };
 
-
-
-
-
-    //NOTE - Board Initialisation
-
+    //NOTE Board Initialization
 
     async initBoard() {
         try {
-            toggleLoader(true);
-            await initializeTasksData();
-            sessionStorage.setItem("tasks", JSON.stringify(tasks));
-            initDragDrop();
-            applyCurrentSearchFilter();
-            toggleLoader(false);
+            await this.initializeTasksData();
+            this.kanban.activateListenersBoard('dragDrop');
+            this.applyCurrentSearchFilter();
         } catch (error) {
-            console.error("Initialisation error:", error);
+            console.error("Initialization error:", error);
         }
     }
-
 
     async initializeTasksData() {
         const loader = document.querySelector('.loader');
         loader?.classList.toggle('dNone');
-
-        await pushDataToArray();
-
-        if (tasks.length > 0) {
-            for (let i = 0; i < tasks.length; i++) {
-                tasks[i] = await checkDeletedUser(tasks[i]);
-            }
-
-            loader?.classList.toggle('dNone');
-        }
-        activateListeners();
+        if (this.kanban.tasks.length === 0) await this.kanban.db.getTasksData();
+        await this.checkDataOfArray();
+        loader?.classList.toggle('dNone');
     }
 
-
-    async pushDataToArray() {
+    async checkDataOfArray() {
+        const updatedTasksArray = [];
         try {
-            let tasksData = await getDataFromDatabase("tasks");
-            setTasks([]);
-            for (const key in tasksData) {
-                let singleTask = tasksData[key];
-                if (!singleTask) continue;
-                let task = await createTaskArray(key, singleTask);
-                task = await checkDeletedUser(task);
-                tasks.push(task);
+            for (let task of this.kanban.tasks) {
+                if (!(task instanceof Task)) {
+                    task = new Task(task);
+                }
+                if (task.subtasks) {
+                    task.subtasks = task.subtasks.map(subtask => new Subtask(subtask));
+                }
+                if (task.assignedTo) {
+                    task.assignedTo = task.assignedTo.map(contact => new Contact(contact));
+                }
+                task = await this.checkDeletedUser(task);
+                updatedTasksArray.push(task);
             }
+            this.kanban.setTasks(updatedTasksArray);
         } catch (error) {
             console.error("Error pushing tasks to array:", error);
         }
     }
 
-
     async checkDeletedUser(loadedTask) {
-        contacts.length == 0 ? await getContactsData() : null;
-        let updatedTask = loadedTask;
-        if (loadedTask.assignedTo) {
-            let highestId = updatedTask.assignedTo.reduce((maxId, user) => {
-                return Math.max(maxId, user.id);
-            }, -Infinity);
-            updatedTask = await checkContactChange(updatedTask, highestId);
-        }
-        return updatedTask;
+        if (this, this.kanban.contacts.length === 0) await this.kanban.db.getContactsData();
+        if (!loadedTask.assignedTo) return loadedTask;
+
+        loadedTask.assignedTo = loadedTask.assignedTo.map(assignedContact => {
+            const contact = this.kanban.contacts.find(c => c.id === assignedContact.id);
+            if (!contact) return null;
+            if (
+                contact.name !== assignedContact.name ||
+                contact.email !== assignedContact.email ||
+                contact.phone !== assignedContact.phone ||
+                contact.profilePic !== assignedContact.profilePic ||
+                contact.firstLetters !== assignedContact.firstLetters
+            ) {
+                return contact;
+            }
+            return assignedContact;
+        })
+            .filter(Boolean);
+
+        await this.kanban.db.update(`api/tasks/${loadedTask.id}/`, loadedTask.toTaskUploadObject());
+        return loadedTask;
     }
-
-
-    async checkContactChange(task, maxId) {
-        for (let index = maxId; index >= 0; index--) {
-            const assignedContact = task.assignedTo[index];
-            if (!assignedContact) continue;
-
-            const contactIndex = contacts.findIndex(contact => contact.id === assignedContact.id);
-            if (contactIndex === -1) task.assignedTo.splice(index, 1);
-            else if (hasContactChanged(assignedContact)) task.assignedTo[index] = contacts[contactIndex];
-
-            await updateDataInDatabase(`${BASE_URL}tasks/${task.id}/assignedTo.json?auth=${token}`, task.assignedTo);
-        }
-        return task;
-    }
-
-
-    hasContactChanged(assignedContact) {
-        const contactIndex = contacts.findIndex(contact => contact.id === assignedContact.id);
-        if (contactIndex === -1) return true;
-
-        const storedContact = contacts[contactIndex];
-        return (
-            storedContact.name !== assignedContact.name ||
-            storedContact.email !== assignedContact.email ||
-            storedContact.phone !== assignedContact.phone ||
-            storedContact.profilePic !== assignedContact.profilePic ||
-            storedContact.firstLetters !== assignedContact.firstLetters
-        );
-    }
-
 
     updateAllTaskCategories() {
-        updateTaskCategories("toDo", "toDo", "No tasks to do");
-        updateTaskCategories("inProgress", "inProgress", "No tasks in progress");
-        updateTaskCategories("awaitFeedback", "awaitFeedback", "No tasks await feedback");
-        updateTaskCategories("done", "done", "No tasks done");
+        this.updateTaskCategories("toDo", "toDo", "No tasks to do");
+        this.updateTaskCategories("inProgress", "inProgress", "No tasks in progress");
+        this.updateTaskCategories("awaitFeedback", "awaitFeedback", "No tasks await feedback");
+        this.updateTaskCategories("done", "done", "No tasks done");
     }
 
-
-
-
-
-    //NOTE - Subtask functions
-
+    //NOTE Subtask Methods
 
     updateTaskCategories(status, categoryId, noTaskMessage) {
-        let taskForSection = tasks.filter((task) => task.status === status);
+        let taskForSection = this.kanban.tasks.filter((task) => task.status === status);
         let categoryElement = document.getElementById(categoryId);
         if (!categoryElement) return;
         categoryElement.innerHTML = "";
         if (taskForSection.length > 0) {
-            taskForSection.forEach((element) => {
-                categoryElement.innerHTML += generateTodoHTML(element);
-                if (element.subtasks && element.subtasks.length > 0) {
-                    updateSubtaskProgressBar(element.subtasks, element.id);
+            taskForSection.forEach((task) => {
+                categoryElement.innerHTML += task.html.generateTodoHTML();
+                if (task.subtasks && task.subtasks.length > 0) {
+                    this.updateSubtaskProgressBar(task.subtasks, task.id);
                 }
             });
         } else {
             if (categoryElement) categoryElement.innerHTML = `<div class="noTaskPlaceholder">${noTaskMessage}</div>`;
         }
     }
-
 
     updateSubtaskProgressBar(subtasks, taskId) {
         const checkedSubtaskCount = subtasks.filter(
@@ -204,20 +176,14 @@ export class Board {
         progressBarText.innerHTML = `${checkedSubtaskCount}/${subtasks.length} Subtasks`;
     }
 
+    //NOTE Drag and Drop Methods
+    // Drag and Drop methods would be here
 
-    //NOTE - Drag and Drop functions
-
-
-
-
-
-    //NOTE - Search functions
-
+    //NOTE Search Methods
 
     applyCurrentSearchFilter() {
-        if (currentSearchInput) searchTasks(currentSearchInput);
+        if (this.currentSearchInput) this.searchTasks(this.currentSearchInput);
     }
-
 
     searchTasks(inputValue) {
         emptyDragAreasWhileSearching(inputValue);
@@ -226,7 +192,6 @@ export class Board {
         let anyVisibleTask = searchTasksInCards(taskCards, currentSearchInput);
         updateNoTasksFoundVisibility(anyVisibleTask);
     }
-
 
     searchTasksInCards(taskCards, searchInput) {
         let anyVisibleTask = false;
@@ -244,7 +209,6 @@ export class Board {
         return anyVisibleTask;
     }
 
-
     emptyDragAreasWhileSearching(searchInput) {
         const dragAreas = document.querySelectorAll(".noTaskPlaceholder");
 
@@ -255,11 +219,12 @@ export class Board {
         }
     }
 
-
     updateNoTasksFoundVisibility(anyVisibleTask) {
         const noTasksFound = document.getElementById('noTasksFound');
         if (anyVisibleTask) noTasksFound.classList.add('dNone');
         else noTasksFound.classList.remove('dNone');
     }
 
+    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
+    // Additional methods to be reviewed and moved here if necessary
 }

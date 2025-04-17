@@ -254,5 +254,23 @@ export class Kanban {
         }
     }
 
+    activateListenersBoard(listener) {
+        if (listener === 'board') {
+            this.listener?.board?.activateListeners();
+        }
+        if (listener === 'dragDrop') {
+            this.listener?.board?.initDragDrop();
+        }
+    }
+
+    deactivateListenersBoard(listener) {
+        if (listener === 'board') {
+            this.listener?.board?.deactivateAllListenersBoard();
+        }
+        if (listener === 'dragDrop') {
+            this.listener?.board?.deactivateDragDrop();
+        }
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

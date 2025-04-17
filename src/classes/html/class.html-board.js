@@ -20,4 +20,16 @@ export class BoardHtml {
             </div>
         `;
     }
+
+    //NOTE Add Task Modal Template
+
+    async fetchAddTaskTemplate() {
+        let response = await fetch("../assets/templates/html/addtasktemplate.html");
+        let html = await response.text();
+        return `
+                  <div class="addTaskModalContainer">
+                    ${html}
+                  </div>
+                `;
+    }
 }

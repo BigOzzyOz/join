@@ -4,7 +4,7 @@ export class BoardListener {
         this.boardInstance = kanban.board;
         this.addTaskInstance = kanban.addTask || null;
         this.category = localStorage.getItem('taskCategory');
-        if (category) localStorage.removeItem('taskCategory');
+        if (this.category) localStorage.removeItem('taskCategory');
         this.activateListeners();
     }
 
@@ -351,9 +351,9 @@ export class BoardListener {
 
 
     initDragDrop() {
-        deactivateDragDrop();
+        this.deactivateDragDrop();
         this.boardInstance.updateAllTaskCategories();
-        dragDrop();
+        this.dragDrop();
     }
 
 

@@ -1,4 +1,5 @@
 import { Subtask } from "./class.subtask.js";
+import { TaskHtml } from "./html/class.html-task.js";
 
 export class Task {
     //NOTE Properties
@@ -12,6 +13,7 @@ export class Task {
     assignedTo;
     category;
     subtasks;
+    html;
 
     constructor(data) {
         this.id = data.id || null;
@@ -21,12 +23,14 @@ export class Task {
         this.prio = data.prio || 'low';
         this.status = data.status || 'toDo';
         this.assignedTo = data.assignedTo || data.assigned_to || [];
-        this.category = data.category || 'General';
+        this.category = data.category || 'User Story';
         if (data.subtasks && data.subtasks.length > 0) {
             this.subtasks = data.subtasks.map(sub => new Subtask(sub));
         } else {
             this.subtasks = [];
         }
+
+        this.html = new TaskHtml(this.toTaskObject());
     }
 
     //NOTE Task Object Methods
