@@ -345,7 +345,7 @@ export class Database {
             }
             let loadItem = await response.json();
             this.setTasksArray(loadItem);
-            this.kanban.setTasks(this.kanban.contacts);
+            this.kanban.setTasks(this.kanban.tasks);
         } catch (error) {
             console.error("Error fetching contacts data:", error);
         }

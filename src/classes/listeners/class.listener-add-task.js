@@ -131,7 +131,7 @@ export class AddTaskListener {
 
     handleSubmitBtnClick = (event) => {
         event.preventDefault();
-        if (formValidation()) this.addTaskInstance.pushNewTask();
+        if (this.addTaskInstance.formValidation()) this.addTaskInstance.pushNewTask();
     };
 
 

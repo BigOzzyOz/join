@@ -1,5 +1,6 @@
 import { AddTaskHtml } from "./html/class.html-add-task.js";
 import { Subtask } from "./class.subtask.js";
+import { Task } from "./class.task.js";
 
 export class AddTask {
     constructor(kanban) {
@@ -196,29 +197,47 @@ export class AddTask {
 
 
     async pushNewTask() {
-        let newTask = createNewTask();
-        await postDataToDatabase("tasks", newTask);
-        closeAddTaskModal();
+        let data = this.createNewTask();
+        let newTask = new Task(data);
+        await this.kanban.db.post("api/tasks/", newTask.toTaskUploadObject());
+        this.kanban.tasks.push(newTask);
+        this.kanban.setTasks(this.kanban.tasks);
+        this.closeAddTaskModal();
     }
+
+
+    createNewTask() {
+        return {
+            title: this.getId('taskTitle'),
+            description: this.getId('taskDescription'),
+            date: this.getId('dateInput'),
+            prio: this.currentPrio,
+            status: sessionStorage.getItem('taskCategory'),
+            subtasks: this.getSubtasks(),
+            assignedTo: this.assignedContacts,
+            category: document.getElementById('categoryInput').value,
+        };
+    }
+
 
 
     //NOTE - Validation functions
 
 
-    formValidation() {
+    formValidation = () => {
         const inputs = document.querySelectorAll('.singleInputContainer input[required]');
         let isValid = true;
         inputs.forEach(input => {
             const validationText = input.nextElementSibling;
             if (input.value.trim() === '') {
-                formValidationTrue(input, validationText);
+                this.formValidationTrue(input, validationText);
                 isValid = false;
             }
-            else formValidationFalse(input, validationText);
-            formValidationListener(input, validationText);
+            else this.formValidationFalse(input, validationText);
+            this.formValidationListener(input, validationText);
         });
         return isValid;
-    }
+    };
 
 
     formValidationTrue(input, validationText) {
@@ -246,15 +265,13 @@ export class AddTask {
     }
 
 
-    async closeAddTaskModal() {
-        if (activeTab == 'add task') {
+    closeAddTaskModal() {
+        if (this.kanban.activeTab == 'add task') {
             this.showTaskAddedAnimation();
-            this.kanban.setTasks([]);
-            this.kanban.setActiveTab('.menuBtn[href="../html/board.html"]');
+            this.kanban.setActive('.menuBtn[href="../html/board.html"]');
             sessionStorage.removeItem('tasks');
         } else {
             this.showTaskAddedAnimation();
-            this.kanban.setTasks([]);
             setTimeout(() => location.reload(), 2000);
         }
     }
@@ -262,7 +279,7 @@ export class AddTask {
 
     showTaskAddedAnimation() {
         if (window.location.href.endsWith('addtask.html')) {
-            this.toggleClass('taskAddedBtn', 'd-None', 'show');
+            this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
             setTimeout(() => {
                 return window.location.href = "../html/board.html";
             }, 2000);

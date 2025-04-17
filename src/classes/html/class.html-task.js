@@ -1,6 +1,7 @@
 class TaskHtml {
     constructor(task) {
-
+        this.task = task;
+        this.taskId = task.id;
     }
 
 

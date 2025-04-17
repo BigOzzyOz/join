@@ -1,41 +1,52 @@
+import { Subtask } from "./class.subtask.js";
+
 export class Task {
     constructor(data) {
-
+        this.id = data.id || null;
+        this.title = data.title || '';
+        this.description = data.description || '';
+        this.date = data.date || '';
+        this.prio = data.prio || 'low';
+        this.status = data.status || 'toDo';
+        this.assignedTo = data.assignedTo || data.assigned_to || [];
+        this.category = data.category || 'General';
+        if (data.subtasks && data.subtasks.length > 0) {
+            this.subtasks = data.subtasks.map(sub => new Subtask(sub));
+        } else {
+            this.subtasks = [];
+        }
     }
 
-    createNewTask() {
+    toTaskObject() {
         return {
-            title: getId('taskTitle'),
-            description: getId('taskDescription'),
-            date: getId('dateInput'),
-            prio: currentPrio,
-            status: sessionStorage.getItem('taskCategory'),
-            subtasks: getSubtasks(),
-            assignedTo: assignedContacts,
-            category: document.getElementById('categoryInput').value,
+            id: this.id,
+            title: this.title,
+            description: this.description,
+            date: this.date,
+            prio: this.prio,
+            status: this.status,
+            assignedTo: this.assignedTo,
+            category: this.category,
+            subtasks: this.subtasks.map(sub => sub.toSubtaskObject()),
         };
     }
+
+    toTaskUploadObject() {
+        return {
+            title: this.title,
+            description: this.description,
+            date: this.date,
+            prio: this.prio,
+            status: this.status,
+            assigned_to: this.assignedTo,
+            category: this.category,
+            subtasks: this.subtasks.map(sub => sub.toSubtaskUploadObject()),
+        };
+    }
+
 
     //NOTE - priority functions
 
-
-
-
-
-    async createTaskArray(key, singleTask) {
-        let task = {
-            "id": key,
-            "assignedTo": singleTask.assignedTo,
-            "category": singleTask.category,
-            "date": singleTask.date,
-            "description": singleTask.description,
-            "prio": singleTask.prio,
-            "status": singleTask.status,
-            "subtasks": singleTask.subtasks,
-            "title": singleTask.title,
-        };
-        return task;
-    }
 
     enableTaskEdit(taskId) {
         let modalContainer = document.getElementById("modalContainer");
