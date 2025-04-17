@@ -1,4 +1,5 @@
 import { AddTaskHtml } from "./html/class.html-add-task.js";
+import { Subtask } from "./class.subtask.js";
 
 export class AddTask {
     constructor(kanban) {
@@ -110,7 +111,7 @@ export class AddTask {
 
 
     addNewSubtask = (event) => {
-        handleKeyDown(event);
+        this.handleKeyDown(event);
         const input = document.getElementById('subtaskInput').value.length;
         if (input > -1) {
             document.getElementById('subtaskIconContainer').classList.remove('dNone');
@@ -130,26 +131,27 @@ export class AddTask {
     handleKeyDown(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            saveSubtask();
+            this.saveSubtask();
         }
     }
 
 
-    saveSubtask() {
+    saveSubtask = () => {
         let subtaskList = document.getElementById('subtaskList');
         let inputText = document.getElementById('subtaskInput').value.trim();
         if (inputText === '') { return; }
         let index = subtaskList.children.length;
-        let subtaskHTML = generateSaveSubtaskHTML(inputText, index);
+        let subtask = new Subtask({ 'text': inputText, 'status': 'unchecked' });
+        let subtaskHTML = subtask.html.generateSaveSubtaskHTML(index);
         let subtaskItem = document.createElement('div');
         subtaskItem.innerHTML = subtaskHTML;
         subtaskList.appendChild(subtaskItem.firstElementChild);
         document.getElementById('subtaskInput').value = '';
         document.getElementById('subtaskIconContainer').classList.add('dNone');
         document.getElementById('subtaskPlusIcon').classList.remove('dNone');
-        deactivateSubtaskListeners();
-        activateSubtaskListeners();
-    }
+        this.kanban.deactivateListenerAddTask('subtask');
+        this.kanban.activateListenerAddTask('subtask');
+    };
 
 
     editSubtask(editIcon) {
@@ -159,24 +161,24 @@ export class AddTask {
         subtaskText.classList.add('dNone');
         editInput.classList.remove('dNone');
         editInput.focus();
-        editInput.addEventListener('blur', () => { saveEditedSubtask(subtaskText, editInput); });
-        deactivateSubtaskListeners();
-        activateSubtaskListeners();
+        editInput.addEventListener('blur', () => { this.saveEditedSubtask(subtaskText, editInput); });
+        this.kanban.deactivateListenerAddTask('subtask');
+        this.kanban.activateListenerAddTask('subtask');
     }
 
 
-    saveEditedSubtask(subtaskText, editInput) {
+    saveEditedSubtask = (subtaskText, editInput) => {
         subtaskText.textContent = editInput.value.trim();
         subtaskText.classList.remove('dNone');
         editInput.classList.add('dNone');
-    }
+    };
 
 
     deleteSubtask(deleteIcon) {
         let subtaskItem = deleteIcon.closest('.subtaskEditList');
         subtaskItem.remove();
-        deactivateSubtaskListeners();
-        activateSubtaskListeners();
+        this.kanban.deactivateListenerAddTask('subtask');
+        this.kanban.activateListenerAddTask('subtask');
     }
 
 
@@ -246,13 +248,13 @@ export class AddTask {
 
     async closeAddTaskModal() {
         if (activeTab == 'add task') {
-            showTaskAddedAnimation();
-            setTasks([]);
-            setActiveTab('.menuBtn[href="../html/board.html"]');
+            this.showTaskAddedAnimation();
+            this.kanban.setTasks([]);
+            this.kanban.setActiveTab('.menuBtn[href="../html/board.html"]');
             sessionStorage.removeItem('tasks');
         } else {
-            showTaskAddedAnimation();
-            setTasks([]);
+            this.showTaskAddedAnimation();
+            this.kanban.setTasks([]);
             setTimeout(() => location.reload(), 2000);
         }
     }
@@ -260,16 +262,16 @@ export class AddTask {
 
     showTaskAddedAnimation() {
         if (window.location.href.endsWith('addtask.html')) {
-            toggleClass('taskAddedBtn', 'd-None', 'show');
+            this.toggleClass('taskAddedBtn', 'd-None', 'show');
             setTimeout(() => {
                 return window.location.href = "../html/board.html";
             }, 2000);
-        } else showTaskAddedAnimationModal();
+        } else this.showTaskAddedAnimationModal();
     }
 
 
     showTaskAddedAnimationModal() {
-        toggleClass('taskAddedBtn', 'd-None', 'show');
+        this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
         setTimeout(() => { closeModal(); }, 2000);
     }
 
@@ -278,9 +280,9 @@ export class AddTask {
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskDescription').value = '';
         document.getElementById('dateInput').value = '';
-        updatePrioActiveBtn('');
+        this.updatePrioActiveBtn('');
         document.getElementById('subtaskInput').value = '';
-        clearSubtaskList();
+        this.clearSubtaskList();
     };
 
     enableTaskEdit(taskId) {
@@ -384,4 +386,36 @@ export class AddTask {
             }
         }
     }
+
+    setPrio(element) {
+        const prio = element.getAttribute('data-prio');
+        this.currentPrio = prio;
+        this.updatePrioActiveBtn(prio);
+    }
+
+    updatePrioActiveBtn(prio) {
+        const buttons = document.querySelectorAll('.prioBtn');
+        buttons.forEach(button => {
+            button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
+            const imgs = button.querySelectorAll('img');
+            imgs.forEach(img => { img.classList.add('hidden'); });
+        });
+        this.changeActiveBtn(prio);
+    }
+
+    changeActiveBtn(prio) {
+        const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
+        if (activeButton) {
+            activeButton.classList.add(`prioBtn${this.capitalize(prio)}Active`);
+            const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
+            if (whiteIcon) {
+                whiteIcon.classList.remove('hidden');
+            }
+        }
+    }
+
+    capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
 }

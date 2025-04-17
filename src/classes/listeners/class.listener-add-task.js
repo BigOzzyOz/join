@@ -145,7 +145,7 @@ export class AddTaskListener {
     handlePrioClick = (event) => {
         const prioElement = event.target.closest('.prioBtn');
         if (!prioElement) return;
-        setPrio(prioElement);//TODO - combine with task.js
+        this.addTaskInstance.setPrio(prioElement);
     };
 
 
@@ -181,9 +181,12 @@ export class AddTaskListener {
 
     handleSubtaskList = ({ target, type }) => {
         const subtask = target.closest('.subtaskEditList');
+        if (type === "dblclick") {
+            this.addTaskInstance.editSubtask(subtask);
+            return;
+        }
         const action = target.closest('img').dataset.action;
-        if (type === "dblclick") this.addTaskInstance.editSubtask(subtask);
-        else if (action === "edit") this.addTaskInstance.editSubtask(subtask);
+        if (action === "edit") this.addTaskInstance.editSubtask(subtask);
         else if (action === "delete") this.addTaskInstance.deleteSubtask(subtask);
     };
 

@@ -236,11 +236,17 @@ export class Kanban {
         if (listener === 'openAssignDropdown') {
             this.listener?.addTask?.addTaskListenerOpenAssignDropdown('add');
         }
+        if (listener === 'subtask') {
+            this.listener?.addTask?.activateSubtaskListeners();
+        }
     }
 
     deactivateListenerAddTask(listener) {
         if (listener === 'closeAssignDropdown') {
             this.listener?.addTask?.addTaskListenerOpenAssignDropdown('remove');
+        }
+        if (listener === 'subtask') {
+            this.listener?.addTask?.deactivateSubtaskListeners();
         }
     }
 

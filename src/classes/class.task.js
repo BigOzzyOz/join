@@ -19,39 +19,8 @@ export class Task {
     //NOTE - priority functions
 
 
-    updatePrioActiveBtn(prio) {
-        const buttons = document.querySelectorAll('.prioBtn');
-        buttons.forEach(button => {
-            button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
-            const imgs = button.querySelectorAll('img');
-            imgs.forEach(img => { img.classList.add('hidden'); });
-        });
-        changeActiveBtn(prio);
-    }
 
 
-    changeActiveBtn(prio) {
-        const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
-        if (activeButton) {
-            activeButton.classList.add(`prioBtn${capitalize(prio)}Active`);
-            const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
-            if (whiteIcon) {
-                whiteIcon.classList.remove('hidden');
-            }
-        }
-    }
-
-
-    capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-
-    setPrio(element) {
-        const prio = element.getAttribute('data-prio');
-        currentPrio = prio;
-        updatePrioActiveBtn(prio);
-    }
 
     async createTaskArray(key, singleTask) {
         let task = {
