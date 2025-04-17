@@ -29,5 +29,10 @@ export class Subtask {
         };
     }
 
+    updateSubtaskStatus(index) {
+        this.status = this.status === "checked" ? "unchecked" : "checked";
+        this.html.updateSubtaskStatus(this.status, index);
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

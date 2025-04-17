@@ -47,12 +47,14 @@ export class Board {
         activateAddTaskListeners();
     }
 
-    openOverlay(elementId) {
-        let element = tasks.find((task) => task.id === elementId);
+    openOverlay(taskId) {
+        let task = this.kanban.tasks.find((task) => task.id === taskId);
         let overlay = document.getElementById("overlay");
-        setAssignedContacts([]);
-        overlay.innerHTML = generateOpenOverlayHTML(element);
-        activateOverlayListeners(elementId);
+        this.kanban.generateAddTaskInstance(task, overlay);
+        console.log(this.kanban);
+        // setAssignedContacts([]);
+        // overlay.innerHTML = generateOpenOverlayHTML();
+        // activateOverlayListeners();
         overlay.style.display = "block";
     }
 
@@ -175,6 +177,19 @@ export class Board {
         );
         progressBarText.innerHTML = `${checkedSubtaskCount}/${subtasks.length} Subtasks`;
     }
+
+    updateSubtaskStatus = async (taskId, subtaskIndex) => {
+        let task = this.kanban.tasks.find((task) => task.id === taskId);
+        if (task) {
+            let subtask = task.subtasks[subtaskIndex];
+            if (subtask) {
+                subtask.updateSubtaskStatus(subtaskIndex);
+                this.updateSubtaskProgressBar(task.subtasks, taskId);
+                await this.kanban.db.patch(`api/tasks/${taskId}/`, { subtasks: task.subtasks.map(sub => sub.toSubtaskUploadObject()) });
+                this.kanban.setTasks(this.kanban.tasks);
+            }
+        }
+    };
 
     //NOTE Drag and Drop Methods
     // Drag and Drop methods would be here

@@ -33,12 +33,12 @@ export class SummaryListener {
         if (target.closest('.summ-info-field')) {
             this.nextPage();
         };
+    };
 
-        //NOTE - Navigation
+    //NOTE - Navigation
 
-        nextPage = () => {
-            sessionStorage.setItem('activeTab', 'board');
-            window.location.href = 'board.html';
-        };
+    nextPage = () => {
+        sessionStorage.setItem('activeTab', 'board');
+        window.location.href = 'board.html';
     };
 }

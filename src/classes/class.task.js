@@ -137,33 +137,7 @@ export class Task {
         }
     }
 
-    //NOTE Subtask Methods
 
-    updateSubtaskStatusInDOM(subtask, index) {
-        subtask.status = subtask.status === "checked" ? "unchecked" : "checked";
-
-        const subtaskCheckbox = document.getElementById(`subtaskCheckbox${index}`);
-        if (subtaskCheckbox) {
-            subtaskCheckbox.src = subtask.status === "checked"
-                ? "../assets/icons/checkboxchecked.svg"
-                : "../assets/icons/checkbox.svg";
-        }
-    }
-
-    async updateSubtaskStatus(taskId, subtaskIndex) {
-        let task = tasks.find((task) => task.id === taskId);
-        if (task) {
-            let subtask = task.subtasks[subtaskIndex];
-            if (subtask) {
-                updateSubtaskStatusInDOM(subtask, subtaskIndex);
-                updateSubtaskProgressBar(task.subtasks, taskId);
-                await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
-                let taskIndex = tasks.findIndex(t => taskId === t.id);
-                tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
-                sessionStorage.setItem("tasks", JSON.stringify(tasks));
-            }
-        }
-    }
 
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

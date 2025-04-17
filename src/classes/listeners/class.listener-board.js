@@ -143,7 +143,7 @@ export class BoardListener {
     handleToDoClick = (e) => {
         const target = e.target.closest(".todoContainer");
         e.stopPropagation();
-        openOverlay(target.id);//TODO - generalize function for task handling in board
+        this.boardInstance.openOverlay(target.id);
     };
 
 
@@ -160,7 +160,7 @@ export class BoardListener {
 
     //NOTE - Overlay listeners and handlers for the board page
 
-    activateOverlayListeners(elementId) {
+    activateOverlayListeners() {
         this.boardListenerOverlayButtons("add");
         this.boardListenerOverlaySubtasks("add");
     }
@@ -199,11 +199,11 @@ export class BoardListener {
     }
 
 
-    handleSubtaskClick(event) {
+    handleSubtaskClick = (event) => {
         const subtaskIndex = event.target.closest('.modalSubtasksSingle').dataset.subtaskindex;
         const taskId = event.target.closest('#modalContainer').dataset.id;
-        //updateSubtaskStatus(taskId, subtaskIndex);//TODO - generalize function for task handling in board
-    }
+        this.boardInstance.updateSubtaskStatus(taskId, subtaskIndex);
+    };
 
 
     handleOverlayEditClick(event) {

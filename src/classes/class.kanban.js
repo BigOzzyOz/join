@@ -272,5 +272,12 @@ export class Kanban {
         }
     }
 
+    generateAddTaskInstance(task, overlay) {
+        this.addTask = new AddTask(this);
+        this.addTask.setAssignedContacts([]);
+        overlay.innerHTML = task.html.generateOpenOverlayHTML();
+        this.listener?.board?.activateOverlayListeners();
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

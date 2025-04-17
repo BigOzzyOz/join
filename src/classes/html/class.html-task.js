@@ -125,9 +125,9 @@ export class TaskHtml {
 
     //NOTE Modal/Overlay HTML Generation
 
-    generateModalCategoryHTML(category) {
+    generateModalCategoryHTML() {
         let modalCategoryHTML = '';
-        if (category == 'User Story') {
+        if (this.category == 'User Story') {
             modalCategoryHTML = `<div class="modalUserStoryBadge">User Story</div>`;
         } else {
             modalCategoryHTML = `<div class="modalTechnicalTaskBadge">Technical Task</div>`;
@@ -135,25 +135,25 @@ export class TaskHtml {
         return modalCategoryHTML;
     }
 
-    generateModalAssignedToHTML(assignedTo) {
-        if (!assignedTo) return '';
+    generateModalAssignedToHTML() {
+        if (!this.assignedTo) return '';
         let modalAssignedToHTML = '';
-        for (let i = 0; i < assignedTo.length; i++) {
+        for (let i = 0; i < this.assignedTo.length; i++) {
             modalAssignedToHTML += /*html*/`
                   <div class="modalAssignedToSingle">
-                      ${assignedTo[i].profilePic}
-                      ${assignedTo[i].name}
+                      ${this.assignedTo[i].profilePic}
+                      ${this.assignedTo[i].name}
                   </div>
               `;
         }
         return modalAssignedToHTML;
     }
 
-    generateModalSubtasksHTML(element) {
+    generateModalSubtasksHTML() {
         let modalSubtasksHTML = "";
-        if (element.subtasks) {
-            for (let i = 0; i < element.subtasks.length; i++) {
-                let subtask = element.subtasks[i];
+        if (this.subtasks) {
+            for (let i = 0; i < this.subtasks.length; i++) {
+                let subtask = this.subtasks[i];
                 let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
                 modalSubtasksHTML += /*html*/ `
                       <label class="modalSubtasksSingle" data-subtaskindex="${i}">
@@ -168,31 +168,31 @@ export class TaskHtml {
         return modalSubtasksHTML;
     }
 
-    generateOpenOverlayHTML(element) {
-        let modalCategoryHTML = generateModalCategoryHTML(element.category);
-        let priority = element.prio.charAt(0).toUpperCase() + element.prio.slice(1);
-        let modalAssignedToHTML = generateModalAssignedToHTML(element.assignedTo);
-        let modalSubtasksHTML = generateModalSubtasksHTML(element);
+    generateOpenOverlayHTML() {
+        let modalCategoryHTML = this.generateModalCategoryHTML();
+        let priority = this.prio.charAt(0).toUpperCase() + this.prio.slice(1);
+        let modalAssignedToHTML = this.generateModalAssignedToHTML();
+        let modalSubtasksHTML = this.generateModalSubtasksHTML();
 
         return /*html*/ `
-              <div class="modalContainer" id="modalContainer" data-id="${element.id}">
+              <div class="modalContainer" id="modalContainer" data-id="${this.id}">
                   <div class="modalToDoContent">
                       <div class="modalCategoryContainer">
                           ${modalCategoryHTML}
                           <img id="modalCloseBtn" class="modalCloseIcon" src="../assets/icons/closeGrey.svg" alt="">
                       </div>
                       <div class="modalScrollbarWrapper">
-                          <div id="modalHeader" class="modalHeader">${element.title}</div>
-                          <div class="modalDescription" id="modalDescription">${element.description}</div>
+                          <div id="modalHeader" class="modalHeader">${this.title}</div>
+                          <div class="modalDescription" id="modalDescription">${this.description}</div>
                           <div class="modalDateContainer">
                               <div class="modalDateText">Due date:</div>
-                              <div>${element.date}</div>
+                              <div>${this.date}</div>
                           </div>
                           <div class="modalPrioContainer">
                               <div class="modalPrioText">Priority:</div>
                               <div class="modalPrioIconContainer">
                                   <div>${priority}</div>
-                                  <img src="../assets/icons/prio${element.prio}small.svg">
+                                  <img src="../assets/icons/prio${this.prio}small.svg">
                               </div>
                           </div>
                           <div class="modalAssignedToContainer">

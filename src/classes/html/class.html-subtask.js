@@ -29,5 +29,15 @@ export class SubtaskHtml {
         `;
     }
 
+    updateSubtaskStatus(status, index) {
+        this.status = status;
+        const subtaskCheckbox = document.getElementById(`subtaskCheckbox${index}`);
+        if (subtaskCheckbox) {
+            subtaskCheckbox.src = this.status === "checked"
+                ? "../assets/icons/checkboxchecked.svg"
+                : "../assets/icons/checkbox.svg";
+        }
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }
