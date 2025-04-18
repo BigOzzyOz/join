@@ -29,6 +29,7 @@ main>section:first-child {
 }
 
 .addTaskSection {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 0px 16px 0px 16px;
@@ -285,10 +286,10 @@ input:focus {
   border-radius: 20px;
   gap: 16px;
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.15);
-  position: fixed;
+  position: absolute;
   bottom: -100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 50%);
   transition: bottom 0.5s ease-out;
   z-index: 6;
 }
@@ -299,7 +300,7 @@ input:focus {
 }
 
 .taskAddedBtn.show {
-  bottom: 50%;
+  bottom: 65%;
 }
 
 .formValidationText {
@@ -783,6 +784,10 @@ ul {
   }
 
   .taskAddedBtn {
-    left: 558px;
+    left: 600px;
+  }
+
+  .taskAddedBtn.show {
+    bottom: 75%;
   }
 }

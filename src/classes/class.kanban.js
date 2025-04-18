@@ -112,10 +112,8 @@ export class Kanban {
 
         if (targetButton) {
             targetButton.classList.add("menuBtnActive");
-            if (!link) {
-                this.activeTab = targetButton.innerText.toLowerCase();
-                sessionStorage.setItem("activeTab", this.activeTab);
-            }
+            this.activeTab = targetButton.innerText.toLowerCase();
+            sessionStorage.setItem("activeTab", this.activeTab);
         }
     };
 

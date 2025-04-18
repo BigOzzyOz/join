@@ -111,7 +111,7 @@ export class TaskHtml {
         return assignedToHTML;
     }
 
-    generatePrioHTML(prio) {
+    generatePrioHTML() {
         let prioHTML = '';
         if (this.prio == 'urgent') {
             prioHTML = `<img src="../assets/icons/priourgent.png">`;

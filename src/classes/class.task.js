@@ -1,4 +1,5 @@
 import { Subtask } from "./class.subtask.js";
+import { Contact } from "./class.contact.js";
 import { TaskHtml } from "./html/class.html-task.js";
 
 export class Task {
@@ -22,8 +23,9 @@ export class Task {
         this.date = data.date || '';
         this.prio = data.prio || 'low';
         this.status = data.status || 'toDo';
-        this.assignedTo = data.assignedTo || data.assigned_to || [];
         this.category = data.category || 'User Story';
+        this.assignedTo = data.assignedTo || data.assigned_to || [];
+        this.assignedTo = this.assignedTo.map(contact => new Contact(contact));
         if (data.subtasks && data.subtasks.length > 0) {
             this.subtasks = data.subtasks.map(sub => new Subtask(sub));
         } else {
@@ -43,7 +45,7 @@ export class Task {
             date: this.date,
             prio: this.prio,
             status: this.status,
-            assignedTo: this.assignedTo,
+            assignedTo: this.assignedTo.map(contact => contact.toContactObject()),
             category: this.category,
             subtasks: this.subtasks.map(sub => sub.toSubtaskObject()),
         };
@@ -56,7 +58,7 @@ export class Task {
             date: this.date,
             prio: this.prio,
             status: this.status,
-            assigned_to: this.assignedTo,
+            assigned_to: this.assignedTo.map(contact => contact.toContactObject()),
             category: this.category,
             subtasks: this.subtasks.map(sub => sub.toSubtaskUploadObject()),
         };

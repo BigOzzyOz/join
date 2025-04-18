@@ -14,6 +14,7 @@ export class ContactsListener {
             console.error("ContactsPage Instanz nicht in Kanban gefunden! Listener kann nicht korrekt initialisiert werden.");
             return;
         }
+        this.activateListenersContact();
     }
 
     //NOTE - Master Listener Control

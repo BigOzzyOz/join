@@ -93,7 +93,7 @@ export class BoardListener {
 
     handleSearchInput = () => {
         const searchInput = document.getElementById("searchInput");
-        searchTasks(searchInput.value);
+        this.boardInstance.searchTasks(searchInput.value);
     };
 
 

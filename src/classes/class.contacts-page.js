@@ -46,7 +46,6 @@ export class ContactsPage {
                 console.warn(`Contact section element '${this.currentLetterId}' not found.`);
             }
         }
-        this.kanban.activateListenersContacts();
     }
 
     renderContactLetter(contact) {
@@ -199,7 +198,7 @@ export class ContactsPage {
         updatedContactInstance.name = updatedName;
         updatedContactInstance.email = updatedEmail;
         updatedContactInstance.phone = updatedPhone;
-        const uploadData = updatedContactInstance.uploadContactObject();
+        const uploadData = updatedContactInstance.toContactUploadObject();
 
         try {
             const response = await this.kanban.db.update(`api/contacts/${id}/`, uploadData);
@@ -257,11 +256,8 @@ export class ContactsPage {
                 throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
             }
 
-            const indexToRemove = this.kanban.contacts.findIndex(c => c.id === id);
-            if (indexToRemove !== -1) {
-                this.kanban.contacts.splice(indexToRemove, 1);
-            }
-            this.kanban.setContacts(this.kanban.contacts);
+            let newContacts = this.kanban.contacts.filter(c => c.id !== id);
+            this.kanban.setContacts(newContacts);
 
             const wasCurrentUser = (id === this.kanban.currentUser?.id);
             this.editId = -1;

@@ -203,21 +203,21 @@ export class Board {
     }
 
     searchTasks(inputValue) {
-        emptyDragAreasWhileSearching(inputValue);
-        currentSearchInput = inputValue.toLowerCase();
+        this.emptyDragAreasWhileSearching(inputValue);
+        this.currentSearchInput = inputValue.toLowerCase();
         const taskCards = document.querySelectorAll(".todoContainer");
-        let anyVisibleTask = searchTasksInCards(taskCards, currentSearchInput);
-        updateNoTasksFoundVisibility(anyVisibleTask);
+        let anyVisibleTask = this.searchTasksInCards(taskCards);
+        this.updateNoTasksFoundVisibility(anyVisibleTask);
     }
 
-    searchTasksInCards(taskCards, searchInput) {
+    searchTasksInCards(taskCards) {
         let anyVisibleTask = false;
 
         for (const taskCard of taskCards) {
             const title = taskCard.querySelector(".toDoHeader")?.textContent.trim().toLowerCase() || "";
             const description = taskCard.querySelector(".toDoDescription")?.textContent.trim().toLowerCase() || "";
 
-            const isVisible = title.includes(searchInput) || description.includes(searchInput);
+            const isVisible = title.includes(this.currentSearchInput) || description.includes(this.currentSearchInput);
 
             taskCard.style.display = isVisible ? "block" : "none";
 
@@ -226,10 +226,10 @@ export class Board {
         return anyVisibleTask;
     }
 
-    emptyDragAreasWhileSearching(searchInput) {
+    emptyDragAreasWhileSearching() {
         const dragAreas = document.querySelectorAll(".noTaskPlaceholder");
 
-        if (searchInput === '') {
+        if (this.currentSearchInput === '') {
             dragAreas.forEach((dragArea) => dragArea.classList.remove("dNone"));
         } else {
             dragAreas.forEach((dragArea) => dragArea.classList.add("dNone"));

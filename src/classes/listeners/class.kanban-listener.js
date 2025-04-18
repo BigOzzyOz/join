@@ -54,7 +54,7 @@ export class KanbanListener {
                 this.board = new BoardListener(this.kanban);
                 break;
             case path.includes('contacts.html'):
-                if (!this.kanban.contacts) this.kanban.contacts = new ContactsPage(this.kanban);
+                if (!this.kanban.contactsPage) this.kanban.contactsPage = new ContactsPage(this.kanban);
                 this.contacts = new ContactsListener(this.kanban);
                 break;
             default:

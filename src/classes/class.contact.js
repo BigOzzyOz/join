@@ -23,12 +23,12 @@ export class Contact {
         this.profilePic = contact.profile_pic || contact.profilePic || '';
         this.phone = contact.number || contact.phone || '';
 
-        this.html = new ContactHtml(this.contactObject());
+        this.html = new ContactHtml(this.toContactObject());
     }
 
     //NOTE - Data Representation Methods
 
-    contactObject() {
+    toContactObject() {
         return {
             'id': this.id,
             'name': this.name,
@@ -40,7 +40,7 @@ export class Contact {
         };
     }
 
-    uploadContactObject() {
+    toContactUploadObject() {
         return {
             ...(this.id > 0 && { 'id': this.id }),
             'name': this.name,

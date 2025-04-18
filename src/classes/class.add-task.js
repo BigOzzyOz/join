@@ -321,7 +321,7 @@ export class AddTask {
 
     showTaskAddedAnimationModal() {
         this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
-        setTimeout(() => { closeModal(); }, 2000);
+        setTimeout(() => { this.closeModal(); }, 2000);
     }
 
     clearAddTaskForm = () => {
