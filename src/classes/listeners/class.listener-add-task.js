@@ -21,9 +21,6 @@ export class AddTaskListener {
         this.addTaskListenerCategory("add");
         this.addTaskListenerPrio("add");
         this.addTaskListenerDate("add");
-        if (this.boardInstance) {
-            window.addEventListener('click', this.boardInstance.handleOverlayOutsideClick);
-        }
     }
 
     deactivateAllAddTaskListeners() {
@@ -34,9 +31,6 @@ export class AddTaskListener {
         this.addTaskListenerPrio("remove");
         this.addTaskListenerDate("remove");
         this.deactivateSubtaskListeners();
-        if (this.boardInstance) {
-            window.removeEventListener('click', this.boardInstance.handleOverlayOutsideClick);
-        }
     }
 
     addTaskModalListener(action) {

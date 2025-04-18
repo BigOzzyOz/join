@@ -1,6 +1,7 @@
 import { Task } from './class.task.js';
 import { Subtask } from './class.subtask.js';
 import { Contact } from './class.contact.js';
+import { BoardHtml } from './html/class.html-board.js';
 
 export class Board {
     //NOTE Properties
@@ -9,25 +10,18 @@ export class Board {
     currentDraggedElement;
     currentSearchInput = '';
     currentTaskStatus;
+    html;
 
     constructor(kanban) {
         this.kanban = kanban;
         this.currentDraggedElement;
         this.currentSearchInput = '';
         this.currentTaskStatus;
+
+        this.html = new BoardHtml(this.kanban);
     }
 
     //NOTE Overlay & Modal Methods
-
-    handleOverlayOutsideClick = (event) => {
-        const overlay = document.getElementById("overlay");
-        const addTaskOverlay = document.getElementById("addTaskOverlay");
-        if (event.target === overlay || event.target === addTaskOverlay) {
-            closeModal();
-            deactivateOverlayListeners();
-            deactivateAllAddTaskListeners();
-        }
-    };
 
     checkScreenWidth(category) {
         const screenWidth = window.innerWidth;
@@ -51,17 +45,13 @@ export class Board {
         let task = this.kanban.tasks.find((task) => task.id === taskId);
         let overlay = document.getElementById("overlay");
         this.kanban.generateAddTaskInstance(task, overlay);
-        console.log(this.kanban);
-        // setAssignedContacts([]);
-        // overlay.innerHTML = generateOpenOverlayHTML();
-        // activateOverlayListeners();
         overlay.style.display = "block";
     }
 
     closeModal = () => {
         const overlay = document.getElementById("overlay");
         const addTaskOverlay = document.getElementById("addTaskOverlay");
-        deactivateOverlayListeners();
+        this.kanban.closeAddTaskInstance();
         if (overlay || addTaskOverlay) {
             overlay.style.display = "none";
             addTaskOverlay.style.display = "none";
@@ -143,6 +133,18 @@ export class Board {
     }
 
     //NOTE Subtask Methods
+
+    async deleteTaskSure(taskId) {
+        this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
+
+        await this.kanban.db.delete(`api/tasks/${taskId}/`);
+        let newTasksArray = this.kanban.tasks.filter(task => task.id !== taskId);
+        this.kanban.setTasks(newTasksArray);
+
+        this.closeModal();
+        this.initializeTasksData();
+        this.kanban.activateListenersBoard('dragDrop');
+    }
 
     updateTaskCategories(status, categoryId, noTaskMessage) {
         let taskForSection = this.kanban.tasks.filter((task) => task.status === status);

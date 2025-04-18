@@ -279,5 +279,11 @@ export class Kanban {
         this.listener?.board?.activateOverlayListeners();
     }
 
+    closeAddTaskInstance() {
+        this.listener?.board?.deactivateOverlayListeners();
+        this.listener?.addTask?.deactivateAllAddTaskListeners();
+        this.addTask = null;
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
 }

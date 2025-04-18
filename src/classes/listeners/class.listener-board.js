@@ -163,12 +163,14 @@ export class BoardListener {
     activateOverlayListeners() {
         this.boardListenerOverlayButtons("add");
         this.boardListenerOverlaySubtasks("add");
+        window.addEventListener('click', this.handleOverlayOutsideClick);
     }
 
 
     deactivateOverlayListeners() {
         this.boardListenerOverlayButtons("remove");
         this.boardListenerOverlaySubtasks("remove");
+        window.removeEventListener('click', this.handleOverlayOutsideClick);
     }
 
 
@@ -212,23 +214,23 @@ export class BoardListener {
     }
 
 
-    handleOverlayDeleteClick(event) {
+    handleOverlayDeleteClick = (event) => {
         const taskId = event.target.closest('#modalContainer').dataset.id;
-        //deleteTask(taskId);//TODO - generalize function for task handling in board
+        this.kanban.toggleClass('deleteResponse', 'ts0', 'ts1');
+        document.getElementById('deleteResponse').innerHTML = this.boardInstance.html.openDeleteTaskSureHtml(taskId);
         this.kanban.activateOutsideCheck(event, 'deleteResponse', 'ts0', 'ts1');
         this.activateDeleteResponseListeners();
-    }
+    };
 
 
-    handleOverlayOutsideClick(event) {
+    handleOverlayOutsideClick = (event) => {
         const overlay = document.getElementById("overlay");
         const addTaskOverlay = document.getElementById("addTaskOverlay");
         if (event.target === overlay || event.target === addTaskOverlay) {
             this.boardInstance.closeModal();
-            this.deactivateOverlayListeners();
-            //this.deactivateAllAddTaskListeners();//TODO - deactivate over Kanban
+            this.kanban.closeAddTaskInstance();
         }
-    }
+    };
 
 
     //NOTE - Delete Response listeners and handlers for the board page
@@ -253,7 +255,8 @@ export class BoardListener {
     handleDeleteTaskFormSubmit = (event) => {
         event.preventDefault();
         const taskId = event.target.dataset.id;
-        //deleteTaskSure(taskId);//TODO - generalize function for task handling in board
+        this.deactivateDeleteResponseListeners();
+        this.boardInstance.deleteTaskSure(taskId);
     };
 
 

@@ -531,18 +531,7 @@ import { Kanban } from "./src/classes/class.kanban.js";
 //  * - Invokes the initializeTasksData function.
 //  * @param {string} taskId - The id of the task to delete.
 //  */
-// export async function deleteTaskSure(taskId) {
-//   toggleClass('deleteResponse', 'ts0', 'ts1');
-//   deactivateDeleteResponseListeners();
 
-//   await deleteDataFromDatabase(`tasks/${taskId}`);
-//   tasks = tasks.filter(task => task.id !== taskId);
-//   sessionStorage.setItem("tasks", JSON.stringify(tasks));
-
-//   closeModal();
-//   initDragDrop();
-//   initializeTasksData();
-// }
 
 
 // export function activateOutsideCheck(event, modalName, class1, class2) {
