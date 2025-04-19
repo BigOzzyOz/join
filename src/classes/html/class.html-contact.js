@@ -1,35 +1,23 @@
 export class ContactHtml {
   //NOTE - Properties
 
-  id;
-  email;
-  firstLetters;
-  isUser;
-  name;
-  profilePic;
-  phone;
+  contact;
 
   //NOTE - Constructor & Initialization
 
   constructor(contact) {
-    this.id = contact.id;
-    this.email = contact.email;
-    this.firstLetters = contact.firstLetters;
-    this.isUser = contact.isUser;
-    this.name = contact.name;
-    this.profilePic = contact.profilePic;
-    this.phone = contact.phone;
+    this.contact = contact;
   }
 
   //NOTE - HTML Rendering Methods
 
   htmlRenderContactDetails() {
-    const safeName = this.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safeEmail = this.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safePhone = this.phone.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeEmail = this.contact.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safePhone = this.contact.phone.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    const mailtoLink = this.email ? `mailto:${encodeURIComponent(this.email)}` : '#';
-    const telLink = this.phone ? `tel:${encodeURIComponent(this.phone)}` : '#';
+    const mailtoLink = this.contact.email ? `mailto:${encodeURIComponent(this.contact.email)}` : '#';
+    const telLink = this.contact.phone ? `tel:${encodeURIComponent(this.contact.phone)}` : '#';
 
     return /*html*/ `
       <div id="contactsDetailMore" class="moreIcon">
@@ -44,17 +32,17 @@ export class ContactHtml {
       </div>
       <div class="contactOverview">
         <div class="contactBig">
-          ${this.profilePic || `<div class="initials-placeholder">${this.firstLetters}</div>`}
+          ${this.contact.profilePic || `<div class="initials-placeholder">${this.contact.firstLetters}</div>`}
         </div>
         <div>
           <h2>${safeName}</h2>
           <div id="editMenu" class="editMenu ts0">
-            <div id="editContactBtn" class="editMenuItem" data-id="${this.id}">
+            <div id="editContactBtn" class="editMenuItem" data-id="${this.contact.id}">
               <img class="editMenuButton" src="../assets/icons/edit.svg" alt="Edit">
               <img class="editMenuButton hoverEffectIcon" src="../assets/icons/editBlue.svg" alt="">
               <p>Edit</p>
             </div>
-            <div id="deleteContactBtn" class="editMenuItem" data-id="${this.id}">
+            <div id="deleteContactBtn" class="editMenuItem" data-id="${this.contact.id}">
               <img class="editMenuButton" src="../assets/icons/delete.svg" alt="Delete">
               <img class="editMenuButton hoverEffectIcon" src="../assets/icons/deleteBlue.svg" alt="">
               <p>Delete</p>
@@ -71,18 +59,18 @@ export class ContactHtml {
   }
 
   htmlRenderGeneral(currentUserId) {
-    const safeName = this.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safeEmail = this.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeEmail = this.contact.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    const mailtoLink = this.email ? `mailto:${encodeURIComponent(this.email)}` : '#';
+    const mailtoLink = this.contact.email ? `mailto:${encodeURIComponent(this.contact.email)}` : '#';
 
     return /*html*/ `
-      <li id="contact${this.id}" class="contactListItem" data-id="${this.id}">
+      <li id="contact${this.contact.id}" class="contactListItem" data-id="${this.contact.id}">
         <div class="contactSmall">
-          ${this.profilePic || `<div class="initials-placeholder">${this.firstLetters}</div>`}
+          ${this.contact.profilePic || `<div class="initials-placeholder">${this.contact.firstLetters}</div>`}
         </div>
         <div>
-          <p class="fs20">${safeName} ${this.id === currentUserId ? '(you)' : ''}</p>
+          <p class="fs20">${safeName} ${this.contact.id === currentUserId ? '(you)' : ''}</p>
           <p><a>${safeEmail || 'No email provided'}</a></p>
         </div>
       </li>
@@ -90,17 +78,17 @@ export class ContactHtml {
   }
 
   htmlRenderContactsAssign(assignedContacts) {
-    const safeName = this.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     return /*html*/`
-      <label for="contact${this.id}" class="${assignedContacts.some(c => c.name === this.name) ? 'contactsToAssignCheck' : ''}">
-        ${this.profilePic}
+      <label for="contact${this.contact.id}" class="${assignedContacts.some(c => c.name === this.contact.name) ? 'contactsToAssignCheck' : ''}">
+        ${this.contact.profilePic}
         <p>${safeName}</p>
         <input class="assignContactToProject" 
-          data-id="${this.id}" 
+          data-id="${this.contact.id}" 
           type="checkbox" 
-          id="contact${this.id}"  
-          ${assignedContacts.some(c => c.name == this.name) ? 'checked' : ''}>
+          id="contact${this.contact.id}"  
+          ${assignedContacts.some(c => c.name == this.contact.name) ? 'checked' : ''}>
         <span class="checkMark"></span>
       </label>
       `;

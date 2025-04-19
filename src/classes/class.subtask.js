@@ -10,7 +10,7 @@ export class Subtask {
     constructor(data) {
         this.text = data.text || '';
         this.status = data.status || 'unchecked';
-        this.html = new SubtaskHtml(this.toSubtaskObject());
+        this.html = new SubtaskHtml(this);
     }
 
     //NOTE Subtask Object Methods

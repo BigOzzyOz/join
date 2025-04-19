@@ -62,21 +62,22 @@ export class Board {
     //NOTE Board Initialization
 
     async initBoard() {
+        const loader = document.querySelector('.loader');
         try {
+            loader?.classList.toggle('dNone');
             await this.initializeTasksData();
             this.kanban.activateListenersBoard('dragDrop');
             this.applyCurrentSearchFilter();
         } catch (error) {
             console.error("Initialization error:", error);
+        } finally {
+            loader?.classList.toggle('dNone');
         }
     }
 
     async initializeTasksData() {
-        const loader = document.querySelector('.loader');
-        loader?.classList.toggle('dNone');
         if (this.kanban.tasks.length === 0) await this.kanban.db.getTasksData();
         await this.checkDataOfArray();
-        loader?.classList.toggle('dNone');
     }
 
     async checkDataOfArray() {
@@ -92,6 +93,7 @@ export class Board {
                 if (task.assignedTo) {
                     task.assignedTo = task.assignedTo.map(contact => new Contact(contact));
                 }
+                console.log("Task:", task);
                 task = await this.checkDeletedUser(task);
                 updatedTasksArray.push(task);
             }
@@ -102,26 +104,32 @@ export class Board {
     }
 
     async checkDeletedUser(loadedTask) {
-        if (this, this.kanban.contacts.length === 0) await this.kanban.db.getContactsData();
+        let uploadNeeded = false;
         if (!loadedTask.assignedTo) return loadedTask;
+        if (this.kanban.contacts.length === 0) await this.kanban.db.getContactsData();
 
         loadedTask.assignedTo = loadedTask.assignedTo.map(assignedContact => {
             const contact = this.kanban.contacts.find(c => c.id === assignedContact.id);
-            if (!contact) return null;
-            if (
+            if (!contact) {
+                uploadNeeded = true;
+                return null;
+            } else if (
                 contact.name !== assignedContact.name ||
                 contact.email !== assignedContact.email ||
                 contact.phone !== assignedContact.phone ||
                 contact.profilePic !== assignedContact.profilePic ||
                 contact.firstLetters !== assignedContact.firstLetters
             ) {
+                uploadNeeded = true;
                 return contact;
             }
             return assignedContact;
         })
             .filter(Boolean);
 
-        await this.kanban.db.update(`api/tasks/${loadedTask.id}/`, loadedTask.toTaskUploadObject());
+        if (uploadNeeded) {
+            await this.kanban.db.update(`api/tasks/${loadedTask.id}/`, loadedTask.toTaskUploadObject());
+        }
         return loadedTask;
     }
 
@@ -153,6 +161,7 @@ export class Board {
         categoryElement.innerHTML = "";
         if (taskForSection.length > 0) {
             taskForSection.forEach((task) => {
+                console.log("Task for section:", task);
                 categoryElement.innerHTML += task.html.generateTodoHTML();
                 if (task.subtasks && task.subtasks.length > 0) {
                     this.updateSubtaskProgressBar(task.subtasks, task.id);

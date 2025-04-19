@@ -1,25 +1,9 @@
 export class TaskHtml {
     //NOTE Properties
-    id;
-    title;
-    description;
-    date;
-    prio;
-    status;
-    assignedTo;
-    category;
-    subtasks;
+    task;
 
     constructor(task) {
-        this.id = task.id || null;
-        this.title = task.title || '';
-        this.description = task.description || '';
-        this.date = task.date || '';
-        this.prio = task.prio || 'low';
-        this.status = task.status || 'toDo';
-        this.assignedTo = task.assignedTo || task.assigned_to || [];
-        this.category = task.category || 'User Story';
-        this.subtasks = task.subtasks || task.subtasks || [];
+        this.task = task;
     }
 
     //NOTE Board Card HTML Generation
@@ -33,7 +17,7 @@ export class TaskHtml {
         let prioHTML = this.generatePrioHTML();
 
         return /*html*/ `
-              <div draggable="true" id="${this.id}" class="todoContainer" data-id="${this.id}">
+              <div draggable="true" id="${this.task.id}" class="todoContainer" data-id="${this.task.id}">
                   <div class="toDoContent">
                       ${categoryHTML}
                       <div class="toDoHeaderContainer">
@@ -52,7 +36,7 @@ export class TaskHtml {
 
     generateCategoryHTML() {
         let categoryHTML = '';
-        if (this.category == 'User Story') {
+        if (this.task.category == 'User Story') {
             categoryHTML = `<div class="userStoryBadge">User Story</div>`;
         } else {
             categoryHTML = `<div class="technicalTaskBadge">Technical Task</div>`;
@@ -61,7 +45,7 @@ export class TaskHtml {
     }
 
     generateTitleHTML() {
-        let safeTitle = this.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        let safeTitle = this.task.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let titleHTML = '';
         if (safeTitle.length < 20) {
             titleHTML = `<div class="toDoHeader">${safeTitle}</div>`;
@@ -72,7 +56,7 @@ export class TaskHtml {
     }
 
     generateDescriptionHTML() {
-        let safeDescription = this.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        let safeDescription = this.task.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let descriptionHTML = '';
         if (safeDescription.length < 60) {
             descriptionHTML = `<div class="toDoDescription">${safeDescription}</div>`;
@@ -84,13 +68,13 @@ export class TaskHtml {
 
     generateSubtasksHTML() {
         let subtasksHTML = "";
-        if (this.subtasks && this.subtasks.length > 0) {
+        if (this.task.subtasks && this.task.subtasks.length > 0) {
             subtasksHTML = /*html*/ `
               <div class="toDoSubtasksContainer">
                   <div class="subtasksProgressbar">
-                      <div id="subtasksProgressbarProgress${this.id}" class="subtasksProgressbarProgress" style="width: 0%;" role="progressbar"></div>
+                      <div id="subtasksProgressbarProgress${this.task.id}" class="subtasksProgressbarProgress" style="width: 0%;" role="progressbar"></div>
                   </div>
-                  <div id="subtasksProgressbarText${this.id}">0/${this.subtasks.length} Subtasks</div>
+                  <div id="subtasksProgressbarText${this.task.id}">0/${this.task.subtasks.length} Subtasks</div>
               </div>`;
         }
         return subtasksHTML;
@@ -98,14 +82,14 @@ export class TaskHtml {
 
     generateAssignedToHTML() {
         let assignedToHTML = '';
-        if (!this.assignedTo) {
+        if (!this.task.assignedTo) {
             return '';
         }
-        for (let i = 0; i < Math.min(this.assignedTo.length, 4); i++) {
-            assignedToHTML += `<div class="assignedToBadge">${this.assignedTo[i].profilePic}</div>`;
+        for (let i = 0; i < Math.min(this.task.assignedTo.length, 4); i++) {
+            assignedToHTML += `<div class="assignedToBadge">${this.task.assignedTo[i].profilePic}</div>`;
         }
-        if (this.assignedTo.length > 4) {
-            let assignedNum = this.assignedTo.length - 4;
+        if (this.task.assignedTo.length > 4) {
+            let assignedNum = this.task.assignedTo.length - 4;
             assignedToHTML += `<div class="assignedToMoreBadge">+${assignedNum}</div>`;
         }
         return assignedToHTML;
@@ -113,9 +97,9 @@ export class TaskHtml {
 
     generatePrioHTML() {
         let prioHTML = '';
-        if (this.prio == 'urgent') {
+        if (this.task.prio == 'urgent') {
             prioHTML = `<img src="../assets/icons/priourgent.png">`;
-        } else if (this.prio == 'medium') {
+        } else if (this.task.prio == 'medium') {
             prioHTML = `<img src="../assets/icons/priomedium.png">`;
         } else {
             prioHTML = `<img src="../assets/icons/priolow.png">`;
@@ -127,7 +111,7 @@ export class TaskHtml {
 
     generateModalCategoryHTML() {
         let modalCategoryHTML = '';
-        if (this.category == 'User Story') {
+        if (this.task.category == 'User Story') {
             modalCategoryHTML = `<div class="modalUserStoryBadge">User Story</div>`;
         } else {
             modalCategoryHTML = `<div class="modalTechnicalTaskBadge">Technical Task</div>`;
@@ -136,13 +120,13 @@ export class TaskHtml {
     }
 
     generateModalAssignedToHTML() {
-        if (!this.assignedTo) return '';
+        if (!this.task.assignedTo) return '';
         let modalAssignedToHTML = '';
-        for (let i = 0; i < this.assignedTo.length; i++) {
+        for (let i = 0; i < this.task.assignedTo.length; i++) {
             modalAssignedToHTML += /*html*/`
                   <div class="modalAssignedToSingle">
-                      ${this.assignedTo[i].profilePic}
-                      ${this.assignedTo[i].name}
+                      ${this.task.assignedTo[i].profilePic}
+                      ${this.task.assignedTo[i].name}
                   </div>
               `;
         }
@@ -151,9 +135,9 @@ export class TaskHtml {
 
     generateModalSubtasksHTML() {
         let modalSubtasksHTML = "";
-        if (this.subtasks) {
-            for (let i = 0; i < this.subtasks.length; i++) {
-                let subtask = this.subtasks[i];
+        if (this.task.subtasks) {
+            for (let i = 0; i < this.task.subtasks.length; i++) {
+                let subtask = this.task.subtasks[i];
                 let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
                 modalSubtasksHTML += /*html*/ `
                       <label class="modalSubtasksSingle" data-subtaskindex="${i}">
@@ -170,29 +154,29 @@ export class TaskHtml {
 
     generateOpenOverlayHTML() {
         let modalCategoryHTML = this.generateModalCategoryHTML();
-        let priority = this.prio.charAt(0).toUpperCase() + this.prio.slice(1);
+        let priority = this.task.prio.charAt(0).toUpperCase() + this.task.prio.slice(1);
         let modalAssignedToHTML = this.generateModalAssignedToHTML();
         let modalSubtasksHTML = this.generateModalSubtasksHTML();
 
         return /*html*/ `
-              <div class="modalContainer" id="modalContainer" data-id="${this.id}">
+              <div class="modalContainer" id="modalContainer" data-id="${this.task.id}">
                   <div class="modalToDoContent">
                       <div class="modalCategoryContainer">
                           ${modalCategoryHTML}
                           <img id="modalCloseBtn" class="modalCloseIcon" src="../assets/icons/closeGrey.svg" alt="">
                       </div>
                       <div class="modalScrollbarWrapper">
-                          <div id="modalHeader" class="modalHeader">${this.title}</div>
-                          <div class="modalDescription" id="modalDescription">${this.description}</div>
+                          <div id="modalHeader" class="modalHeader">${this.task.title}</div>
+                          <div class="modalDescription" id="modalDescription">${this.task.description}</div>
                           <div class="modalDateContainer">
                               <div class="modalDateText">Due date:</div>
-                              <div>${this.date}</div>
+                              <div>${this.task.date}</div>
                           </div>
                           <div class="modalPrioContainer">
                               <div class="modalPrioText">Priority:</div>
                               <div class="modalPrioIconContainer">
                                   <div>${priority}</div>
-                                  <img src="../assets/icons/prio${this.prio}small.svg">
+                                  <img src="../assets/icons/prio${this.task.prio}small.svg">
                               </div>
                           </div>
                           <div class="modalAssignedToContainer">

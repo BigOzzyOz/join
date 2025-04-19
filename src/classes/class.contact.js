@@ -23,7 +23,7 @@ export class Contact {
         this.profilePic = contact.profile_pic || contact.profilePic || '';
         this.phone = contact.number || contact.phone || '';
 
-        this.html = new ContactHtml(this.toContactObject());
+        this.html = new ContactHtml(this);
     }
 
     //NOTE - Data Representation Methods

@@ -96,7 +96,8 @@ export class Login {
         try {
             const guestUser = { name: "Guest", firstLetters: "G", id: "guest", email: "guest@join.com", phone: "" };
             this.kanban.currentUser = new Contact(guestUser);
-            sessionStorage.setItem("currentUser", JSON.stringify(this.kanban.currentUser));
+            const currentUserForStorage = this.kanban.currentUser.toContactObject();
+            sessionStorage.setItem("currentUser", JSON.stringify(currentUserForStorage));
             localStorage.removeItem('rememberMe');
             localStorage.removeItem('login');
             localStorage.removeItem('password');
@@ -128,7 +129,8 @@ export class Login {
                 this.kanban.currentUser = new Contact(userData);
             }
         }
-        sessionStorage.setItem('currentUser', JSON.stringify(this.kanban.currentUser));
+        const currentUserForStorage = this.kanban.currentUser.toContactObject();
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUserForStorage));
     };
 
 

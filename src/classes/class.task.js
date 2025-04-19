@@ -32,7 +32,7 @@ export class Task {
             this.subtasks = [];
         }
 
-        this.html = new TaskHtml(this.toTaskObject());
+        this.html = new TaskHtml(this);
     }
 
     //NOTE Task Object Methods

@@ -1,18 +1,16 @@
 export class SubtaskHtml {
     //NOTE Properties
 
-    text;
-    status;
+    subtask;
 
     constructor(subtask) {
-        this.text = subtask.text;
-        this.status = subtask.status;
+        this.subtask = subtask;
     }
 
     //NOTE Subtask HTML Generation
 
     generateSaveSubtaskHTML(index) {
-        const safeText = this.text.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        const safeText = this.subtask.text.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         return /*html*/`
             <li class="subtaskEditList" id="subtask-${index}">
               <div class="subtaskItem">
@@ -30,10 +28,10 @@ export class SubtaskHtml {
     }
 
     updateSubtaskStatus(status, index) {
-        this.status = status;
+        this.subtask.status = status;
         const subtaskCheckbox = document.getElementById(`subtaskCheckbox${index}`);
         if (subtaskCheckbox) {
-            subtaskCheckbox.src = this.status === "checked"
+            subtaskCheckbox.src = this.subtask.status === "checked"
                 ? "../assets/icons/checkboxchecked.svg"
                 : "../assets/icons/checkbox.svg";
         }

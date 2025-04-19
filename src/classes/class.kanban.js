@@ -78,13 +78,38 @@ export class Kanban {
     //NOTE Kanban Data Methods
 
     setTasks = (newTasks) => {
-        this.tasks = newTasks;
-        sessionStorage.setItem('tasks', JSON.stringify(newTasks));
+        this.tasks = newTasks.map(taskData => {
+            if (taskData instanceof Task) {
+                return taskData;
+            } else {
+                return new Task(taskData);
+            }
+        });
+
+        const tasksForStorage = this.tasks.map(task => task.toTaskObject());
+        try {
+            sessionStorage.setItem('tasks', JSON.stringify(tasksForStorage));
+        } catch (error) {
+            console.error("Error saving tasks to storage:", error);
+        }
     };
 
-    setContacts = (newContacts) => {
-        this.contacts = newContacts;
-        sessionStorage.setItem('contact', JSON.stringify(newContacts));
+    setContacts = (contactsArray) => {
+        this.contacts = contactsArray.map(contactData => {
+            if (contactData instanceof Contact) {
+                return contactData;
+            } else {
+                return new Contact(contactData);
+            }
+        });
+
+        const contactsForStorage = this.contacts.map(contact => contact.toContactObject());
+
+        try {
+            sessionStorage.setItem('contacts', JSON.stringify(contactsForStorage));
+        } catch (error) {
+            console.error("Error saving contacts to storage:", error);
+        }
     };
 
     //NOTE UI Updates & Interaction
