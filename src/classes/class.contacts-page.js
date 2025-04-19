@@ -94,7 +94,7 @@ export class ContactsPage {
         }
 
         this.renderContactList();
-
+        this.kanban.activateListenersContacts();
         this.renderContactsDetails(this.editId);
     }
 

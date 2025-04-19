@@ -93,7 +93,6 @@ export class Board {
                 if (task.assignedTo) {
                     task.assignedTo = task.assignedTo.map(contact => new Contact(contact));
                 }
-                console.log("Task:", task);
                 task = await this.checkDeletedUser(task);
                 updatedTasksArray.push(task);
             }
@@ -161,7 +160,6 @@ export class Board {
         categoryElement.innerHTML = "";
         if (taskForSection.length > 0) {
             taskForSection.forEach((task) => {
-                console.log("Task for section:", task);
                 categoryElement.innerHTML += task.html.generateTodoHTML();
                 if (task.subtasks && task.subtasks.length > 0) {
                     this.updateSubtaskProgressBar(task.subtasks, task.id);
