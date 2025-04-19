@@ -368,25 +368,6 @@ export class AddTask {
 
     //NOTE Board/Move Methods
 
-    async moveTo(newStatus) {
-        document.querySelectorAll(".taskDragArea").forEach((area) => {
-            area.classList.add("highlighted");
-        });
-
-        const taskToMove = tasks.find(task => task.id === currentDraggedElement);
-        if (taskToMove && newStatus) {
-            taskToMove.status = newStatus;
-            await updateDataInDatabase(`${BASE_URL}tasks/${taskToMove.id}.json?auth=${token}`, taskToMove);
-
-            const taskIndex = tasks.findIndex(task => task.id === taskToMove.id);
-            tasks.splice(taskIndex, 1, await createTaskArray(taskToMove.id, taskToMove));
-            sessionStorage.setItem("tasks", JSON.stringify(tasks));
-
-            initDragDrop();
-            applyCurrentSearchFilter();
-        }
-    }
-
     updateSubtaskStatusInDOM(subtask, index) {
         subtask.status = subtask.status === "checked" ? "unchecked" : "checked";
 

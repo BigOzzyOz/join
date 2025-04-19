@@ -246,6 +246,20 @@ export class Board {
         else noTasksFound.classList.remove('dNone');
     }
 
+    async moveTo(newStatus) {
+        document.querySelectorAll(".taskDragArea").forEach((area) => {
+            area.classList.add("highlighted");
+        });
+
+        const taskToMove = this.kanban.tasks.find(task => task.id === this.currentDraggedElement);
+        if (taskToMove && newStatus && taskToMove.moveTo(newStatus)) {
+            await this.kanban.db.patch(`api/tasks/${taskToMove.id}/`, { 'status': taskToMove.status });
+            this.kanban.setTasks(this.kanban.tasks);
+            this.kanban.activateListenersBoard('dragDrop');
+            this.applyCurrentSearchFilter();
+        }
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
     // Additional methods to be reviewed and moved here if necessary
 }

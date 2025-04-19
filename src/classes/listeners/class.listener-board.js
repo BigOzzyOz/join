@@ -3,8 +3,6 @@ export class BoardListener {
         this.kanban = kanban;
         this.boardInstance = kanban.board;
         this.addTaskInstance = kanban.addTask || null;
-        // this.category = localStorage.getItem('taskCategory');
-        // if (this.category) localStorage.removeItem('taskCategory');
         this.activateListeners();
     }
 
@@ -41,7 +39,7 @@ export class BoardListener {
             addTaskPlus?.forEach((element) => {
                 element.removeEventListener('click', this.handleAddTaskBtnClick);
             });
-        }
+        };
     }
 
 
@@ -50,36 +48,28 @@ export class BoardListener {
         const inProgressContainer = document.getElementById('inProgress-container');
         const awaitFeedbackContainer = document.getElementById('awaitFeedback-container');
         const doneContainer = document.getElementById('done-container');
+        const dropTargetContainer = [toDoContainer, inProgressContainer, awaitFeedbackContainer, doneContainer];
 
-        if (action === "add") {
-            toDoContainer?.addEventListener('drop', this.handleDrop);
-            inProgressContainer?.addEventListener('drop', this.handleDrop);
-            awaitFeedbackContainer?.addEventListener('drop', this.handleDrop);
-            doneContainer?.addEventListener('drop', this.handleDrop);
-        } else if (action === "remove") {
-            toDoContainer?.removeEventListener('drop', this.handleDrop);
-            inProgressContainer?.removeEventListener('drop', this.handleDrop);
-            awaitFeedbackContainer?.removeEventListener('drop', this.handleDrop);
-            doneContainer?.removeEventListener('drop', this.handleDrop);
-        }
+        dropTargetContainer.forEach((container) => {
+            if (action === "add") {
+                container?.addEventListener('drop', this.handleDrop);
+                container?.addEventListener('dragover', this.handleDragAreas);
+                container?.addEventListener('dragleave', this.handleDragAreas);
+            } else if (action === "remove") {
+                container?.removeEventListener('drop', this.handleDrop);
+                container?.removeEventListener('dragover', this.handleDragAreas);
+                container?.removeEventListener('dragleave', this.handleDragAreas);
+            }
+        });
     }
 
     boardListenerMisc(action) {
         const searchInput = document.getElementById("searchInput");
-        const container = document.querySelectorAll('.taskCategoryContainer');
 
         if (action === "add") {
             searchInput?.addEventListener('input', this.handleSearchInput);
-            container?.forEach((element) => {
-                element.addEventListener('dragover', this.allowDrop);
-                element.addEventListener('dragleave', this.dragLeave);
-            });
         } else if (action === "remove") {
             searchInput?.removeEventListener('input', this.handleSearchInput);
-            container?.forEach((element) => {
-                element.removeEventListener('dragover', this.allowDrop);
-                element.removeEventListener('dragleave', this.dragLeave);
-            });
         }
     }
 
@@ -99,64 +89,20 @@ export class BoardListener {
 
     dragDrop() {
         document.querySelectorAll(".todoContainer").forEach((todoContainer) => {
-            todoContainer.addEventListener('click', this.handleToDoClick);
-            todoContainer.addEventListener("dragstart", this.handleDragStart);
-            todoContainer.addEventListener("dragend", this.handleDragEnd);
+            todoContainer.addEventListener('click', this.handleToDos);
+            todoContainer.addEventListener('dragstart', this.handleToDos);
+            todoContainer.addEventListener('dragend', this.handleToDos);
         });
     }
 
 
     deactivateDragDrop() {
         document.querySelectorAll(".todoContainer").forEach((todoContainer) => {
-            todoContainer.removeEventListener('click', this.handleToDoClick);
-            todoContainer.removeEventListener("dragstart", this.handleDragStart);
-            todoContainer.removeEventListener("dragend", this.handleDragEnd);
+            todoContainer.removeEventListener('click', this.handleToDos);
+            todoContainer.removeEventListener("dragstart", this.handleToDos);
+            todoContainer.removeEventListener("dragend", this.handleToDos);
         });
     }
-
-
-    allowDrop = (event) => {
-        const dropTarget = event.target;
-        const dropAreas = document.querySelectorAll('.taskDragArea');
-        dropAreas.forEach(area => {
-            if (area === dropTarget || area.contains(dropTarget)) {
-                event.preventDefault();
-                area.classList.add('highlightedBackground');
-            }
-        });
-    };
-
-
-    dragLeave = () => {
-        document.querySelectorAll('.taskDragArea').forEach((zone) => {
-            zone.classList.remove('highlightedBackground');
-        });
-    };
-
-
-    handleDrop = (event) => {
-        event.preventDefault();
-        moveTo(event.target.id);//TODO - generalize function for task handling in board
-    };
-
-
-    handleToDoClick = async (e) => {
-        const target = e.target.closest(".todoContainer");
-        e.stopPropagation();
-        await this.boardInstance.openOverlay(target.id);
-    };
-
-
-    handleDragStart = (e) => {
-        e.target.classList.add("tilted");
-        this.startDragging(e.target.id);//TODO - generalize function for task handling in board
-    };
-
-    handleDragEnd = (e) => {
-        e.target.classList.remove("tilted");
-        this.dragEnd();
-    };
-
 
     //NOTE - Overlay listeners and handlers for the board page
 
@@ -359,17 +305,50 @@ export class BoardListener {
         this.dragDrop();
     }
 
+    handleDrop = async (event) => {
+        event.preventDefault();
+        const dropTarget = event.currentTarget.querySelector('.taskDragArea').id;
+        await this.boardInstance.moveTo(dropTarget);
+    };
 
-    startDragging() {
-        document.querySelectorAll(".taskDragArea").forEach((zone) => {
-            zone.classList.add("highlighted");
-        });
-    }
+    handleDragAreas = (event) => {
+        const dropTarget = event.currentTarget.querySelector('.taskDragArea');
+        if (event.type === 'dragover') {
+            event.preventDefault();
+            dropTarget.classList.add("highlightedBackground");
+        } else if (event.type === 'dragleave') {
+            if (!dropTarget.contains(event.relatedTarget)) {
+                dropTarget.classList.remove("highlightedBackground");
+            }
+        }
+    };
 
+    handleToDos = async (event) => {
+        const target = event.target.closest(".todoContainer");
+        if (!target) {
+            console.warn("handleToDos called but no '.todoContainer' found for event target:", event.target);
+            return;
+        }
+        const taskId = target.dataset.id;
+        const dragAreas = document.querySelectorAll('.taskDragArea');
 
-    dragEnd() {
-        document.querySelectorAll('.taskDragArea').forEach((zone) => {
-            zone.classList.remove('highlighted', 'highlightedBackground');
-        });
-    }
+        if (event.type === 'dragstart') {
+            this.boardInstance.currentDraggedElement = taskId;
+            target.classList.add("tilted");
+            dragAreas.forEach((zone) => {
+                zone.classList.add("highlighted");
+            });
+        } else if (event.type === 'dragend') {
+            target.classList.remove("tilted");
+            dragAreas.forEach((zone) => {
+                zone.classList.remove("highlighted", "highlightedBackground");
+            });
+            if (this.boardInstance.currentDraggedElement === taskId) {
+                this.boardInstance.currentDraggedElement = null;
+            }
+        } else if (event.type === 'click') {
+            await this.boardInstance.openOverlay(taskId);
+        }
+    };
+
 }
