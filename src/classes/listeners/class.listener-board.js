@@ -3,8 +3,8 @@ export class BoardListener {
         this.kanban = kanban;
         this.boardInstance = kanban.board;
         this.addTaskInstance = kanban.addTask || null;
-        this.category = localStorage.getItem('taskCategory');
-        if (this.category) localStorage.removeItem('taskCategory');
+        // this.category = localStorage.getItem('taskCategory');
+        // if (this.category) localStorage.removeItem('taskCategory');
         this.activateListeners();
     }
 
@@ -85,9 +85,9 @@ export class BoardListener {
 
 
     handleAddTaskBtnClick = (event) => {
-        if (event.target.id === "addTaskInProgress") checkScreenWidth("inProgress");
-        else if (event.target.id === "addTaskFeedback") checkScreenWidth("awaitFeedback");
-        else checkScreenWidth("toDo");
+        if (event.target.id === "addTaskInProgress") this.boardInstance.checkScreenWidth("inProgress");
+        else if (event.target.id === "addTaskFeedback") this.boardInstance.checkScreenWidth("awaitFeedback");
+        else this.boardInstance.checkScreenWidth("toDo");
     };
 
 
@@ -140,10 +140,10 @@ export class BoardListener {
     };
 
 
-    handleToDoClick = (e) => {
+    handleToDoClick = async (e) => {
         const target = e.target.closest(".todoContainer");
         e.stopPropagation();
-        this.boardInstance.openOverlay(target.id);
+        await this.boardInstance.openOverlay(target.id);
     };
 
 

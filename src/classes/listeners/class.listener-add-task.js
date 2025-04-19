@@ -33,30 +33,22 @@ export class AddTaskListener {
         this.deactivateSubtaskListeners();
     }
 
-    addTaskModalListener(action) {
-        const closeBtn = document.getElementById("addTaskModalCloseBtn");
-
-        if (action === "add") {
-            closeBtn?.addEventListener("click", this.boardInstance.closeModal);
-
-        } else if (action === "remove") {
-            closeBtn?.removeEventListener("click", this.boardInstance.closeModal);
-
-        }
-    }
 
     //NOTE Listener Methods (General, Assign, Subtasks, Category, Prio, Date)
 
     addTaskListenerGeneral(action) {
+        const closeBtn = document.getElementById("addTaskModalCloseBtn");
         const clearBtn = document.getElementById("clearBtn");
         const addTaskForm = document.getElementById("addTaskForm");
 
         if (action === "add") {
             clearBtn?.addEventListener('click', this.addTaskInstance.clearAddTaskForm);
             addTaskForm?.addEventListener('submit', this.handleSubmitBtnClick);
+            closeBtn?.addEventListener("click", this.boardInstance.closeModal);
         } else if (action === "remove") {
             clearBtn?.removeEventListener('click', this.addTaskInstance.clearAddTaskForm);
             addTaskForm?.removeEventListener('submit', this.handleSubmitBtnClick);
+            closeBtn?.removeEventListener("click", this.boardInstance.closeModal);
         }
     }
 

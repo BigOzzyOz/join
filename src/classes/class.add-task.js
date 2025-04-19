@@ -306,7 +306,7 @@ export class AddTask {
             sessionStorage.removeItem('tasks');
         } else {
             this.showTaskAddedAnimation();
-            setTimeout(() => location.reload(), 2000);
+            setTimeout(() => this.kanban.activateListenersBoard('dragDrop'), 2000);
         }
     }
 
@@ -321,7 +321,7 @@ export class AddTask {
 
     showTaskAddedAnimationModal() {
         this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
-        setTimeout(() => { this.closeModal(); }, 2000);
+        setTimeout(() => { this.kanban.board.closeModal(); }, 2000);
     }
 
     clearAddTaskForm = () => {

@@ -8,6 +8,7 @@ import { Register } from './class.register.js';
 import { Summary } from './class.summary.js';
 import { ContactsPage } from './class.contacts-page.js';
 import { AddTask } from './class.add-task.js';
+import { AddTaskListener } from "./listeners/class.listener-add-task.js";
 
 
 export class Kanban {
@@ -295,17 +296,27 @@ export class Kanban {
         }
     }
 
-    generateAddTaskInstance(task, overlay) {
+    async generateAddTaskInstance(task, overlay) {
         this.addTask = new AddTask(this);
+        this.listener.addTask = new AddTaskListener(this);
         this.addTask.setAssignedContacts([]);
-        overlay.innerHTML = task.html.generateOpenOverlayHTML();
-        this.listener?.board?.activateOverlayListeners();
+
+        if (task) {
+            overlay.innerHTML = task.html.generateOpenOverlayHTML();
+            this.listener?.board?.activateOverlayListeners();
+        } else {
+            overlay.innerHTML = await this.board.html.fetchAddTaskTemplate();
+            overlay.style.display = "block";
+            this.listener?.addTask?.activateAddTaskListeners();
+
+        }
     }
 
     closeAddTaskInstance() {
         this.listener?.board?.deactivateOverlayListeners();
         this.listener?.addTask?.deactivateAllAddTaskListeners();
         this.addTask = null;
+        this.listener.addTask = null;
     }
 
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben

@@ -28,23 +28,20 @@ export class Board {
         const activeTab = document.querySelector('.menuBtn[href="../html/addtask.html"]');
         sessionStorage.setItem('taskCategory', category);
         if (screenWidth < 992) {
-            changeActive(activeTab);
+            this.kanban.changeActive(activeTab);
             window.location.href = "../html/addtask.html";
-        } else openAddTaskOverlay();
+        } else this.openAddTaskOverlay();
     }
 
     async openAddTaskOverlay() {
         let addTaskOverlay = document.getElementById("addTaskOverlay");
-        setAssignedContacts([]);
-        addTaskOverlay.innerHTML = await fetchAddTaskTemplate();
-        addTaskOverlay.style.display = "block";
-        activateAddTaskListeners();
+        await this.kanban.generateAddTaskInstance(null, addTaskOverlay);
     }
 
-    openOverlay(taskId) {
+    async openOverlay(taskId) {
         let task = this.kanban.tasks.find((task) => task.id === taskId);
         let overlay = document.getElementById("overlay");
-        this.kanban.generateAddTaskInstance(task, overlay);
+        await this.kanban.generateAddTaskInstance(task, overlay);
         overlay.style.display = "block";
     }
 
