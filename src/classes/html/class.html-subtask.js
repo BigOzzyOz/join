@@ -12,7 +12,7 @@ export class SubtaskHtml {
     generateSaveSubtaskHTML(index) {
         const safeText = this.subtask.text.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         return /*html*/`
-            <li class="subtaskEditList" id="subtask-${index}">
+            <li class="subtaskEditList" id="subtask-${index}" data-index="${index}">
               <div class="subtaskItem">
                 <span class="subtaskItemText">${safeText}</span>
                 <input type="text" class="editSubtaskInput dNone" value="${safeText}" maxlength="80">

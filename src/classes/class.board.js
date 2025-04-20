@@ -197,8 +197,6 @@ export class Board {
         }
     };
 
-    //NOTE Drag and Drop Methods
-    // Drag and Drop methods would be here
 
     //NOTE Search Methods
 
@@ -260,6 +258,83 @@ export class Board {
         }
     }
 
+    enableTaskEdit(taskId) {
+        let modalContainer = document.getElementById("modalContainer");
+        let task = this.kanban.tasks.find((task) => task.id === taskId);
+        !task.assignedTo ? this.kanban.addTask.setAssignedContacts([]) : this.kanban.addTask.setAssignedContacts(task.assignedTo);
+        modalContainer.innerHTML = task.html.generateTaskEditHTML();
+        this.currentTaskStatus = task.status;
+        document.getElementById("editTaskTitle").value = task.title;
+        document.getElementById("editTaskDescription").value = task.description;
+        document.getElementById("editDateInput").value = task.date;
+        this.kanban.addTask.updatePrioActiveBtn(task.prio);
+        this.kanban.addTask.renderAssignedContacts();
+        this.kanban.activateListenersBoard('editTask');
+    }
+
+
+    createEditedTask(taskId) {
+        let originalTask = this.kanban.tasks.find(task => task.id === taskId);
+        if (!originalTask) {
+            console.error("Original task not found for editing:", taskId);
+            return null;
+        }
+
+        let newSubtasks = [];
+        const subtaskLiElements = document.querySelectorAll('#subtaskList > li.subtaskEditList');
+        const currentPrio = this.kanban.addTask.currentPrio;
+        const currentTaskStatus = this.currentTaskStatus;
+        const assignedContacts = this.kanban.addTask.assignedContacts;
+
+        subtaskLiElements.forEach((liElement) => {
+            const subtaskTextElement = liElement.querySelector('.subtaskItemText');
+            const currentText = subtaskTextElement ? subtaskTextElement.innerText.trim() : '';
+            const originalIndexStr = liElement.dataset.index;
+            let status = 'unchecked';
+
+            const originalSubtask = originalTask.subtasks?.find(sub => sub.text === currentText);
+
+            if (originalSubtask) {
+                status = originalSubtask.status;
+            } else if (originalIndexStr !== undefined) {
+                const originalIndex = parseInt(originalIndexStr);
+                if (!isNaN(originalIndex) && originalTask.subtasks && originalTask.subtasks[originalIndex]) {
+                    if (originalTask.subtasks[originalIndex].text === currentText) {
+                        status = originalTask.subtasks[originalIndex].status;
+                    }
+                }
+            }
+
+            if (currentText) {
+                newSubtasks.push(new Subtask({ text: currentText, status: status }));
+            }
+        });
+
+        return {
+            id: taskId,
+            title: document.getElementById('editTaskTitle').value,
+            description: document.getElementById('editTaskDescription').value,
+            date: document.getElementById('editDateInput').value,
+            prio: currentPrio,
+            status: currentTaskStatus,
+            subtasks: newSubtasks.map(sub => sub.toSubtaskUploadObject()),
+            assignedTo: assignedContacts.map(contact => contact.toContactUploadObject()),
+            category: originalTask.category,
+        };
+
+    }
+
+    async saveEditedTask(taskId) {
+        const task = new Task(this.createEditedTask(taskId));
+        await this.kanban.db.update(`api/tasks/${taskId}/`, task.toTaskUploadObject());
+        const taskIndex = this.kanban.tasks.findIndex((t) => t.id === taskId);
+        this.kanban.tasks.splice(taskIndex, 1, task);
+        this.kanban.setTasks(this.kanban.tasks);
+        this.openOverlay(taskId);
+        this.kanban.activateListenersBoard('dragDrop');
+        this.applyCurrentSearchFilter();
+    }
+
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
     // Additional methods to be reviewed and moved here if necessary
-}
+};

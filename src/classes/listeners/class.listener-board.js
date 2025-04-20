@@ -154,10 +154,10 @@ export class BoardListener {
     };
 
 
-    handleOverlayEditClick(event) {
+    handleOverlayEditClick = (event) => {
         const taskId = event.target.closest('#modalContainer').dataset.id;
-        //enableTaskEdit(taskId);//TODO - generalize function for task handling in board
-    }
+        this.boardInstance.enableTaskEdit(taskId);
+    };
 
 
     handleOverlayDeleteClick = (event) => {
@@ -220,7 +220,7 @@ export class BoardListener {
         this.boardListenerEditTaskGeneral("add");
         this.boardListenerEditTaskAssignMenu("add");
         this.boardListenerEditTaskSubtasks("add");
-        //this.activateSubtaskListeners();//TODO - centtralize over kanban
+        this.kanban.activateListenerAddTask('subtask');
     }
 
 
@@ -228,7 +228,7 @@ export class BoardListener {
         this.boardListenerEditTaskGeneral("remove");
         this.boardListenerEditTaskAssignMenu("remove");
         this.boardListenerEditTaskSubtasks("remove");
-        //this.deactivateSubtaskListeners();//TODO - centtralize over kanban
+        this.kanban.deactivateListenerAddTask('subtask');
     }
 
 
@@ -238,9 +238,9 @@ export class BoardListener {
         const prio = document.querySelectorAll('.prioBtn');
 
         if (action === "add") {
-            editTaskForm?.addEventListener('submit', this.handleEditTaskFormSubmit);
+            editTaskForm?.addEventListener('submit', this.handleEditTaskFormSubmit);//TODO - still change to class method
             closebtn?.addEventListener('click', this.boardInstance.closeModal);
-            prio?.forEach((element) => element.addEventListener('click', this.handlePrioClick));
+            prio?.forEach((element) => element.addEventListener('click', this.handlePrioClick));//TODO - still change to class method
         } else if (action === "remove") {
             editTaskForm?.removeEventListener('submit', this.handleEditTaskFormSubmit);
             closebtn?.removeEventListener('click', this.boardInstance.closeModal);
@@ -285,17 +285,17 @@ export class BoardListener {
     }
 
 
-    handleEditTaskFormSubmit = (event) => {
+    handleEditTaskFormSubmit = async (event) => {
         event.preventDefault();
         const taskId = event.target.closest('#editTaskForm').dataset.id;
-        if (formValidation()) saveEditedTask(taskId);
+        if (this.addTaskInstance.formValidation()) await this.boardInstance.saveEditedTask(taskId);
     };
 
 
     handlePrioClick = (event) => {
         const prioElement = event.target.closest('.prioBtn');
         if (!prioElement) return;
-        setPrio(prioElement);
+        this.kanban.addTask.setPrio(prioElement);
     };
 
 

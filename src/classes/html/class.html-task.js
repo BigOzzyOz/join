@@ -206,26 +206,11 @@ export class TaskHtml {
 
     //NOTE Edit Task Modal HTML Generation
 
-    generateTaskEditHTML(taskId) {
-        let task = tasks.find(task => task.id === taskId);
+    generateTaskEditHTML() {
         let subtaskHTML = '';
-        !task.assignedTo ? setAssignedContacts([]) : setAssignedContacts(task.assignedTo);
-
-        if (task.subtasks && task.subtasks.length > 0) {
-            task.subtasks.forEach((subtask, index) => {
-                subtaskHTML += /*html*/ `
-                      <li class="subtaskEditList" data-index="${index}" id="subtask-${index}">
-                          <div class="subtaskItem">
-                              <span class="subtaskItemText">${subtask.text}</span>
-                              <input type="text" class="editSubtaskInput dNone" value="${subtask.text}" maxlength="80"/>
-                              <div class="addedTaskIconContainer">
-                                  <img class="icon editSubtaskBtns" data-action="edit" src="../assets/icons/pencilDarkBlue.svg">
-                                  <div class="subtaskInputSeperator"></div>
-                                  <img class="icon deleteSubtaskBtns" data-action="delete" src="../assets/icons/delete.svg">
-                              </div>
-                          </div>
-                      </li>
-                  `;
+        if (this.task.subtasks && this.task.subtasks.length > 0) {
+            this.task.subtasks.forEach((subtask, index) => {
+                subtaskHTML += subtask.html.generateSaveSubtaskHTML(index);
             });
         }
 
@@ -234,7 +219,7 @@ export class TaskHtml {
                   <div class="editTaskCloseContainer">
                       <img id="editTaskCloseBtn" class="modalCloseIcon" src="../assets/icons/closeGrey.svg" alt="">
                   </div>
-                  <form id="editTaskForm" data-id="${taskId}" class="editTaskForm">
+                  <form id="editTaskForm" data-id="${this.task.id}" class="editTaskForm">
                       <div class="editTaskScrollbarWrapper">
                           <div class="singleInputContainer">
                               <div class="redStarAfter">Title</div>

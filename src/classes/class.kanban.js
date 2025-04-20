@@ -285,6 +285,9 @@ export class Kanban {
         if (listener === 'dragDrop') {
             this.listener?.board?.initDragDrop();
         }
+        if (listener === 'editTask') {
+            this.listener?.board?.activateEditTaskListeners();
+        }
     }
 
     deactivateListenersBoard(listener) {
@@ -304,6 +307,7 @@ export class Kanban {
         if (task) {
             overlay.innerHTML = task.html.generateOpenOverlayHTML();
             this.listener?.board?.activateOverlayListeners();
+            this.listener.board.addTaskInstance = this.addTask;
         } else {
             overlay.innerHTML = await this.board.html.fetchAddTaskTemplate();
             overlay.style.display = "block";
@@ -317,6 +321,7 @@ export class Kanban {
         this.listener?.addTask?.deactivateAllAddTaskListeners();
         this.addTask = null;
         this.listener.addTask = null;
+        sessionStorage.removeItem('taskCategory');
     }
 
     //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben

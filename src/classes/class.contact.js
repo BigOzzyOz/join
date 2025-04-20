@@ -42,7 +42,7 @@ export class Contact {
 
     toContactUploadObject() {
         return {
-            ...(this.id > 0 && { 'id': this.id }),
+            ...(this.id !== -1 && { 'id': this.id }),
             'name': this.name,
             'email': this.email,
             'number': this.phone,
