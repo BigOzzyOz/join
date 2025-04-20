@@ -1,4 +1,3 @@
-import { Kanban } from './class.kanban.js';
 import { Board } from './class.board.js';
 import { Login } from './class.login.js';
 import { Register } from './class.register.js';
@@ -33,7 +32,6 @@ export class Database {
             else this.redirectToLogin();
         } catch (error) {
             console.error('Error checking auth status:', error);
-            await this.kanban.init();
             this.redirectToLogin();
         } finally {
             this.kanban.toggleLoader(false);
@@ -86,13 +84,9 @@ export class Database {
         ];
         const isPublicPage = path === '/' || noUserContentPaths.some((publicPath) => path.includes(publicPath));
 
-        if (isPublicPage && this.shouldInitializeLoginRegister(path)) {
-            if (path.includes('register.html')) {
-                this.kanban.register = new Register(this.kanban);
-            } else if (path.includes('index.html') || path === '/') {
-                this.kanban.login = new Login(this.kanban);
-            }
-        }
+        if (!(isPublicPage && this.shouldInitializeLoginRegister(path))) return isPublicPage;
+        if (path.includes('register.html')) this.kanban.register = new Register(this.kanban);
+        else if (path.includes('index.html') || path === '/') this.kanban.login = new Login(this.kanban);
         return isPublicPage;
     }
 
@@ -118,7 +112,7 @@ export class Database {
             }
             if (!data.token) throw new Error('No token received from the server.');
             this.setToken(data.token);
-            return data; // Return full data which might include user info
+            return data;
         } catch (error) {
             console.error('Login error:', error);
             throw error;
