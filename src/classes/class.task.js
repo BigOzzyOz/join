@@ -64,59 +64,6 @@ export class Task {
         };
     }
 
-    //NOTE Task Edit & Save Methods
-    enableTaskEdit(taskId) {
-        let modalContainer = document.getElementById("modalContainer");
-        modalContainer.innerHTML = generateTaskEditHTML(taskId);
-        let task = tasks.find((task) => task.id === taskId);
-        if (task.assignedTo) setAssignedContacts(task.assignedTo);
-        currentTaskStatus = task.status;
-        document.getElementById("editTaskTitle").value = task.title;
-        document.getElementById("editTaskDescription").value = task.description;
-        document.getElementById("editDateInput").value = task.date;
-        updatePrioActiveBtn(task.prio);
-        renderAssignedContacts();
-        activateEditTaskListeners();
-    }
-
-    createEditedTask(taskId) {
-        let originalTask = tasks.find(task => task.id === taskId);
-        if (!originalTask) return;
-        let subtasks = [];
-        document.querySelectorAll('#subtaskList .subtaskItem').forEach((subtaskItem, index) => {
-            const subtaskText = subtaskItem.querySelector('span').innerText;
-            let status = 'unchecked';
-            if (originalTask.subtasks && originalTask.subtasks[index]) {
-                status = originalTask.subtasks[index].status ? originalTask.subtasks[index].status : 'unchecked';
-            }
-            subtasks.push({ text: subtaskText, status: status });
-        });
-        return createEditedTaskReturn(subtasks, originalTask);
-    }
-
-    createEditedTaskReturn(subtasks, originalTask) {
-        return {
-            title: document.getElementById('editTaskTitle').value,
-            description: document.getElementById('editTaskDescription').value,
-            date: document.getElementById('editDateInput').value,
-            prio: currentPrio,
-            status: currentTaskStatus,
-            subtasks: subtasks,
-            assignedTo: assignedContacts,
-            category: originalTask.category,
-        };
-    }
-
-    async saveEditedTask(taskId) {
-        const task = createEditedTask(taskId);
-        await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
-        const taskIndex = tasks.findIndex((t) => t.id === taskId);
-        tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
-        sessionStorage.setItem("tasks", JSON.stringify(tasks));
-        openOverlay(taskId);
-        initDragDrop();
-        applyCurrentSearchFilter();
-    }
 
     //NOTE Board/Move Methods
 

@@ -36,6 +36,8 @@ export class Kanban {
     addTask = null;
     contactsPage = null;
 
+    //NOTE Initialisierung
+
     constructor() {
         if (this.noUserContentPaths.some((usedPath) => this.path.includes(usedPath)) || this.path === '/') sessionStorage.clear();
         this.currentUser = this.currentUserStorage ? new Contact(this.currentUserStorage) : null;
@@ -63,6 +65,8 @@ export class Kanban {
         document.getElementById('backArrow')?.addEventListener('click', () => { window.history.back(); });
     }
 
+    //NOTE HTML-Includes
+
     async includeHTML() {
         const elementsToInclude = document.querySelectorAll('[w3-include-html]');
         for (const element of elementsToInclude) {
@@ -80,37 +84,22 @@ export class Kanban {
 
     setTasks = (newTasks) => {
         this.tasks = newTasks.map(taskData => {
-            if (taskData instanceof Task) {
-                return taskData;
-            } else {
-                return new Task(taskData);
-            }
+            if (taskData instanceof Task) return taskData;
+            else return new Task(taskData);
         });
 
         const tasksForStorage = this.tasks.map(task => task.toTaskObject());
-        try {
-            sessionStorage.setItem('tasks', JSON.stringify(tasksForStorage));
-        } catch (error) {
-            console.error("Error saving tasks to storage:", error);
-        }
+        sessionStorage.setItem('tasks', JSON.stringify(tasksForStorage));
     };
 
     setContacts = (contactsArray) => {
         this.contacts = contactsArray.map(contactData => {
-            if (contactData instanceof Contact) {
-                return contactData;
-            } else {
-                return new Contact(contactData);
-            }
+            if (contactData instanceof Contact) return contactData;
+            else return new Contact(contactData);
         });
 
         const contactsForStorage = this.contacts.map(contact => contact.toContactObject());
-
-        try {
-            sessionStorage.setItem('contacts', JSON.stringify(contactsForStorage));
-        } catch (error) {
-            console.error("Error saving contacts to storage:", error);
-        }
+        sessionStorage.setItem('contacts', JSON.stringify(contactsForStorage));
     };
 
     //NOTE UI Updates & Interaction
@@ -121,26 +110,25 @@ export class Kanban {
 
         let targetButton = null;
 
-        if (link) {
-            targetButton = document.querySelector(link);
-        } else {
-            const currentPage = document.querySelector('main')?.getAttribute('data-page')?.toLowerCase();
-            const activeTabName = this.activeTab || currentPage;
-            if (activeTabName) {
-                menuButtons.forEach(button => {
-                    const buttonName = button.innerText.toLowerCase();
-                    if (buttonName === activeTabName) {
-                        targetButton = button;
-                    }
-                });
-            }
-        }
-
+        if (link) targetButton = document.querySelector(link);
+        else targetButton = this.findActiveMenuButton(menuButtons, this.activeTab);
         if (targetButton) {
             targetButton.classList.add("menuBtnActive");
             this.activeTab = targetButton.innerText.toLowerCase();
             sessionStorage.setItem("activeTab", this.activeTab);
         }
+    };
+
+    findActiveMenuButton = (menuButtons) => {
+        const currentPage = document.querySelector('main')?.getAttribute('data-page')?.toLowerCase();
+        const activeTabName = this.activeTab || currentPage;
+        let targetButton = null;
+        if (!activeTabName) return;
+        menuButtons.forEach(button => {
+            const buttonName = button.innerText.toLowerCase();
+            if (buttonName === activeTabName) targetButton = button;
+        });
+        return targetButton;
     };
 
     changeActive = (linkElement) => {
@@ -162,26 +150,25 @@ export class Kanban {
             return;
         }
 
-        if (!this.currentUser) {
-            this.hideContentWhenNoUser(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
-        } else {
-            this.showContentWhenUserIsLoggedIn(forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
-            headerUserBadgeElements.forEach(badgeElement => {
-                badgeElement.innerText = this.currentUser?.firstLetters || '??';
-            });
-        }
+        const showContent = !!this.currentUser;
+
+        this.toggleUserSpecificContent(showContent, forbiddenContentElements, menuUserContainerElement, headerUserContainerElement);
+
+        if (showContent) this.setCurrentUserFirstLetters(headerUserBadgeElements);
     };
 
-    hideContentWhenNoUser = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
-        forbiddenContentElements.forEach(element => element.classList.add('d-none'));
-        menuUserContainerElement.classList.add('d-none');
-        headerUserContainerElement.classList.add('d-none');
-    };
+    setCurrentUserFirstLetters(headerUserBadges) {
+        headerUserBadges.forEach(badgeElement => {
+            badgeElement.innerText = this.currentUser?.firstLetters || '??';
+        });
+    }
 
-    showContentWhenUserIsLoggedIn = (forbiddenContentElements, menuUserContainerElement, headerUserContainerElement) => {
-        forbiddenContentElements.forEach(element => element.classList.remove('d-none'));
-        menuUserContainerElement.classList.remove('d-none');
-        headerUserContainerElement.classList.remove('d-none');
+    toggleUserSpecificContent = (show, forbiddenElements, menuContainer, headerContainer) => {
+        const action = show ? 'remove' : 'add';
+
+        forbiddenElements.forEach(element => element.classList[action]('d-none'));
+        menuContainer.classList[action]('d-none');
+        headerContainer.classList[action]('d-none');
     };
 
     toggleLoader = (status) => {
