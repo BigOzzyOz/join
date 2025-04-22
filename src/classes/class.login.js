@@ -1,19 +1,34 @@
 import { Contact } from "./class.contact.js";
 
+/**
+ * Handles user login, guest login, remember me functionality,
+ * and associated UI interactions for the login form.
+ */
 export class Login {
     //NOTE - Properties
 
+    /** @type {import('./class.kanban.js').Kanban} Reference to the main Kanban application instance. */
     kanban;
+    /** @type {HTMLInputElement|null} The password input field element. */
     passwordInput = document.getElementById('passwordInput');
+    /** @type {boolean} Tracks the current visibility state of the password. */
     isPasswordVisible = false;
 
     //NOTE - Constructor & Initialization
 
+    /**
+     * Creates an instance of the Login class.
+     * @param {import('./class.kanban.js').Kanban} kanban - The main Kanban application instance.
+     */
     constructor(kanban) {
         this.kanban = kanban;
         this.initLogin();
     }
 
+    /**
+     * Initializes the login functionality by finding the form and necessary elements.
+     * @private
+     */
     initLogin() {
         const loginForm = document.getElementById('login-form');
         if (!loginForm) {
@@ -30,10 +45,15 @@ export class Login {
         this.initForm(loginForm);
     }
 
+    /**
+     * Initializes form elements within the provided form.
+     * @param {HTMLFormElement} form - The login form element.
+     * @private
+     */
     initForm(form) {
         const loginInput = form.querySelector('#loginInput');
-        const checkbox = form.querySelector('#checkbox');
-        const rememberMeCheckbox = form.querySelector('#rememberMe');
+        const checkbox = form.querySelector('#checkbox'); // Checkbox image element
+        const rememberMeCheckbox = form.querySelector('#rememberMe'); // Actual checkbox input
 
         if (loginInput && this.passwordInput && checkbox && rememberMeCheckbox) {
             this.initRememberMe(loginInput, this.passwordInput, rememberMeCheckbox, checkbox);
@@ -42,6 +62,14 @@ export class Login {
         }
     }
 
+    /**
+     * Initializes the "Remember Me" functionality, setting initial state and values.
+     * @param {HTMLInputElement} loginInput
+     * @param {HTMLInputElement} passwordInput
+     * @param {HTMLInputElement} rememberMeCheckbox
+     * @param {HTMLImageElement} checkboxImg
+     * @private
+     */
     initRememberMe(loginInput, passwordInput, rememberMeCheckbox, checkboxImg) {
         const rememberMeChecked = localStorage.getItem('rememberMe') === 'true';
         rememberMeCheckbox.checked = rememberMeChecked;
@@ -54,6 +82,12 @@ export class Login {
 
     //NOTE - Core Login Actions
 
+    /**
+     * Handles the click event of the main login button.
+     * Orchestrates validation and login attempt.
+     * @param {Event} [event] - The click event object.
+     * @returns {Promise<void>}
+     */
     loginButtonClick = async (event) => {
         event?.preventDefault();
         if (!this._checkInitialization()) return;
@@ -64,6 +98,11 @@ export class Login {
         await this._attemptLogin(formData);
     };
 
+    /**
+     * Checks if essential Kanban components are initialized.
+     * @returns {boolean} True if initialized, false otherwise.
+     * @private
+     */
     _checkInitialization() {
         if (!this.kanban || !this.kanban.db) {
             console.error("Kanban or DB not initialized!");
@@ -73,6 +112,11 @@ export class Login {
         return true;
     }
 
+    /**
+     * Retrieves form elements, validates their values, and returns structured data.
+     * @returns {{login: string, password: string, isRememberMeChecked: boolean}|null} Form data or null if validation fails.
+     * @private
+     */
     _getAndValidateFormData() {
         const elements = this._getFormElements();
         if (!elements) return null;
@@ -83,6 +127,11 @@ export class Login {
         return { ...values, isRememberMeChecked: elements.rememberMeCheckbox.checked };
     }
 
+    /**
+     * Retrieves necessary form elements from the DOM.
+     * @returns {{loginInput: HTMLInputElement, passwordInput: HTMLInputElement, rememberMeCheckbox: HTMLInputElement}|null} Object with elements or null if any are missing.
+     * @private
+     */
     _getFormElements() {
         const loginInput = document.getElementById('loginInput');
         const passwordInput = this.passwordInput || document.getElementById('passwordInput');
@@ -96,6 +145,13 @@ export class Login {
         return { loginInput, passwordInput, rememberMeCheckbox };
     }
 
+    /**
+     * Gets and validates the login and password values from input elements.
+     * @param {HTMLInputElement} loginInput
+     * @param {HTMLInputElement} passwordInput
+     * @returns {{login: string, password: string}|null} Object with values or null if invalid.
+     * @private
+     */
     _getAndValidateFormValues(loginInput, passwordInput) {
         const login = loginInput.value.trim().toLowerCase();
         const password = passwordInput.value;
@@ -107,6 +163,12 @@ export class Login {
         return { login, password };
     }
 
+    /**
+     * Attempts the login API call and handles success (user setup, navigation) or failure (error display).
+     * @param {{login: string, password: string, isRememberMeChecked: boolean}} formData - The validated form data.
+     * @returns {Promise<void>}
+     * @private
+     */
     async _attemptLogin({ login, password, isRememberMeChecked }) {
         const bodyData = {
             "username": login,
@@ -123,21 +185,30 @@ export class Login {
         }
     }
 
+    /**
+     * Handles the guest login process.
+     * @returns {Promise<void>}
+     */
     handleGuestLogin = async () => {
         try {
-            const guestUser = { name: "Guest", firstLetters: "G", id: "guest", email: "guest@join.com", phone: "" };
-            this.kanban.currentUser = new Contact(guestUser);
-            const currentUserForStorage = this.kanban.currentUser.toContactObject();
-            sessionStorage.setItem("currentUser", JSON.stringify(currentUserForStorage));
+            const guestUser = this._getGuestUserData();
+            this._updateCurrentUserState(guestUser);
             this.handleRememberMe(false, null, null);
             this.continueToSummary();
         } catch (error) {
+            console.error('Error signing in as guest:', error);
             this.showError({ message: "Guest login failed." });
         }
     };
 
     //NOTE - Login Sub-Processes
 
+    /**
+     * Sets the current user based on login response data, fetching details or defaulting to guest.
+     * @param {object} loginResponseData - Data returned from the login API.
+     * @returns {Promise<void>}
+     * @private
+     */
     setCurrentUser = async (loginResponseData) => {
         const userId = loginResponseData?.user?.id || loginResponseData?.id;
         let userData = null;
@@ -149,10 +220,15 @@ export class Login {
         }
 
         const finalUserData = userData || this._getGuestUserData();
-
         this._updateCurrentUserState(finalUserData);
     };
 
+    /**
+     * Fetches user data from the API based on user ID.
+     * @param {string|number} userId - The ID of the user to fetch.
+     * @returns {Promise<object|null>} The user data object or null if fetch failed.
+     * @private
+     */
     async _fetchUserData(userId) {
         try {
             const response = await this.kanban.db.get(`api/contacts/${userId}/`);
@@ -170,22 +246,39 @@ export class Login {
         }
     }
 
+    /**
+     * Returns the default guest user data object.
+     * @returns {{name: string, firstLetters: string, id: string, email: string, phone: string}} Guest user data.
+     * @private
+     */
     _getGuestUserData() {
         return { name: "Guest", firstLetters: "G", id: "guest", email: "guest@join.com", phone: "" };
     }
 
+    /**
+     * Updates the kanban state and sessionStorage with the current user.
+     * @param {object} userData - The user data object (either fetched or guest).
+     * @private
+     */
     _updateCurrentUserState(userData) {
         this.kanban.currentUser = new Contact(userData);
         const currentUserForStorage = this.kanban.currentUser.toContactObject();
         sessionStorage.setItem('currentUser', JSON.stringify(currentUserForStorage));
     }
 
+    //NOTE - State/Navigation Helpers
+
+    /**
+     * Handles storing or removing login credentials based on the "Remember Me" checkbox state.
+     * @param {boolean} rememberMe - Whether the "Remember Me" checkbox is checked.
+     * @param {string|null} login - The user's login email (or null if not remembering).
+     * @param {string|null} password - The user's password (or null if not remembering).
+     */
     handleRememberMe = (rememberMe, login, password) => {
         if (rememberMe) {
             localStorage.setItem('login', login);
             localStorage.setItem('password', password);
             localStorage.setItem('rememberMe', 'true');
-
         } else {
             localStorage.removeItem('rememberMe');
             localStorage.removeItem('login');
@@ -193,6 +286,9 @@ export class Login {
         }
     };
 
+    /**
+     * Navigates the user to the summary page after successful login.
+     */
     continueToSummary = () => {
         sessionStorage.setItem('activeTab', 'summary');
         this.kanban.listener?.deactivateListeners();
@@ -201,6 +297,10 @@ export class Login {
 
     //NOTE - UI Event Handlers
 
+    /**
+     * Handles clicks on the password visibility toggle icon.
+     * @param {Event} [event] - The click event object.
+     */
     handlePasswordVisibilityClick = (event) => {
         event?.preventDefault();
         if (!this.passwordInput) return;
@@ -209,7 +309,6 @@ export class Login {
         const selectionEnd = this.passwordInput.selectionEnd;
 
         this.isPasswordVisible = !this.isPasswordVisible;
-
         this._setPasswordVisibility(this.isPasswordVisible);
 
         this.passwordInput.focus();
@@ -218,7 +317,13 @@ export class Login {
         });
     };
 
+    /**
+     * Sets the type and background image of the password input based on visibility state.
+     * @param {boolean} isVisible - Whether the password should be visible.
+     * @private
+     */
     _setPasswordVisibility(isVisible) {
+        if (!this.passwordInput) return;
         if (isVisible) {
             this.passwordInput.type = "text";
             this.passwordInput.style.backgroundImage = "url('../assets/icons/visibility.png')";
@@ -228,7 +333,9 @@ export class Login {
         }
     }
 
-
+    /**
+     * Resets the password visibility state when the input loses focus.
+     */
     resetPasswordStateOnBlur = () => {
         if (!this.passwordInput || !this.isPasswordVisible) return;
 
@@ -237,6 +344,9 @@ export class Login {
         this.passwordInput.style.backgroundImage = "url('../assets/icons/password_input.png')";
     };
 
+    /**
+     * Handles clicks on the "Remember Me" checkbox image, updating its visual state.
+     */
     checkBoxClicked = () => {
         const rememberMeCheckbox = document.getElementById('rememberMe');
         const checkboxImg = document.getElementById('checkbox');
@@ -248,6 +358,10 @@ export class Login {
 
     //NOTE - Utility Functions
 
+    /**
+     * Displays an error message to the user in the designated error element.
+     * @param {Error|object|string} error - The error object or message string.
+     */
     showError = (error) => {
         const errorMessageElement = document.getElementById('error-message');
         if (!errorMessageElement) {
@@ -256,10 +370,16 @@ export class Login {
         }
 
         const message = this._getDisplayErrorMessage(error);
-
         this._displayErrorMessageUI(errorMessageElement, message);
     };
 
+    /**
+     * Extracts and processes a user-friendly error message from various error types.
+     * Handles specific credential error messages.
+     * @param {Error|object|string} error - The raw error data.
+     * @returns {string} The processed error message for display.
+     * @private
+     */
     _getDisplayErrorMessage(error) {
         let message = "An unknown error occurred.";
 
@@ -281,6 +401,12 @@ export class Login {
         return message;
     }
 
+    /**
+     * Updates the error message UI element with the provided message.
+     * @param {HTMLElement} element - The error message container element.
+     * @param {string} message - The message to display.
+     * @private
+     */
     _displayErrorMessageUI(element, message) {
         element.textContent = message;
         element.style.width = 'auto';
