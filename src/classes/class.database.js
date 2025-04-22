@@ -383,23 +383,25 @@ export class Database {
      * @param {typeof Contact | typeof Task} ItemClass - The class constructor (Contact or Task) to use for instantiation.
      */
     _setKanbanArray(loadItem, arrayName, ItemClass) {
-        const targetArray = this.kanban[arrayName];
+        const setterName = `set${arrayName.charAt(0).toUpperCase() + arrayName.slice(1)}`;
+        const newArray = [];
+
         if (!Array.isArray(loadItem)) {
             console.error(`Invalid data received for ${arrayName}:`, loadItem);
-            this.kanban[`set${arrayName.charAt(0).toUpperCase() + arrayName.slice(1)}`]([]); // Use setter like setContacts([])
+            this.kanban[setterName]([]);
             return;
         }
-        this.kanban[`set${arrayName.charAt(0).toUpperCase() + arrayName.slice(1)}`]([]); // Clear existing items
 
         for (const itemData of loadItem) {
             if (!itemData) continue;
             try {
                 const newItem = new ItemClass(itemData);
-                targetArray.push(newItem);
+                newArray.push(newItem);
             } catch (error) {
                 console.error(`Error creating ${ItemClass.name} instance:`, error, itemData);
             }
         }
+        this.kanban[setterName](newArray);
     }
 
     /**
