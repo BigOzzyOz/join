@@ -191,6 +191,7 @@ export class Login {
      */
     handleGuestLogin = async () => {
         try {
+            await this.kanban.db.guestLogin();
             const guestUser = this._getGuestUserData();
             this._updateCurrentUserState(guestUser);
             this.handleRememberMe(false, null, null);
