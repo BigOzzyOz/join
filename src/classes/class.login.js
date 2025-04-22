@@ -16,15 +16,18 @@ export class Login {
 
     initLogin() {
         const loginForm = document.getElementById('login-form');
-
-        if (loginForm) {
-            if (!this.passwordInput) {
-                this.passwordInput = document.getElementById('passwordInput');
-            }
-            this.initForm(loginForm);
-        } else {
-            console.warn("Login form not found during initialization.");
+        if (!loginForm) {
+            console.error("Login form ('login-form') not found. Cannot initialize login.");
+            return;
         }
+
+        if (!this.passwordInput) {
+            this.passwordInput = document.getElementById('passwordInput');
+            if (!this.passwordInput) {
+                console.error("Password input ('passwordInput') not found. Form initialization might be incomplete.");
+            }
+        }
+        this.initForm(loginForm);
     }
 
     initForm(form) {
@@ -53,30 +56,58 @@ export class Login {
 
     loginButtonClick = async (event) => {
         event?.preventDefault();
+        if (!this._checkInitialization()) return;
+
+        const formData = this._getAndValidateFormData();
+        if (!formData) return;
+
+        await this._attemptLogin(formData);
+    };
+
+    _checkInitialization() {
         if (!this.kanban || !this.kanban.db) {
             console.error("Kanban or DB not initialized!");
-            this.showError({ message: "Ein interner Fehler ist aufgetreten." });
-            return;
+            this.showError({ message: "An internal error occurred." });
+            return false;
         }
+        return true;
+    }
+
+    _getAndValidateFormData() {
+        const elements = this._getFormElements();
+        if (!elements) return null;
+
+        const values = this._getAndValidateFormValues(elements.loginInput, elements.passwordInput);
+        if (!values) return null;
+
+        return { ...values, isRememberMeChecked: elements.rememberMeCheckbox.checked };
+    }
+
+    _getFormElements() {
         const loginInput = document.getElementById('loginInput');
         const passwordInput = this.passwordInput || document.getElementById('passwordInput');
         const rememberMeCheckbox = document.getElementById('rememberMe');
 
         if (!loginInput || !passwordInput || !rememberMeCheckbox) {
-            console.error("Form elements not found!");
-            this.showError({ message: "Formular unvollständig." });
-            return;
+            console.error("Required form elements (login, password, rememberMe) not found!");
+            this.showError({ message: "Form incomplete." });
+            return null;
         }
+        return { loginInput, passwordInput, rememberMeCheckbox };
+    }
 
+    _getAndValidateFormValues(loginInput, passwordInput) {
         const login = loginInput.value.trim().toLowerCase();
         const password = passwordInput.value;
-        const isRememberMeChecked = rememberMeCheckbox.checked;
 
         if (!login || !password) {
-            this.showError({ message: "Bitte E-Mail und Passwort eingeben." });
-            return;
+            this.showError({ message: "Please enter email and password." });
+            return null;
         }
+        return { login, password };
+    }
 
+    async _attemptLogin({ login, password, isRememberMeChecked }) {
         const bodyData = {
             "username": login,
             "password": password,
@@ -90,7 +121,7 @@ export class Login {
             console.error("Login failed:", error);
             this.showError(error);
         }
-    };
+    }
 
     handleGuestLogin = async () => {
         try {
@@ -98,41 +129,56 @@ export class Login {
             this.kanban.currentUser = new Contact(guestUser);
             const currentUserForStorage = this.kanban.currentUser.toContactObject();
             sessionStorage.setItem("currentUser", JSON.stringify(currentUserForStorage));
-            localStorage.removeItem('rememberMe');
-            localStorage.removeItem('login');
-            localStorage.removeItem('password');
+            this.handleRememberMe(false, null, null);
             this.continueToSummary();
         } catch (error) {
-            console.error('Error signing in as guest:', error);
-            this.showError({ message: "Gast-Login fehlgeschlagen." });
+            this.showError({ message: "Guest login failed." });
         }
     };
 
     //NOTE - Login Sub-Processes
 
     setCurrentUser = async (loginResponseData) => {
-        let userData = { name: "Guest", firstLetters: "G", id: "guest", email: "guest@join.com", phone: "" };
         const userId = loginResponseData?.user?.id || loginResponseData?.id;
+        let userData = null;
 
-        if (!userId) {
-            console.error("Invalid user data from login response:", loginResponseData);
-            this.kanban.currentUser = new Contact(userData);
+        if (userId) {
+            userData = await this._fetchUserData(userId);
         } else {
-            try {
-                const response = await this.kanban.db.get(`api/contacts/${userId}/`);
-                const user = await response.json();
-                if (!user) throw new Error('User data not found or fetch failed');
-                userData = new Contact(user);
-                this.kanban.currentUser = userData;
-            } catch (error) {
-                console.error('Error fetching user data after login:', error);
-                this.kanban.currentUser = new Contact(userData);
-            }
+            console.warn('No user ID found in login response. Using guest user.');
         }
-        const currentUserForStorage = this.kanban.currentUser.toContactObject();
-        sessionStorage.setItem('currentUser', JSON.stringify(currentUserForStorage));
+
+        const finalUserData = userData || this._getGuestUserData();
+
+        this._updateCurrentUserState(finalUserData);
     };
 
+    async _fetchUserData(userId) {
+        try {
+            const response = await this.kanban.db.get(`api/contacts/${userId}/`);
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            const user = await response.json();
+            if (!user) {
+                throw new Error('Invalid user data received');
+            }
+            return user;
+        } catch (error) {
+            console.warn(`Could not fetch/process user data for ID: ${userId}. Error: ${error.message}`);
+            return null;
+        }
+    }
+
+    _getGuestUserData() {
+        return { name: "Guest", firstLetters: "G", id: "guest", email: "guest@join.com", phone: "" };
+    }
+
+    _updateCurrentUserState(userData) {
+        this.kanban.currentUser = new Contact(userData);
+        const currentUserForStorage = this.kanban.currentUser.toContactObject();
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUserForStorage));
+    }
 
     handleRememberMe = (rememberMe, login, password) => {
         if (rememberMe) {
@@ -164,19 +210,24 @@ export class Login {
 
         this.isPasswordVisible = !this.isPasswordVisible;
 
-        if (this.isPasswordVisible) {
-            this.passwordInput.type = "text";
-            this.passwordInput.style.backgroundImage = "url('../assets/icons/visibility.png')";
-        } else {
-            this.passwordInput.type = "password";
-            this.passwordInput.style.backgroundImage = "url('../assets/icons/password_off.png')";
-        }
+        this._setPasswordVisibility(this.isPasswordVisible);
 
         this.passwordInput.focus();
         requestAnimationFrame(() => {
             this.passwordInput.setSelectionRange(selectionStart, selectionEnd);
         });
     };
+
+    _setPasswordVisibility(isVisible) {
+        if (isVisible) {
+            this.passwordInput.type = "text";
+            this.passwordInput.style.backgroundImage = "url('../assets/icons/visibility.png')";
+        } else {
+            this.passwordInput.type = "password";
+            this.passwordInput.style.backgroundImage = "url('../assets/icons/password_off.png')";
+        }
+    }
+
 
     resetPasswordStateOnBlur = () => {
         if (!this.passwordInput || !this.isPasswordVisible) return;
@@ -204,25 +255,36 @@ export class Login {
             return;
         }
 
-        let message = "Ein unbekannter Fehler ist aufgetreten.";
+        const message = this._getDisplayErrorMessage(error);
 
+        this._displayErrorMessageUI(errorMessageElement, message);
+    };
 
-        if (error instanceof Error) {
-            message = error.message;
-        } else if (typeof error === 'object' && error !== null && error.message) {
-            message = error.message;
-        } else if (typeof error === 'string') {
-            message = error;
-        }
+    _getDisplayErrorMessage(error) {
+        let message = "An unknown error occurred.";
+
+        if (error instanceof Error) message = error.message;
+        else if (typeof error === 'object' && error?.message) message = error.message;
+        else if (typeof error === 'string') message = error;
 
         const statusCode = error?.status || error?.response?.status;
-        if (statusCode === 401 || message.toLowerCase().includes("unauthorized") || message.toLowerCase().includes("credentials") || message.toLowerCase().includes("no active account")) {
-            message = "Ungültige Anmeldedaten. Bitte überprüfe E-Mail und Passwort.";
+        const lowerCaseMessage = message.toLowerCase();
+        const credentialKeywords = ["unauthorized", "credentials", "no active account"];
+
+        const isCredentialError = statusCode === 401 ||
+            credentialKeywords.some(keyword => lowerCaseMessage.includes(keyword));
+
+        if (isCredentialError) {
+            message = "Wrong email or password.";
         }
 
-        errorMessageElement.textContent = message;
-        errorMessageElement.style.width = 'auto';
-        errorMessageElement.style.opacity = '1';
-    };
+        return message;
+    }
+
+    _displayErrorMessageUI(element, message) {
+        element.textContent = message;
+        element.style.width = 'auto';
+        element.style.opacity = '1';
+    }
 }
 

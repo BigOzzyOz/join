@@ -96,6 +96,7 @@ export class Database {
     }
 
     //NOTE - Authentication Methods
+
     async login(bodyData) {
         try {
             let response = await fetch(`${this.BASE_URL}auth/login/`, {
