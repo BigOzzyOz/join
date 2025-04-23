@@ -1,13 +1,26 @@
+/**
+ * Represents the HTML structure for a task, including board cards, modals, and edit forms.
+ */
 export class TaskHtml {
     //NOTE Properties
+
+    /** @type {Task} The task object associated with this HTML representation. */
     task;
 
+    /**
+     * Creates an instance of TaskHtml.
+     * @param {Task} task - The task object.
+     */
     constructor(task) {
         this.task = task;
     }
 
     //NOTE Board Card HTML Generation
 
+    /**
+     * Generates the complete HTML for a task card on the board.
+     * @returns {string} The HTML string for the task card.
+     */
     generateTodoHTML() {
         let categoryHTML = this.generateCategoryHTML();
         let titleHTML = this.generateTitleHTML();
@@ -34,6 +47,10 @@ export class TaskHtml {
           `;
     }
 
+    /**
+     * Generates the HTML for the task category badge on the board card.
+     * @returns {string} The HTML string for the category badge.
+     */
     generateCategoryHTML() {
         let categoryHTML = '';
         if (this.task.category == 'User Story') {
@@ -44,6 +61,11 @@ export class TaskHtml {
         return categoryHTML;
     }
 
+    /**
+     * Generates the HTML for the task title on the board card, truncating if necessary.
+     * Sanitizes the title to prevent XSS.
+     * @returns {string} The HTML string for the title.
+     */
     generateTitleHTML() {
         let safeTitle = this.task.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let titleHTML = '';
@@ -55,6 +77,11 @@ export class TaskHtml {
         return titleHTML;
     }
 
+    /**
+     * Generates the HTML for the task description on the board card, truncating if necessary.
+     * Sanitizes the description to prevent XSS.
+     * @returns {string} The HTML string for the description.
+     */
     generateDescriptionHTML() {
         let safeDescription = this.task.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let descriptionHTML = '';
@@ -66,6 +93,10 @@ export class TaskHtml {
         return descriptionHTML;
     }
 
+    /**
+     * Generates the HTML for the subtasks progress bar on the board card.
+     * @returns {string} The HTML string for the subtasks section, or an empty string if no subtasks exist.
+     */
     generateSubtasksHTML() {
         let subtasksHTML = "";
         if (this.task.subtasks && this.task.subtasks.length > 0) {
@@ -80,6 +111,11 @@ export class TaskHtml {
         return subtasksHTML;
     }
 
+    /**
+     * Generates the HTML for the assigned contacts badges on the board card.
+     * Shows a maximum of 4 badges and an indicator for more if needed.
+     * @returns {string} The HTML string for the assigned contacts badges.
+     */
     generateAssignedToHTML() {
         let assignedToHTML = '';
         if (!this.task.assignedTo) {
@@ -95,6 +131,10 @@ export class TaskHtml {
         return assignedToHTML;
     }
 
+    /**
+     * Generates the HTML for the priority icon on the board card.
+     * @returns {string} The HTML string for the priority icon.
+     */
     generatePrioHTML() {
         let prioHTML = '';
         if (this.task.prio == 'urgent') {
@@ -109,6 +149,10 @@ export class TaskHtml {
 
     //NOTE Modal/Overlay HTML Generation
 
+    /**
+     * Generates the HTML for the task category badge in the modal view.
+     * @returns {string} The HTML string for the modal category badge.
+     */
     generateModalCategoryHTML() {
         let modalCategoryHTML = '';
         if (this.task.category == 'User Story') {
@@ -119,6 +163,10 @@ export class TaskHtml {
         return modalCategoryHTML;
     }
 
+    /**
+     * Generates the HTML for the list of assigned contacts in the modal view.
+     * @returns {string} The HTML string for the assigned contacts list, or an empty string if none are assigned.
+     */
     generateModalAssignedToHTML() {
         if (!this.task.assignedTo) return '';
         let modalAssignedToHTML = '';
@@ -133,9 +181,13 @@ export class TaskHtml {
         return modalAssignedToHTML;
     }
 
+    /**
+     * Generates the HTML for the list of subtasks in the modal view, including checkboxes.
+     * @returns {string} The HTML string for the subtasks list.
+     */
     generateModalSubtasksHTML() {
         let modalSubtasksHTML = "";
-        if (this.task.subtasks) {
+        if (this.task.subtasks && this.task.subtasks.length > 0) {
             for (let i = 0; i < this.task.subtasks.length; i++) {
                 let subtask = this.task.subtasks[i];
                 let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
@@ -152,6 +204,10 @@ export class TaskHtml {
         return modalSubtasksHTML;
     }
 
+    /**
+     * Generates the complete HTML for the task details modal (overlay).
+     * @returns {string} The HTML string for the task modal.
+     */
     generateOpenOverlayHTML() {
         let modalCategoryHTML = this.generateModalCategoryHTML();
         let priority = this.task.prio.charAt(0).toUpperCase() + this.task.prio.slice(1);
@@ -206,6 +262,11 @@ export class TaskHtml {
 
     //NOTE Edit Task Modal HTML Generation
 
+    /**
+     * Generates the HTML for the task edit modal form.
+     * Includes fields for title, description, due date, priority, assigned contacts, and subtasks.
+     * @returns {string} The HTML string for the task edit form.
+     */
     generateTaskEditHTML() {
         let subtaskHTML = '';
         if (this.task.subtasks && this.task.subtasks.length > 0) {
