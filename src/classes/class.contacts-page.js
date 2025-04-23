@@ -221,8 +221,8 @@ export class ContactsPage {
             this.kanban.setContacts(this.kanban.contacts);
 
             this.editId = finalUpdatedContact.id;
-
-            if (contact.id === this.kanban.currentUser?.id) {
+            const isCurrentUserAndMailChanged = (contact.id === this.kanban.currentUser?.id && contact.email.toLowerCase() !== updatedEmail);
+            if (isCurrentUserAndMailChanged) {
                 this.kanban.db.logout();
             } else {
                 this.refreshPage();
