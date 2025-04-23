@@ -2,14 +2,25 @@ import { AddTaskHtml } from "./html/class.html-add-task.js";
 import { Subtask } from "./class.subtask.js";
 import { Task } from "./class.task.js";
 
+/**
+ * Represents the Add Task functionality, managing the creation and editing of tasks.
+ */
 export class AddTask {
-    //NOTE Properties 
+    //NOTE Properties
 
+    /** @type {import('./class.kanban.js').Kanban} Reference to the main Kanban instance. */
     kanban;
+    /** @type {import('./class.contact.js').Contact[]} Array of contacts assigned to the current task. */
     assignedContacts = [];
+    /** @type {string} The currently selected priority for the task ('urgent', 'medium', 'low'). */
     currentPrio = 'medium';
+    /** @type {AddTaskHtml} Instance for handling HTML generation related to adding tasks. */
     html;
 
+    /**
+     * Creates an instance of AddTask.
+     * @param {import('./class.kanban.js').Kanban} kanban - The main Kanban instance.
+     */
     constructor(kanban) {
         this.kanban = kanban;
         this.assignedContacts = [];
@@ -19,12 +30,22 @@ export class AddTask {
 
     //NOTE Assign/Dropdown/Contact Methods
 
+    /**
+     * Toggles the visibility of the assign contacts dropdown menu.
+     * Opens or closes the dropdown based on its current state.
+     * @async
+     */
     toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
         document.getElementById('assignSearch').classList.contains('contactsAssignStandard') ? await this.openAssignDropdown() : this.closeAssignDropdown();
         this.kanban.toggleClass('assignSearch', 'contactsAssignStandard', 'contactsAssignOpen');
     };
 
+    /**
+     * Opens the assign contacts dropdown, populates it with sorted contacts,
+     * and sets up necessary event listeners.
+     * @async
+     */
     async openAssignDropdown() {
         const searchInput = document.getElementById('assignSearch');
         const contactsContainer = document.getElementById('contactsToAssign');
@@ -36,6 +57,10 @@ export class AddTask {
         this.kanban.activateListenerAddTask('openAssignDropdown');
     }
 
+    /**
+     * Closes the assign contacts dropdown, clears its content,
+     * and resets the search input.
+     */
     closeAssignDropdown() {
         let searchInput = document.getElementById('assignSearch');
         let contactsContainer = document.getElementById('contactsToAssign');
@@ -46,6 +71,10 @@ export class AddTask {
         this.kanban.deactivateListenerAddTask('closeAssignDropdown');
     };
 
+    /**
+     * Toggles the visibility of the category selection dropdown.
+     * @param {string} value - The value to set in the input field when closing the dropdown.
+     */
     toggleCategoryDropdown(value) {
         let input = document.getElementById('categoryInput');
         let wrapper = document.getElementById('selectWrapper');
@@ -55,14 +84,28 @@ export class AddTask {
         wrapper.classList.contains('select-wrapperOpen') ? arrow.style.transform = 'rotate(180deg)' : arrow.style.transform = 'rotate(0deg)';
     }
 
+    /**
+     * Gets the value of an HTML element by its ID.
+     * @param {string} id - The ID of the HTML element.
+     * @returns {string} The value of the element.
+     */
     getId(id) {
         return document.getElementById(id).value;
     }
 
+    /**
+     * Sets the array of assigned contacts.
+     * @param {import('./class.contact.js').Contact[]} contactsArray - The array of contacts to assign.
+     */
     setAssignedContacts(contactsArray) {
         this.assignedContacts = contactsArray;
     }
 
+    /**
+     * Checks if a click event occurred outside the assign dropdown menu
+     * and closes the dropdown if it did.
+     * @param {Event} event - The click event object.
+     */
     checkOutsideAssign = ({ target }) => {
         let assignMenu = document.getElementById('assignDropdown');
         if (assignMenu.classList.contains('open') && !assignMenu.contains(target)) {
@@ -70,6 +113,9 @@ export class AddTask {
         };
     };
 
+    /**
+     * Filters the contacts displayed in the assign dropdown based on the search input.
+     */
     assignSearchInput = () => {
         const searchInput = document.getElementById('assignSearch');
         const contactsContainer = document.getElementById('contactsToAssign');
@@ -79,6 +125,11 @@ export class AddTask {
         contactsContainer.innerHTML = filteredContacts.map(c => c.html.htmlRenderContactsAssign(this.assignedContacts)).join('');
     };
 
+    /**
+     * Assigns or unassigns a contact based on the provided ID.
+     * Toggles the visual selection state and updates the assigned contacts array.
+     * @param {number} id - The ID of the contact to assign/unassign.
+     */
     contactAssign(id) {
         const index = this.assignedContacts.findIndex(c => c.id === id);
         const inAssignedContacts = index > -1;
@@ -89,6 +140,10 @@ export class AddTask {
         this.renderAssignedContacts();
     }
 
+    /**
+     * Renders the profile pictures of the assigned contacts below the dropdown.
+     * Shows a maximum of 5 profile pictures and indicates if more are assigned.
+     */
     renderAssignedContacts() {
         let assignedContactsContainer = document.getElementById('contactsAssigned');
         assignedContactsContainer.innerHTML = '';
@@ -105,6 +160,12 @@ export class AddTask {
 
     //NOTE Subtask Methods
 
+    /**
+     * Handles input events in the subtask input field.
+     * Shows/hides the save/clear icons based on input length.
+     * Listens for the Enter key to save the subtask.
+     * @param {KeyboardEvent} event - The keyboard event object.
+     */
     addNewSubtask = (event) => {
         this.handleKeyDown(event);
         const input = document.getElementById('subtaskInput').value.length;
@@ -117,10 +178,17 @@ export class AddTask {
         }
     };
 
+    /**
+     * Clears the subtask input field.
+     */
     clearSubtaskInput = () => {
         document.getElementById('subtaskInput').value = '';
     };
 
+    /**
+     * Handles the 'Enter' key press in the subtask input field to save the subtask.
+     * @param {KeyboardEvent} event - The keyboard event object.
+     */
     handleKeyDown = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -128,6 +196,11 @@ export class AddTask {
         }
     };
 
+    /**
+     * Saves a new subtask entered in the input field.
+     * Creates a Subtask object, generates its HTML, and appends it to the list.
+     * Clears the input field and resets icons afterwards.
+     */
     saveSubtask = () => {
         let subtaskList = document.getElementById('subtaskList');
         let inputText = document.getElementById('subtaskInput').value.trim();
@@ -145,6 +218,11 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     };
 
+    /**
+     * Enables editing mode for a specific subtask.
+     * Hides the subtask text and shows an input field for editing.
+     * @param {HTMLElement} editIcon - The edit icon element that was clicked.
+     */
     editSubtask(editIcon) {
         let subtaskItem = editIcon.closest('.subtaskEditList');
         let subtaskText = subtaskItem.querySelector('.subtaskItemText');
@@ -157,12 +235,22 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     }
 
+    /**
+     * Saves the edited subtask text when the input field loses focus.
+     * Updates the subtask text element and hides the input field.
+     * @param {HTMLElement} subtaskText - The element displaying the subtask text.
+     * @param {HTMLInputElement} editInput - The input field used for editing.
+     */
     saveEditedSubtask = (subtaskText, editInput) => {
         subtaskText.textContent = editInput.value.trim();
         subtaskText.classList.remove('dNone');
         editInput.classList.add('dNone');
     };
 
+    /**
+     * Deletes a subtask from the list.
+     * @param {HTMLElement} deleteIcon - The delete icon element that was clicked.
+     */
     deleteSubtask(deleteIcon) {
         let subtaskItem = deleteIcon.closest('.subtaskEditList');
         subtaskItem.remove();
@@ -170,10 +258,17 @@ export class AddTask {
         this.kanban.activateListenerAddTask('subtask');
     }
 
+    /**
+     * Clears all subtasks from the subtask list in the UI.
+     */
     clearSubtaskList() {
         document.getElementById('subtaskList').innerHTML = '';
     }
 
+    /**
+     * Retrieves all subtasks currently listed in the UI.
+     * @returns {Array<Object>} An array of subtask objects with 'status' and 'text' properties.
+     */
     getSubtasks() {
         const subtaskItems = document.querySelectorAll('.subtaskList .subtaskItemText');
         let subtasks = [];
@@ -183,6 +278,11 @@ export class AddTask {
 
     //NOTE Task Creation & Edit Methods
 
+    /**
+     * Creates a new task object from the form data, posts it to the database,
+     * adds it to the local Kanban tasks array, and closes the add task modal/view.
+     * @async
+     */
     async pushNewTask() {
         let data = this.createNewTask();
         let newTask = new Task(data);
@@ -192,6 +292,10 @@ export class AddTask {
         this.closeAddTaskModal();
     }
 
+    /**
+     * Gathers data from the add task form fields and creates a task data object.
+     * @returns {Object} An object containing all the data for the new task.
+     */
     createNewTask() {
         return {
             title: this.getId('taskTitle'),
@@ -208,45 +312,60 @@ export class AddTask {
 
     //NOTE Validation Methods
 
+    /**
+     * Validates the required input fields in the add task form.
+     * Displays validation messages and styles invalid inputs.
+     * Attaches real-time validation listeners if not already present.
+     * @returns {boolean} True if the form is valid, false otherwise.
+     */
     formValidation = () => {
         const inputs = document.querySelectorAll('.singleInputContainer input[required]');
-        let isValid = true;
+        let isFormValid = true;
         inputs.forEach(input => {
             const validationText = input.nextElementSibling;
-            if (input.value.trim() === '') {
-                this.formValidationTrue(input, validationText);
-                isValid = false;
-            }
-            else this.formValidationFalse(input, validationText);
-            this.formValidationListener(input, validationText);
+            const isEmpty = input.value.trim() === '';
+            this.updateValidationState(input, validationText, isEmpty);
+            isFormValid = isEmpty ? false : true;
+            this._attachValidationListener(input, validationText); // Attach listener
         });
-        return isValid;
+        return isFormValid;
     };
 
-    formValidationTrue(input, validationText) {
-        validationText.style.display = 'block';
-        input.classList.add('formValidationInputBorder');
+    /**
+     * Updates the validation state (styles and message visibility) for an input field.
+     * @param {HTMLInputElement} input - The input element.
+     * @param {HTMLElement} validationText - The validation message element.
+     * @param {boolean} showError - True to show validation error, false to hide.
+     */
+    updateValidationState(input, validationText, showError) {
+        if (validationText) {
+            validationText.style.display = showError ? 'block' : 'none';
+        }
+        input.classList.toggle('formValidationInputBorder', showError);
     }
 
-    formValidationFalse(input, validationText) {
-        validationText.style.display = 'none';
-        input.classList.remove('formValidationInputBorder');
-    }
-
-    formValidationListener(input, validationText) {
-        input.addEventListener('input', () => {
-            if (input.value.trim() !== '') {
-                validationText.style.display = 'none';
-                input.classList.remove('formValidationInputBorder');
-            } else {
-                validationText.style.display = 'block';
-                input.classList.add('formValidationInputBorder');
-            }
-        });
+    /**
+     * Attaches a real-time validation listener to an input field if not already attached.
+     * @private
+     * @param {HTMLInputElement} input - The input element to attach the listener to.
+     * @param {HTMLElement} validationText - The corresponding validation message element.
+     */
+    _attachValidationListener(input, validationText) {
+        if (!input.dataset.validationListenerAttached) {
+            input.addEventListener('input', () => {
+                const isCurrentlyEmpty = input.value.trim() === '';
+                this.updateValidationState(input, validationText, isCurrentlyEmpty);
+            });
+            input.dataset.validationListenerAttached = 'true'; // Mark listener as attached
+        }
     }
 
     //NOTE UI/Modal/Animation Methods
 
+    /**
+     * Closes the add task modal or navigates away from the add task page
+     * after showing a confirmation animation.
+     */
     closeAddTaskModal() {
         if (this.kanban.activeTab == 'add task') {
             this.showTaskAddedAnimation();
@@ -258,6 +377,11 @@ export class AddTask {
         }
     }
 
+    /**
+     * Shows the "Task Added" animation.
+     * If on the addtask.html page, redirects to board.html after the animation.
+     * Otherwise, calls the modal-specific animation function.
+     */
     showTaskAddedAnimation() {
         if (window.location.href.endsWith('addtask.html')) {
             this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
@@ -267,81 +391,135 @@ export class AddTask {
         } else this.showTaskAddedAnimationModal();
     }
 
+    /**
+     * Shows the "Task Added" animation specifically for the modal context.
+     * Closes the modal after the animation completes.
+     */
     showTaskAddedAnimationModal() {
         this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
         setTimeout(() => { this.kanban.board.closeModal(); }, 2000);
     }
 
+    /**
+     * Clears all input fields, resets priority selection, subtasks, assigned contacts,
+     * category dropdown, and validation styles in the add task form.
+     */
     clearAddTaskForm = () => {
-        document.getElementById('taskTitle').value = '';
-        document.getElementById('taskDescription').value = '';
-        document.getElementById('dateInput').value = '';
-        this.updatePrioActiveBtn('');
-        document.getElementById('subtaskInput').value = '';
+        this._clearInputFields();
+        this.updatePrioActiveBtn('medium');
         this.clearSubtaskList();
+        this.assignedContacts = [];
+        this.renderAssignedContacts();
+        this._resetCategoryDropdown();
+        this._clearValidationStyles();
     };
+
+    /**
+     * Clears the main input fields of the add task form.
+     * @private
+     */
+    _clearInputFields() {
+        const fields = ['taskTitle', 'taskDescription', 'dateInput', 'subtaskInput', 'categoryInput'];
+        fields.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.value = '';
+        });
+    }
+
+    /**
+     * Resets the category dropdown to its default state if it's open.
+     * @private
+     */
+    _resetCategoryDropdown() {
+        const wrapper = document.getElementById('selectWrapper');
+        const arrow = document.getElementById('categoryDropArrow');
+        if (wrapper && wrapper.classList.contains('select-wrapperOpen')) {
+            wrapper.classList.remove('select-wrapperOpen');
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    /**
+     * Removes validation error styles and messages from required inputs.
+     * @private
+     */
+    _clearValidationStyles() {
+        const validatedInputs = document.querySelectorAll('.formValidationInputBorder');
+        validatedInputs.forEach(input => {
+            input.classList.remove('formValidationInputBorder');
+            const validationText = input.nextElementSibling;
+            if (validationText && validationText.style.display === 'block') {
+                validationText.style.display = 'none';
+            }
+        });
+    }
 
     //NOTE Priority Methods
 
+    /**
+     * Sets the current task priority based on the clicked priority button.
+     * @param {HTMLElement} element - The priority button element that was clicked.
+     */
     setPrio(element) {
         const prio = element.getAttribute('data-prio');
         this.currentPrio = prio;
         this.updatePrioActiveBtn(prio);
     }
 
+    /**
+     * Updates the visual state of all priority buttons, highlighting the selected one.
+     * Resets all buttons first, then applies active state to the selected one.
+     * @param {string} prio - The priority to set as active ('urgent', 'medium', 'low', or '' to clear).
+     */
     updatePrioActiveBtn(prio) {
         const buttons = document.querySelectorAll('.prioBtn');
         buttons.forEach(button => {
             button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
             const imgs = button.querySelectorAll('img');
-            imgs.forEach(img => { img.classList.add('hidden'); });
+            imgs.forEach(img => {
+                if (img.src.includes('White')) {
+                    img.classList.add('hidden');
+                } else {
+                    img.classList.remove('hidden');
+                }
+            });
         });
         this.changeActiveBtn(prio);
     }
 
+
+    /**
+     * Applies the active state styling to the specified priority button.
+     * Hides the default icon and shows the white icon for the active button.
+     * @param {string} prio - The priority whose button should be activated ('urgent', 'medium', 'low').
+     */
     changeActiveBtn(prio) {
         const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
         if (activeButton) {
             activeButton.classList.add(`prioBtn${this.capitalize(prio)}Active`);
-            const whiteIcon = activeButton.querySelector(`.prio${prio}smallWhite`);
+            const defaultIcon = activeButton.querySelector(`img:not([src*='White'])`);
+            if (defaultIcon) {
+                defaultIcon.classList.add('hidden');
+            }
+            const whiteIcon = activeButton.querySelector(`img[src*='${prio}smallWhite']`);
             if (whiteIcon) {
                 whiteIcon.classList.remove('hidden');
             }
         }
     }
 
+
+    /**
+     * Capitalizes the first letter of a string.
+     * @param {string} str - The string to capitalize.
+     * @returns {string} The capitalized string.
+     */
     capitalize(str) {
+        if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    //NOTE Board/Move Methods
 
-    updateSubtaskStatusInDOM(subtask, index) {
-        subtask.status = subtask.status === "checked" ? "unchecked" : "checked";
-
-        const subtaskCheckbox = document.getElementById(`subtaskCheckbox${index}`);
-        if (subtaskCheckbox) {
-            subtaskCheckbox.src = subtask.status === "checked"
-                ? "../assets/icons/checkboxchecked.svg"
-                : "../assets/icons/checkbox.svg";
-        }
-    }
-
-    async updateSubtaskStatus(taskId, subtaskIndex) {
-        let task = tasks.find((task) => task.id === taskId);
-        if (task) {
-            let subtask = task.subtasks[subtaskIndex];
-            if (subtask) {
-                this.updateSubtaskStatusInDOM(subtask, subtaskIndex);
-                updateSubtaskProgressBar(task.subtasks, taskId);
-                await updateDataInDatabase(`${BASE_URL}tasks/${taskId}.json?auth=${token}`, task);
-                let taskIndex = tasks.findIndex(t => taskId === t.id);
-                tasks.splice(taskIndex, 1, await createTaskArray(taskId, task));
-                sessionStorage.setItem("tasks", JSON.stringify(tasks));
-            }
-        }
-    }
-
-    // === Doppelte oder nicht benötigte Methoden ===
-    // FIXME: Hier doppelte oder nicht benötigte Methoden ans Ende verschieben
 }
+// === Doppelte oder nicht benötigte Methoden ===
+// FIXME: Hier doppelte oder nicht benötigte Methoden ans Ende verschieben
