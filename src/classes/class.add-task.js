@@ -34,6 +34,7 @@ export class AddTask {
      * Toggles the visibility of the assign contacts dropdown menu.
      * Opens or closes the dropdown based on its current state.
      * @async
+     * @returns {void}
      */
     toggleDropdown = async () => {
         document.getElementById('assignDropdown').classList.toggle('open');
@@ -45,6 +46,7 @@ export class AddTask {
      * Opens the assign contacts dropdown, populates it with sorted contacts,
      * and sets up necessary event listeners.
      * @async
+     * @returns {void}
      */
     async openAssignDropdown() {
         const searchInput = document.getElementById('assignSearch');
@@ -60,6 +62,7 @@ export class AddTask {
     /**
      * Closes the assign contacts dropdown, clears its content,
      * and resets the search input.
+     * @returns {void}
      */
     closeAssignDropdown() {
         let searchInput = document.getElementById('assignSearch');
@@ -74,6 +77,7 @@ export class AddTask {
     /**
      * Toggles the visibility of the category selection dropdown.
      * @param {string} value - The value to set in the input field when closing the dropdown.
+     * @returns {void}
      */
     toggleCategoryDropdown(value) {
         let input = document.getElementById('categoryInput');
@@ -96,6 +100,7 @@ export class AddTask {
     /**
      * Sets the array of assigned contacts.
      * @param {import('./class.contact.js').Contact[]} contactsArray - The array of contacts to assign.
+     * @returns {void}
      */
     setAssignedContacts(contactsArray) {
         this.assignedContacts = contactsArray;
@@ -105,6 +110,7 @@ export class AddTask {
      * Checks if a click event occurred outside the assign dropdown menu
      * and closes the dropdown if it did.
      * @param {Event} event - The click event object.
+     * @returns {void}
      */
     checkOutsideAssign = ({ target }) => {
         let assignMenu = document.getElementById('assignDropdown');
@@ -115,6 +121,7 @@ export class AddTask {
 
     /**
      * Filters the contacts displayed in the assign dropdown based on the search input.
+     * @returns {void}
      */
     assignSearchInput = () => {
         const searchInput = document.getElementById('assignSearch');
@@ -129,6 +136,7 @@ export class AddTask {
      * Assigns or unassigns a contact based on the provided ID.
      * Toggles the visual selection state and updates the assigned contacts array.
      * @param {number} id - The ID of the contact to assign/unassign.
+     * @returns {void}
      */
     contactAssign(id) {
         const index = this.assignedContacts.findIndex(c => c.id === id);
@@ -143,6 +151,7 @@ export class AddTask {
     /**
      * Renders the profile pictures of the assigned contacts below the dropdown.
      * Shows a maximum of 5 profile pictures and indicates if more are assigned.
+     * @returns {void}
      */
     renderAssignedContacts() {
         let assignedContactsContainer = document.getElementById('contactsAssigned');
@@ -165,6 +174,7 @@ export class AddTask {
      * Shows/hides the save/clear icons based on input length.
      * Listens for the Enter key to save the subtask.
      * @param {KeyboardEvent} event - The keyboard event object.
+     * @returns {void}
      */
     addNewSubtask = (event) => {
         this.handleKeyDown(event);
@@ -180,6 +190,7 @@ export class AddTask {
 
     /**
      * Clears the subtask input field.
+     * @returns {void}
      */
     clearSubtaskInput = () => {
         document.getElementById('subtaskInput').value = '';
@@ -188,6 +199,7 @@ export class AddTask {
     /**
      * Handles the 'Enter' key press in the subtask input field to save the subtask.
      * @param {KeyboardEvent} event - The keyboard event object.
+     * @returns {void}
      */
     handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -200,6 +212,7 @@ export class AddTask {
      * Saves a new subtask entered in the input field.
      * Creates a Subtask object, generates its HTML, and appends it to the list.
      * Clears the input field and resets icons afterwards.
+     * @returns {void}
      */
     saveSubtask = () => {
         let subtaskList = document.getElementById('subtaskList');
@@ -222,6 +235,7 @@ export class AddTask {
      * Enables editing mode for a specific subtask.
      * Hides the subtask text and shows an input field for editing.
      * @param {HTMLElement} editIcon - The edit icon element that was clicked.
+     * @returns {void}
      */
     editSubtask(editIcon) {
         let subtaskItem = editIcon.closest('.subtaskEditList');
@@ -240,6 +254,7 @@ export class AddTask {
      * Updates the subtask text element and hides the input field.
      * @param {HTMLElement} subtaskText - The element displaying the subtask text.
      * @param {HTMLInputElement} editInput - The input field used for editing.
+     * @returns {void}
      */
     saveEditedSubtask = (subtaskText, editInput) => {
         subtaskText.textContent = editInput.value.trim();
@@ -250,6 +265,7 @@ export class AddTask {
     /**
      * Deletes a subtask from the list.
      * @param {HTMLElement} deleteIcon - The delete icon element that was clicked.
+     * @returns {void}
      */
     deleteSubtask(deleteIcon) {
         let subtaskItem = deleteIcon.closest('.subtaskEditList');
@@ -260,6 +276,7 @@ export class AddTask {
 
     /**
      * Clears all subtasks from the subtask list in the UI.
+     * @returns {void}
      */
     clearSubtaskList() {
         document.getElementById('subtaskList').innerHTML = '';
@@ -282,6 +299,7 @@ export class AddTask {
      * Creates a new task object from the form data, posts it to the database,
      * adds it to the local Kanban tasks array, and closes the add task modal/view.
      * @async
+     * @returns {void}
      */
     async pushNewTask() {
         let data = this.createNewTask();
@@ -336,6 +354,7 @@ export class AddTask {
      * @param {HTMLInputElement} input - The input element.
      * @param {HTMLElement} validationText - The validation message element.
      * @param {boolean} showError - True to show validation error, false to hide.
+     * @returns {void}
      */
     updateValidationState(input, validationText, showError) {
         if (validationText) {
@@ -349,6 +368,7 @@ export class AddTask {
      * @private
      * @param {HTMLInputElement} input - The input element to attach the listener to.
      * @param {HTMLElement} validationText - The corresponding validation message element.
+     * @returns {void}
      */
     _attachValidationListener(input, validationText) {
         if (!input.dataset.validationListenerAttached) {
@@ -360,11 +380,26 @@ export class AddTask {
         }
     }
 
+    /**
+     * Removes validation error styles and messages from required inputs.
+     * @private
+     * @returns {void}
+     */
+    _clearValidationStyles() {
+        const validatedInputs = document.querySelectorAll('.formValidationInputBorder');
+        validatedInputs.forEach(input => {
+            input.classList.remove('formValidationInputBorder');
+            const validationText = input.nextElementSibling;
+            if (validationText && validationText.style.display === 'block') validationText.style.display = 'none';
+        });
+    }
+
     //NOTE UI/Modal/Animation Methods
 
     /**
      * Closes the add task modal or navigates away from the add task page
      * after showing a confirmation animation.
+     * @returns {void}
      */
     closeAddTaskModal() {
         if (this.kanban.activeTab == 'add task') {
@@ -381,6 +416,7 @@ export class AddTask {
      * Shows the "Task Added" animation.
      * If on the addtask.html page, redirects to board.html after the animation.
      * Otherwise, calls the modal-specific animation function.
+     * @returns {void}
      */
     showTaskAddedAnimation() {
         if (window.location.href.endsWith('addtask.html')) {
@@ -394,6 +430,7 @@ export class AddTask {
     /**
      * Shows the "Task Added" animation specifically for the modal context.
      * Closes the modal after the animation completes.
+     * @returns {void}
      */
     showTaskAddedAnimationModal() {
         this.kanban.toggleClass('taskAddedBtn', 'd-None', 'show');
@@ -403,6 +440,7 @@ export class AddTask {
     /**
      * Clears all input fields, resets priority selection, subtasks, assigned contacts,
      * category dropdown, and validation styles in the add task form.
+     * @returns {void}
      */
     clearAddTaskForm = () => {
         this._clearInputFields();
@@ -417,6 +455,7 @@ export class AddTask {
     /**
      * Clears the main input fields of the add task form.
      * @private
+     * @returns {void}
      */
     _clearInputFields() {
         const fields = ['taskTitle', 'taskDescription', 'dateInput', 'subtaskInput', 'categoryInput'];
@@ -429,6 +468,7 @@ export class AddTask {
     /**
      * Resets the category dropdown to its default state if it's open.
      * @private
+     * @returns {void}
      */
     _resetCategoryDropdown() {
         const wrapper = document.getElementById('selectWrapper');
@@ -439,26 +479,12 @@ export class AddTask {
         }
     }
 
-    /**
-     * Removes validation error styles and messages from required inputs.
-     * @private
-     */
-    _clearValidationStyles() {
-        const validatedInputs = document.querySelectorAll('.formValidationInputBorder');
-        validatedInputs.forEach(input => {
-            input.classList.remove('formValidationInputBorder');
-            const validationText = input.nextElementSibling;
-            if (validationText && validationText.style.display === 'block') {
-                validationText.style.display = 'none';
-            }
-        });
-    }
-
     //NOTE Priority Methods
 
     /**
      * Sets the current task priority based on the clicked priority button.
      * @param {HTMLElement} element - The priority button element that was clicked.
+     * @returns {void}
      */
     setPrio(element) {
         const prio = element.getAttribute('data-prio');
@@ -470,6 +496,7 @@ export class AddTask {
      * Updates the visual state of all priority buttons, highlighting the selected one.
      * Resets all buttons first, then applies active state to the selected one.
      * @param {string} prio - The priority to set as active ('urgent', 'medium', 'low', or '' to clear).
+     * @returns {void}
      */
     updatePrioActiveBtn(prio) {
         const buttons = document.querySelectorAll('.prioBtn');
@@ -477,49 +504,46 @@ export class AddTask {
             button.classList.remove('prioBtnUrgentActive', 'prioBtnMediumActive', 'prioBtnLowActive');
             const imgs = button.querySelectorAll('img');
             imgs.forEach(img => {
-                if (img.src.includes('White')) {
-                    img.classList.add('hidden');
-                } else {
-                    img.classList.remove('hidden');
-                }
+                if (img.src.includes('White')) img.classList.add('hidden');
+                else img.classList.remove('hidden');
             });
         });
         this.changeActiveBtn(prio);
     }
 
-
     /**
      * Applies the active state styling to the specified priority button.
      * Hides the default icon and shows the white icon for the active button.
      * @param {string} prio - The priority whose button should be activated ('urgent', 'medium', 'low').
+     * @returns {void}
      */
     changeActiveBtn(prio) {
         const activeButton = document.querySelector(`.prioBtn[data-prio="${prio}"]`);
         if (activeButton) {
             activeButton.classList.add(`prioBtn${this.capitalize(prio)}Active`);
             const defaultIcon = activeButton.querySelector(`img:not([src*='White'])`);
-            if (defaultIcon) {
-                defaultIcon.classList.add('hidden');
-            }
+            if (defaultIcon) defaultIcon.classList.add('hidden');
             const whiteIcon = activeButton.querySelector(`img[src*='${prio}smallWhite']`);
-            if (whiteIcon) {
-                whiteIcon.classList.remove('hidden');
-            }
+            if (whiteIcon) whiteIcon.classList.remove('hidden');
         }
     }
-
 
     /**
      * Capitalizes the first letter of a string.
      * @param {string} str - The string to capitalize.
-     * @returns {string} The capitalized string.
+     * @returns {string}
      */
     capitalize(str) {
         if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    //NOTE Error Handling
 
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
-// === Doppelte oder nicht benötigte Methoden ===
-// FIXME: Hier doppelte oder nicht benötigte Methoden ans Ende verschieben
