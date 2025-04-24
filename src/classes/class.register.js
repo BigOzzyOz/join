@@ -3,8 +3,11 @@
  */
 export class Register {
     //NOTE - Properties
+    /** @type {object} Kanban app instance. */
     kanban;
+    /** @type {boolean} Password field visible. */
     passwordVisible = false;
+    /** @type {boolean} Confirm password field visible. */
     confirmPasswordVisible = false;
 
     //NOTE - Constructor & Initialization
