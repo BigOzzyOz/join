@@ -132,10 +132,18 @@ main {
     border: 1px solid #29ABE2;
 }
 
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 30px;
+}
+
 .error {
     font-size: 12px;
     color: red;
-    margin-top: 8px;
     display: none;
 }
 
