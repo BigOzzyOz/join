@@ -3,12 +3,10 @@
  */
 export class ContactHtml {
   //NOTE - Properties
-
   /** @type {import('../class.contact.js').Contact} The Contact instance this class generates HTML for. */
   contact;
 
   //NOTE - Constructor & Initialization
-
   /**
    * Creates an instance of ContactHtml.
    * @param {import('../class.contact.js').Contact} contact - The Contact instance to associate with this HTML generator.
@@ -18,21 +16,16 @@ export class ContactHtml {
   }
 
   //NOTE - HTML Rendering Methods
-
   /**
    * Generates the HTML for displaying the detailed view of the contact.
-   * Includes name, email, phone, profile picture/initials, and edit/delete options.
-   * Sanitizes contact data to prevent XSS.
    * @returns {string} The HTML string for the contact details view.
    */
   htmlRenderContactDetails() {
-    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safeEmail = this.contact.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safePhone = this.contact.phone.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
+    const safeName = this._sanitize(this.contact.name);
+    const safeEmail = this._sanitize(this.contact.email);
+    const safePhone = this._sanitize(this.contact.phone);
     const mailtoLink = this.contact.email ? `mailto:${encodeURIComponent(this.contact.email)}` : '#';
     const telLink = this.contact.phone ? `tel:${encodeURIComponent(this.contact.phone)}` : '#';
-
     return /*html*/ `
       <div id="contactsDetailMore" class="moreIcon">
         <img src="../assets/icons/more_vert.svg" alt="More options">
@@ -73,18 +66,13 @@ export class ContactHtml {
   }
 
   /**
-   * Generates the HTML for displaying the contact in a general list (e.g., the main contacts list).
-   * Includes name, email, profile picture/initials, and indicates if the contact is the current user.
-   * Sanitizes contact data.
+   * Generates the HTML for displaying the contact in a general list.
    * @param {number} currentUserId - The ID of the currently logged-in user to check against the contact's ID.
    * @returns {string} The HTML string for the contact list item.
    */
   htmlRenderGeneral(currentUserId) {
-    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safeEmail = this.contact.email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    const mailtoLink = this.contact.email ? `mailto:${encodeURIComponent(this.contact.email)}` : '#';
-
+    const safeName = this._sanitize(this.contact.name);
+    const safeEmail = this._sanitize(this.contact.email);
     return /*html*/ `
       <li id="contact${this.contact.id}" class="contactListItem" data-id="${this.contact.id}">
         <div class="contactSmall">
@@ -99,26 +87,44 @@ export class ContactHtml {
   }
 
   /**
-   * Generates the HTML for displaying the contact in an assignment list (e.g., assigning contacts to a task).
-   * Includes a checkbox to select/deselect the contact.
-   * Sanitizes contact name.
-   * @param {import('../class.contact.js').Contact[]} assignedContacts - An array of contacts currently assigned, used to determine the initial checkbox state.
+   * Generates the HTML for displaying the contact in an assignment list.
+   * @param {import('../class.contact.js').Contact[]} assignedContacts - Array of currently assigned contacts.
    * @returns {string} The HTML string for the contact assignment list item.
    */
   htmlRenderContactsAssign(assignedContacts) {
-    const safeName = this.contact.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
+    const safeName = this._sanitize(this.contact.name);
+    const isChecked = assignedContacts.some(c => c.name === this.contact.name);
     return /*html*/`
-      <label for="contact${this.contact.id}" class="${assignedContacts.some(c => c.name === this.contact.name) ? 'contactsToAssignCheck' : ''}">
+      <label for="contact${this.contact.id}" class="${isChecked ? 'contactsToAssignCheck' : ''}">
         ${this.contact.profilePic}
         <p>${safeName}</p>
         <input class="assignContactToProject" 
           data-id="${this.contact.id}" 
           type="checkbox" 
           id="contact${this.contact.id}"  
-          ${assignedContacts.some(c => c.name == this.contact.name) ? 'checked' : ''}>
+          ${isChecked ? 'checked' : ''}>
         <span class="checkMark"></span>
       </label>
       `;
   }
+
+  //NOTE - Helpers
+  /**
+   * Sanitizes a string for HTML output.
+   * @private
+   * @param {string} str
+   * @returns {string}
+   */
+  _sanitize(str) {
+    if (!str) return '';
+    return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  //NOTE - Error Handling
+  /**
+   * Logs an error message.
+   * @param {string} msg
+   * @returns {void}
+   */
+  _logError(msg) { console.error(msg); }
 }
