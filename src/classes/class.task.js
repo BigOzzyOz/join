@@ -8,40 +8,30 @@ import { TaskHtml } from "./html/class.html-task.js";
 export class Task {
     //NOTE Properties
 
-    /** @type {number|null} The unique identifier of the task. */
+    /** @type {number|null} Task ID. */
     id;
-    /** @type {string} The title of the task. */
+    /** @type {string} Task title. */
     title;
-    /** @type {string} The description of the task. */
+    /** @type {string} Task description. */
     description;
-    /** @type {string} The due date of the task (e.g., 'YYYY-MM-DD'). */
+    /** @type {string} Due date. */
     date;
-    /** @type {'low'|'medium'|'urgent'} The priority of the task. */
+    /** @type {'low'|'medium'|'urgent'} Priority. */
     prio;
-    /** @type {'toDo'|'inProgress'|'awaitFeedback'|'done'} The current status (column) of the task. */
+    /** @type {'toDo'|'inProgress'|'awaitFeedback'|'done'} Status. */
     status;
-    /** @type {Contact[]} An array of contacts assigned to the task. */
+    /** @type {Contact[]} Assigned contacts. */
     assignedTo;
-    /** @type {string} The category of the task (e.g., 'User Story', 'Technical Task'). */
+    /** @type {string} Task category. */
     category;
-    /** @type {Subtask[]} An array of subtasks associated with the task. */
+    /** @type {Subtask[]} Subtasks. */
     subtasks;
-    /** @type {TaskHtml} Instance for handling HTML generation related to this task. */
+    /** @type {TaskHtml} HTML handler. */
     html;
 
     /**
-     * Creates an instance of Task.
-     * @param {object} data - The raw task data, typically from an API response.
-     * @param {number|null} [data.id] - Task ID.
-     * @param {string} [data.title] - Task title.
-     * @param {string} [data.description] - Task description.
-     * @param {string} [data.date] - Task due date.
-     * @param {'low'|'medium'|'urgent'} [data.prio='low'] - Task priority.
-     * @param {'toDo'|'inProgress'|'awaitFeedback'|'done'} [data.status='toDo'] - Task status.
-     * @param {string} [data.category='User Story'] - Task category.
-     * @param {Array<object>} [data.assignedTo] - Array of raw contact data assigned to the task.
-     * @param {Array<object>} [data.assigned_to] - Alternative key for assigned contacts.
-     * @param {Array<object>} [data.subtasks] - Array of raw subtask data.
+     * Creates a Task instance from data.
+     * @param {object} data Raw task data
      */
     constructor(data) {
         this.id = data.id || null;
@@ -51,21 +41,36 @@ export class Task {
         this.prio = data.prio || 'low';
         this.status = data.status || 'toDo';
         this.category = data.category || 'User Story';
-        const assignedData = data.assignedTo || data.assigned_to || [];
-        this.assignedTo = Array.isArray(assignedData) ? assignedData.map(contact => new Contact(contact)) : [];
-        // Ensure subtasks is always an array
-        const subtaskData = data.subtasks || [];
-        this.subtasks = Array.isArray(subtaskData) ? subtaskData.map(sub => new Subtask(sub)) : [];
-
+        this.assignedTo = this._parseContacts(data.assignedTo || data.assigned_to || []);
+        this.subtasks = this._parseSubtasks(data.subtasks || []);
         this.html = new TaskHtml(this);
+    }
+
+    //NOTE Helpers
+
+    /**
+     * Converts raw contact data to Contact instances.
+     * @param {Array<object>} contacts
+     * @returns {Contact[]}
+     */
+    _parseContacts(contacts) {
+        return Array.isArray(contacts) ? contacts.map(c => new Contact(c)) : [];
+    }
+
+    /**
+     * Converts raw subtask data to Subtask instances.
+     * @param {Array<object>} subtasks
+     * @returns {Subtask[]}
+     */
+    _parseSubtasks(subtasks) {
+        return Array.isArray(subtasks) ? subtasks.map(s => new Subtask(s)) : [];
     }
 
     //NOTE Task Object Methods
 
     /**
-     * Converts the Task instance into a plain JavaScript object representation.
-     * Includes nested objects for contacts and subtasks.
-     * @returns {object} A plain object representing the task.
+     * Returns plain object of the task.
+     * @returns {object}
      */
     toTaskObject() {
         return {
@@ -75,16 +80,15 @@ export class Task {
             date: this.date,
             prio: this.prio,
             status: this.status,
-            assignedTo: this.assignedTo.map(contact => contact.toContactObject()),
+            assignedTo: this._contactsToObject(),
             category: this.category,
-            subtasks: this.subtasks.map(sub => sub.toSubtaskObject()),
+            subtasks: this._subtasksToObject(),
         };
     }
 
     /**
-     * Converts the Task instance into a plain JavaScript object suitable for uploading (e.g., to an API).
-     * Uses 'assigned_to' key and specific subtask upload format. Excludes the 'id'.
-     * @returns {object} A plain object representing the task for upload.
+     * Returns plain object for upload (no id, API keys).
+     * @returns {object}
      */
     toTaskUploadObject() {
         return {
@@ -93,27 +97,56 @@ export class Task {
             date: this.date,
             prio: this.prio,
             status: this.status,
-            assigned_to: this.assignedTo.map(contact => contact.toContactObject()), // Use API expected key
+            assigned_to: this._contactsToObject(),
             category: this.category,
-            subtasks: this.subtasks.map(sub => sub.toSubtaskUploadObject()),
+            subtasks: this._subtasksToUploadObject(),
         };
     }
 
+    /**
+     * Converts assigned contacts to plain objects.
+     * @returns {object[]}
+     */
+    _contactsToObject() {
+        return this.assignedTo.map(c => c.toContactObject());
+    }
+
+    /**
+     * Converts subtasks to plain objects.
+     * @returns {object[]}
+     */
+    _subtasksToObject() {
+        return this.subtasks.map(s => s.toSubtaskObject());
+    }
+
+    /**
+     * Converts subtasks to upload objects.
+     * @returns {object[]}
+     */
+    _subtasksToUploadObject() {
+        return this.subtasks.map(s => s.toSubtaskUploadObject());
+    }
 
     //NOTE Board/Move Methods
 
     /**
      * Updates the status of the task.
-     * @param {'toDo'|'inProgress'|'awaitFeedback'|'done'} newStatus - The new status for the task.
-     * @returns {boolean} True if the status was changed, false otherwise.
+     * @param {'toDo'|'inProgress'|'awaitFeedback'|'done'} newStatus
+     * @returns {boolean}
      */
     moveTo(newStatus) {
+        if (!this._isValidStatus(newStatus)) throw new Error('Invalid status');
         if (this.status === newStatus) return false;
         this.status = newStatus;
         return true;
     }
 
-
-
-    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
+    /**
+     * Checks if status is valid.
+     * @param {string} status
+     * @returns {boolean}
+     */
+    _isValidStatus(status) {
+        return ['toDo','inProgress','awaitFeedback','done'].includes(status);
+    }
 }
