@@ -6,18 +6,16 @@ import { SubtaskHtml } from "./html/class.html-subtask.js";
 export class Subtask {
     //NOTE Properties
 
-    /** @type {string} The description or text of the subtask. */
+    /** @type {string} Subtask text. */
     text;
-    /** @type {'checked'|'unchecked'} The completion status of the subtask. */
+    /** @type {'checked'|'unchecked'} Status. */
     status;
-    /** @type {SubtaskHtml} Instance for handling HTML generation related to this subtask. */
+    /** @type {SubtaskHtml} HTML handler. */
     html;
 
     /**
-     * Creates an instance of Subtask.
-     * @param {object} data - The raw subtask data.
-     * @param {string} [data.text] - The text content of the subtask.
-     * @param {'checked'|'unchecked'} [data.status='unchecked'] - The initial status of the subtask.
+     * Creates a Subtask instance from data.
+     * @param {object} data Raw subtask data
      */
     constructor(data) {
         this.text = data.text || '';
@@ -28,8 +26,8 @@ export class Subtask {
     //NOTE Subtask Object Methods
 
     /**
-     * Converts the Subtask instance into a plain JavaScript object representation.
-     * @returns {{text: string, status: 'checked'|'unchecked'}} A plain object representing the subtask.
+     * Returns plain object of the subtask.
+     * @returns {{text: string, status: 'checked'|'unchecked'}}
      */
     toSubtaskObject() {
         return {
@@ -39,8 +37,8 @@ export class Subtask {
     }
 
     /**
-     * Converts the Subtask instance into a plain JavaScript object suitable for uploading (e.g., to an API).
-     * @returns {{text: string, status: 'checked'|'unchecked'}} A plain object representing the subtask for upload.
+     * Returns plain object for upload.
+     * @returns {{text: string, status: 'checked'|'unchecked'}}
      */
     toSubtaskUploadObject() {
         return {
@@ -50,8 +48,8 @@ export class Subtask {
     }
 
     /**
-     * Toggles the status of the subtask ('checked'/'unchecked') and updates its HTML representation.
-     * @param {number} index - The index of the subtask in its list (used for HTML updates).
+     * Toggles status and updates HTML.
+     * @param {number} index
      */
     updateSubtaskStatus(index) {
         this.status = this.status === "checked" ? "unchecked" : "checked";
