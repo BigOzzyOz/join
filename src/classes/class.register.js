@@ -43,7 +43,7 @@ export class Register {
 
     //NOTE - Input Validation
     /**
-     * Validates the registration form fields.
+     * Validates the registration form fields. Only the first error is shown.
      * @param {string} password
      * @param {string} confirmPassword
      * @param {string} email
@@ -51,12 +51,11 @@ export class Register {
      * @returns {boolean}
      */
     validateForm(password, confirmPassword, email, isPrivacyChecked) {
-        let isValid = true;
-        if (!isPrivacyChecked) isValid = this._invalidate('privacyCheck');
-        if (!this.isValidEmail(email)) isValid = this._invalidate('mailErrorMessage');
-        if (!this.isValidPassword(password)) isValid = this._invalidate('criteriaMessage');
-        if (password !== confirmPassword) isValid = this._invalidate('passwordErrorMessage');
-        return isValid;
+        if (!isPrivacyChecked) return this._invalidate('privacyCheck');
+        if (!this.isValidEmail(email)) return this._invalidate('mailErrorMessage');
+        if (!this.isValidPassword(password)) return this._invalidate('criteriaMessage');
+        if (password !== confirmPassword) return this._invalidate('passwordErrorMessage');
+        return true;
     }
 
     /**
