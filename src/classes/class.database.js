@@ -11,11 +11,11 @@ import { Task } from './class.task.js';
  * Handles communication with the backend API for authentication and data management.
  */
 export class Database {
-    /** @type {string} The base URL of the backend API. */
+    /** @type {string} API URL. */
     BASE_URL = 'http://127.0.0.1:8000/';
-    /** @type {string} The authentication token retrieved from sessionStorage or login. */
+    /** @type {string} Token. */
     token = sessionStorage.getItem('token') || '';
-    /** @type {import('./class.kanban.js').Kanban|null} Reference to the main Kanban application instance. */
+    /** @type {import('./class.kanban.js').Kanban|null} Kanban app. */
     kanban = null;
 
     //NOTE - Initialization & Setup
@@ -28,39 +28,33 @@ export class Database {
         this.kanban = kanban;
     }
 
-    /**
-     * Checks the authentication status with the backend and initializes the page or redirects to login.
-     * @returns {Promise<void>}
-     */
+    /** Checks auth. */
     async checkAuthStatus() {
         this.kanban.toggleLoader(true);
         try {
             const response = await this.get('auth/status/');
-            if (!response) {
-                this.redirectToLogin();
-                return;
-            }
+            if (!response) return this.redirectToLogin();
             const data = await response.json();
             await this.kanban.init();
-            if (data.authenticated) await this.initializePage();
-            else this.redirectToLogin();
-        } catch (error) {
-            console.error('Error during auth status check or page initialization:', error);
+            data.authenticated ? await this._initPage() : this.redirectToLogin();
+        } catch (e) {
+            this._logError('Auth check:', e);
             this.redirectToLogin();
         } finally {
             this.kanban.toggleLoader(false);
         }
     }
 
-    /**
-     * Initializes page-specific components based on the current URL path.
-     * @private
-     * @returns {Promise<void>}
-     */
-    async initializePage() {
-        const path = window.location.pathname;
-        await this.loadInitialData();
+    /** Logs error. */
+    _logError(...args) { console.error(...args); }
 
+    /**
+     * Initializes page-specific components.
+     * @private
+     */
+    async _initPage() {
+        const path = window.location.pathname;
+        await this._loadInitialData();
         if (path.includes('summary.html')) {
             this.kanban.summary = new Summary(this.kanban);
             this.kanban.summary.initSummary();
@@ -76,11 +70,10 @@ export class Database {
     }
 
     /**
-     * Loads initial contacts and tasks data if not already present.
+     * Loads contacts and tasks if not present.
      * @private
-     * @returns {Promise<void>}
      */
-    async loadInitialData() {
+    async _loadInitialData() {
         if (this.kanban.tasks.length > 0 && this.kanban.contacts.length > 0) return;
         try {
             await Promise.all([
@@ -88,93 +81,70 @@ export class Database {
                 this.getTasksData(),
             ]);
         } catch (error) {
-            console.error('Error loading initial data:', error);
+            this._logError('Initial data load error:', error);
         }
     }
 
     /**
-     * Redirects to the login page if the current page requires authentication.
+     * Redirects to login if not on a public page.
      * @private
      */
     redirectToLogin() {
-        if (!this.windowNoUserContent()) {
-            this.logout();
-        }
+        if (!this._isPublicPage()) this.logout();
     }
 
     /**
-     * Checks if the current window path corresponds to a page that doesn't require user content/authentication.
-     * Also initializes Login/Register classes for relevant public pages.
+     * Checks if current page is public (no auth needed).
      * @private
-     * @returns {boolean} True if the page is public/no-auth, false otherwise.
+     * @returns {boolean}
      */
-    windowNoUserContent() {
+    _isPublicPage() {
         const path = window.location.pathname;
-        const noUserContentPaths = [
-            '/index.html',
-            '/help.html',
-            '/register.html',
-            '/privacy.html',
-            '/imprint.html',
-        ];
-        const isPublicPage = path === '/' || noUserContentPaths.some((publicPath) => path.includes(publicPath));
-
-        if (!(isPublicPage && this.shouldInitializeLoginRegister(path))) return isPublicPage;
+        const publicPaths = ['/index.html', '/help.html', '/register.html', '/privacy.html', '/imprint.html'];
+        const isPublic = path === '/' || publicPaths.some(p => path.includes(p));
+        if (!(isPublic && this._shouldInitLoginRegister(path))) return isPublic;
         if (path.includes('register.html')) this.kanban.register = new Register(this.kanban);
         else if (path.includes('index.html') || path === '/') this.kanban.login = new Login(this.kanban);
-        return isPublicPage;
+        return isPublic;
     }
 
     /**
-     * Determines if Login or Register classes should be initialized for a given public path.
-     * Excludes specific static pages like help, privacy, imprint.
+     * Should Login/Register be initialized for this path?
      * @private
-     * @param {string} path - The current window path.
-     * @returns {boolean} True if Login/Register should be initialized, false otherwise.
      */
-    shouldInitializeLoginRegister(path) {
-        const excludedPaths = ['help.html', 'privacy.html', 'imprint.html'];
-        return !excludedPaths.some(excludedPath => path.includes(excludedPath));
+    _shouldInitLoginRegister(path) {
+        return !['help.html', 'privacy.html', 'imprint.html'].some(ex => path.includes(ex));
     }
 
     //NOTE - Authentication Methods
 
-    /**
-     * Attempts to log in a user with the provided credentials.
-     * @param {object} bodyData - Data containing username and password.
-     * @returns {Promise<object>} The response data from the server on success.
-     * @throws {Error} If login fails or no token is received.
-     */
+    /** Login user. */
     async login(bodyData) {
         try {
             const response = await this._postAuth('auth/login/', bodyData);
             const data = await response.json();
             if (!response.ok) throw new Error(this._extractAuthErrorMessage(data, 'Login failed.'));
-            if (!data.token) throw new Error('No token received from the server.');
+            if (!data.token) throw new Error('No token received.');
             this.setToken(data.token);
             return data;
-        } catch (error) {
-            console.error('Login error:', error);
-            throw error;
+        } catch (e) {
+            this._logError('Login error:', e);
+            throw e;
         }
     }
 
-    /**
-     * Attempts to log in as a guest user.
-     * @returns {Promise<object>} The response data from the server on success.
-     * @throws {Error} If guest login fails or no token is received.
-     */
+    /** Guest login. */
     async guestLogin() {
         try {
             const response = await this._postAuth('auth/guest/');
             const data = await response.json();
             if (!response.ok) throw new Error(this._extractAuthErrorMessage(data, 'Guest login failed.'));
-            if (!data.token) throw new Error('No token received from the server.');
+            if (!data.token) throw new Error('No token received.');
             this.setToken(data.token);
             return data;
-        } catch (error) {
-            console.error('Guest login error:', error);
-            throw error;
+        } catch (e) {
+            this._logError('Guest login error:', e);
+            throw e;
         }
     }
 
@@ -189,15 +159,7 @@ export class Database {
         window.location.href = '/index.html';
     };
 
-    /**
-     * Attempts to register a new user.
-     * @param {string} name
-     * @param {string} email
-     * @param {string} password
-     * @param {string} confirmPassword
-     * @returns {Promise<object>} The response data from the server on success.
-     * @throws {Error} If registration fails.
-     */
+    /** Register user. */
     async register(name, email, password, confirmPassword) {
         const bodyData = { name, email, password, repeated_password: confirmPassword };
         try {
@@ -205,9 +167,9 @@ export class Database {
             const data = await response.json();
             if (!response.ok) throw new Error(this._extractAuthErrorMessage(data, 'Registration failed.'));
             return data;
-        } catch (error) {
-            console.error('Error during registration:', error);
-            throw error;
+        } catch (e) {
+            this._logError('Registration error:', e);
+            throw e;
         }
     }
 
@@ -276,7 +238,7 @@ export class Database {
             return await this._handleResponse(response, path);
         } catch (error) {
             if (error.message !== 'Unauthorized') {
-                console.error(`Error during ${options.method} request to ${path}:`, error);
+                this._logError(`Error during ${options.method} request to ${path}:`, error);
             }
             return null;
         }
@@ -339,75 +301,64 @@ export class Database {
      */
     createHeaders() {
         const headers = { 'Content-Type': 'application/json' };
-        if (this.token) {
-            headers['Authorization'] = `Token ${this.token}`;
-        }
+        if (this.token) headers['Authorization'] = `Token ${this.token}`;
         return headers;
     }
 
-    /**
-     * Fetches contacts data from the API and updates the Kanban state.
-     * @returns {Promise<void>}
-     */
+    /** Fetch contacts. */
     async getContactsData() {
         try {
             const response = await this.get('api/contacts/');
             if (!response) return;
             const loadItem = await response.json();
             this.setContactsArray(loadItem);
-        } catch (error) {
-            console.error("Error processing contacts data:", error);
+        } catch (e) {
+            this._logError('Contacts fetch error:', e);
         }
     }
 
-    /**
-     * Fetches tasks data from the API and updates the Kanban state.
-     * @returns {Promise<void>}
-     */
+    /** Fetch tasks. */
     async getTasksData() {
         try {
             const response = await this.get('api/tasks/');
             if (!response) return;
             const loadItem = await response.json();
             this.setTasksArray(loadItem);
-        } catch (error) {
-            console.error("Error processing tasks data:", error);
+        } catch (e) {
+            this._logError('Tasks fetch error:', e);
         }
     }
 
     /**
-     * Updates a specific array (contacts or tasks) in the Kanban instance after validating input.
+     * Sets array (contacts or tasks) in Kanban after validation.
      * @private
-     * @param {Array<object>} loadItem - The array of data objects from the API.
-     * @param {'contacts' | 'tasks'} arrayName - The name of the array property in Kanban ('contacts' or 'tasks').
-     * @param {typeof Contact | typeof Task} ItemClass - The class constructor (Contact or Task) to use for instantiation.
+     * @param {Array<object>} loadItem
+     * @param {'contacts'|'tasks'} arrayName
+     * @param {typeof Contact|typeof Task} ItemClass
      */
     _setKanbanArray(loadItem, arrayName, ItemClass) {
         const setterName = `set${arrayName.charAt(0).toUpperCase() + arrayName.slice(1)}`;
         const newArray = [];
-
         if (!Array.isArray(loadItem)) {
-            console.error(`Invalid data received for ${arrayName}:`, loadItem);
+            this._logError(`Invalid data for ${arrayName}:`, loadItem);
             this.kanban[setterName]([]);
             return;
         }
-
         for (const itemData of loadItem) {
             if (!itemData) continue;
             try {
-                const newItem = new ItemClass(itemData);
-                newArray.push(newItem);
-            } catch (error) {
-                console.error(`Error creating ${ItemClass.name} instance:`, error, itemData);
+                newArray.push(new ItemClass(itemData));
+            } catch (e) {
+                this._logError(`Error creating ${ItemClass.name}:`, e, itemData);
             }
         }
         this.kanban[setterName](newArray);
     }
 
     /**
-     * Updates the contacts array in the Kanban instance.
+     * Sets contacts array in Kanban.
      * @private
-     * @param {Array<object>} loadItem - The array of contact data objects from the API.
+     * @param {Array<object>} loadItem
      */
     setContactsArray(loadItem) {
         this._setKanbanArray(loadItem, 'contacts', Contact);
@@ -435,9 +386,7 @@ export class Database {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
         };
-        if (bodyData) {
-            options.body = JSON.stringify(bodyData);
-        }
+        if (bodyData) options.body = JSON.stringify(bodyData);
         return fetch(url, options);
     }
 
@@ -449,17 +398,11 @@ export class Database {
      * @returns {string} The extracted or default error message.
      */
     _extractAuthErrorMessage(data, defaultMessage = 'Authentication error.') {
-        if (data.non_field_errors && Array.isArray(data.non_field_errors)) {
-            return data.non_field_errors.join(' ');
-        }
-        if (data.detail) {
-            return data.detail;
-        }
+        if (data.non_field_errors && Array.isArray(data.non_field_errors)) return data.non_field_errors.join(' ');
+        if (data.detail) return data.detail;
         const errorKeys = ['username', 'password', 'name', 'email', 'repeated_password'];
         for (const key of errorKeys) {
-            if (data[key] && Array.isArray(data[key])) {
-                return data[key].join(' ');
-            }
+            if (data[key] && Array.isArray(data[key])) return data[key].join(' ');
         }
         return defaultMessage;
     }
