@@ -452,10 +452,16 @@ export class BoardListener {
         if (event.type === 'dragstart') {
             this.boardInstance.currentDraggedElement = taskId;
             target.classList.add("tilted");
-            dragAreas.forEach((zone) => zone.classList.add("highlighted"));
+            dragAreas.forEach((zone) => {
+                zone.classList.add("highlighted");
+                zone.addEventListener('dragenter', () => event.preventDefault());
+            });
         } else if (event.type === 'dragend') {
             target.classList.remove("tilted");
-            dragAreas.forEach((zone) => zone.classList.remove("highlighted", "highlightedBackground"));
+            dragAreas.forEach((zone) => {
+                zone.classList.remove("highlighted", "highlightedBackground");
+                zone.removeEventListener('dragenter', () => event.preventDefault());
+            });
             if (this.boardInstance.currentDraggedElement === taskId) this.boardInstance.currentDraggedElement = null;
         } else if (event.type === 'click') {
             await this.boardInstance.openOverlay(taskId);

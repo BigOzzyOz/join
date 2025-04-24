@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="../style/board.css" />
   <link rel="stylesheet" href="../style/boardmodals.css" />
   <link rel="stylesheet" href="../style/addtask.css" />
+  <link rel="stylesheet" href="./../assets/libs/default.css">
+
 
 </head>
 
@@ -102,6 +104,14 @@
 
   <nav w3-include-html="../assets/templates/html/menu.html" class="menu"></nav>
 
+  <script src="./../assets/libs/index.min.js"></script>
+  <script src="./../assets/libs/scroll-behaviour.min.js"></script>
+
+  <script>
+    MobileDragDrop.polyfill({
+      dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+    });
+  </script>
   <script type="module" src="../script.js"></script>
 
 </body>

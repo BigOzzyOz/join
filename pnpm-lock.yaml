@@ -14,6 +14,9 @@ importers:
       firebase:
         specifier: ^10.12.4
         version: 10.14.1
+      mobile-drag-drop:
+        specifier: 3.0.0-rc.0
+        version: 3.0.0-rc.0
 
 packages:
 
@@ -308,6 +311,9 @@ packages:
 
   long@5.3.1:
     resolution: {integrity: sha512-ka87Jz3gcx/I7Hal94xaN2tZEOPoUOEVftkQqZx2EeQRN7LGdfLlI3FvZ+7WDplm+vK2Urx9ULrvSowtdCieng==}
+
+  mobile-drag-drop@3.0.0-rc.0:
+    resolution: {integrity: sha512-f8wIDTbBYLBW/+5sei1cqUE+StyDpf/LP+FRZELlVX6tmOOmELk84r3wh1z3woxCB9G5octhF06K5COvFjGgqg==}
 
   protobufjs@7.4.0:
     resolution: {integrity: sha512-mRUWCc3KUU4w1jU8sGxICXH/gNS94DvI1gxqDvBzhj1JpcsimQkYiOJfwsPUykUI5ZaspFbSgmBLER8IrQ3tqw==}
@@ -797,6 +803,8 @@ snapshots:
   lodash.camelcase@4.3.0: {}
 
   long@5.3.1: {}
+
+  mobile-drag-drop@3.0.0-rc.0: {}
 
   protobufjs@7.4.0:
     dependencies:
