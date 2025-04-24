@@ -269,6 +269,7 @@ export class Board {
         const percentComplete = Math.round((checkedSubtaskCount / subtasks.length) * 100);
         const progressBar = this._getProgressBar(taskId);
         progressBar.style.width = `${percentComplete}%`;
+        progressBar.style.backgroundColor = percentComplete === 100 ? "#4CAF50" : "#2196F3";
         const progressBarText = this._getProgressBarText(taskId);
         progressBarText.innerHTML = `${checkedSubtaskCount}/${subtasks.length} Subtasks`;
     }
