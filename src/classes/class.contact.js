@@ -5,41 +5,38 @@ import { ContactHtml } from "./html/class.html-contact.js";
  */
 export class Contact {
     //NOTE - Properties
-
-    /** @type {ContactHtml|null} Instance for handling HTML generation related to this contact. */
+    /** @type {ContactHtml|null} HTML handler. */
     html = null;
-    /** @type {number} The unique identifier of the contact. Defaults to -1 if not provided. */
+    /** @type {number} Contact ID. */
     id;
-    /** @type {string} The email address of the contact. */
+    /** @type {string} Contact email. */
     email;
-    /** @type {string} The first letters (initials) of the contact's name. */
+    /** @type {string} Contact initials. */
     firstLetters;
-    /** @type {boolean} Indicates if the contact represents the logged-in user. */
+    /** @type {boolean} Is user. */
     isUser;
-    /** @type {string} The full name of the contact. */
+    /** @type {string} Contact name. */
     name;
-    /** @type {string} The URL or path to the contact's profile picture. */
+    /** @type {string} Profile picture URL. */
     profilePic;
-    /** @type {string} The phone number of the contact. */
+    /** @type {string} Contact phone. */
     phone;
 
     //NOTE - Constructor & Initialization
-
     /**
-     * Creates an instance of Contact.
-     * Handles different potential property names from API responses (e.g., 'first_letters' vs 'firstLetters').
-     * @param {object} contact - The raw contact data, typically from an API response.
-     * @param {number} [contact.id] - Contact ID.
-     * @param {string} [contact.email] - Contact email.
-     * @param {string} [contact.first_letters] - Contact initials (alternative key).
-     * @param {string} [contact.firstLetters] - Contact initials.
-     * @param {boolean} [contact.is_user] - Is user flag (alternative key).
-     * @param {boolean} [contact.isUser] - Is user flag.
-     * @param {string} [contact.name] - Contact name.
-     * @param {string} [contact.profile_pic] - Profile picture URL (alternative key).
-     * @param {string} [contact.profilePic] - Profile picture URL.
-     * @param {string} [contact.number] - Phone number (alternative key).
-     * @param {string} [contact.phone] - Phone number.
+     * Creates a Contact instance.
+     * @param {object} contact Raw contact data
+     * @param {number} [contact.id]
+     * @param {string} [contact.email]
+     * @param {string} [contact.first_letters]
+     * @param {string} [contact.firstLetters]
+     * @param {boolean} [contact.is_user]
+     * @param {boolean} [contact.isUser]
+     * @param {string} [contact.name]
+     * @param {string} [contact.profile_pic]
+     * @param {string} [contact.profilePic]
+     * @param {string} [contact.number]
+     * @param {string} [contact.phone]
      */
     constructor(contact) {
         this.id = contact.id || -1;
@@ -49,56 +46,47 @@ export class Contact {
         this.name = contact.name || '';
         this.profilePic = contact.profile_pic || contact.profilePic || '';
         this.phone = contact.number || contact.phone || '';
-
         this.html = new ContactHtml(this);
     }
 
     //NOTE - Data Representation Methods
-
     /**
-     * Converts the Contact instance into a plain JavaScript object representation using standard property names.
-     * @returns {object} A plain object representing the contact.
-     * @property {number} id - Contact ID.
-     * @property {string} name - Contact name.
-     * @property {string} email - Contact email.
-     * @property {string} phone - Contact phone number.
-     * @property {string} firstLetters - Contact initials.
-     * @property {boolean} isUser - Is user flag.
-     * @property {string} profilePic - Profile picture URL.
+     * Returns plain object of the contact.
+     * @returns {object} Contact object
      */
     toContactObject() {
         return {
-            'id': this.id,
-            'name': this.name,
-            'email': this.email,
-            'phone': this.phone,
-            'firstLetters': this.firstLetters,
-            'isUser': this.isUser,
-            'profilePic': this.profilePic,
+            id: this.id,
+            name: this.name,
+            email: this.email,
+            phone: this.phone,
+            firstLetters: this.firstLetters,
+            isUser: this.isUser,
+            profilePic: this.profilePic,
         };
     }
 
     /**
-     * Converts the Contact instance into a plain JavaScript object suitable for uploading (e.g., to an API).
-     * Uses API-specific keys (e.g., 'number', 'first_letters') and conditionally includes the 'id' only if it's not -1.
-     * @returns {object} A plain object representing the contact for upload.
-     * @property {number} [id] - Contact ID (only included if not -1).
-     * @property {string} name - Contact name.
-     * @property {string} email - Contact email.
-     * @property {string} number - Contact phone number (API key).
-     * @property {string} first_letters - Contact initials (API key).
-     * @property {boolean} is_user - Is user flag (API key).
-     * @property {string} profile_pic - Profile picture URL (API key).
+     * Returns plain object for upload (API keys).
+     * @returns {object} Contact upload object
      */
     toContactUploadObject() {
         return {
-            ...(this.id !== -1 && { 'id': this.id }),
-            'name': this.name,
-            'email': this.email,
-            'number': this.phone, // API uses 'number'
-            'first_letters': this.firstLetters, // API uses 'first_letters'
-            'is_user': this.isUser, // API uses 'is_user'
-            'profile_pic': this.profilePic, // API uses 'profile_pic'
+            ...(this.id !== -1 && { id: this.id }),
+            name: this.name,
+            email: this.email,
+            number: this.phone,
+            first_letters: this.firstLetters,
+            is_user: this.isUser,
+            profile_pic: this.profilePic,
         };
     }
+
+    //NOTE - Error Handling
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
