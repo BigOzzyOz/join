@@ -13,17 +13,33 @@ import { AddTask } from '../class.add-task.js';
 import { Board } from '../class.board.js';
 import { ContactsPage } from '../class.contacts-page.js';
 
+/**
+ * Handles initialization and lifecycle of all page listeners for the Kanban app.
+ */
 export class KanbanListener {
     //NOTE - Properties
+    /** @type {object} LoginListener instance. */
     login;
+    /** @type {object} RegisterListener instance. */
     register;
+    /** @type {object} SummaryListener instance. */
     summary;
+    /** @type {object} AddTaskListener instance. */
     addTask;
+    /** @type {object} BoardListener instance. */
     board;
+    /** @type {object} ContactsListener instance. */
     contacts;
+    /** @type {object} MenuListener instance. */
     menu;
+    /** @type {object} Kanban app instance. */
+    kanban;
 
     //NOTE - Constructor & Initialization
+    /**
+     * Creates a KanbanListener instance and activates listeners for the current page.
+     * @param {object} kanban - Kanban app instance
+     */
     constructor(kanban) {
         this.kanban = kanban;
         this.menu = new MenuListener(this.kanban);
@@ -31,9 +47,12 @@ export class KanbanListener {
     }
 
     //NOTE - Listener Lifecycle Management
+    /**
+     * Activates listeners based on the current page path.
+     * @returns {void}
+     */
     activateListenersBasedOnPath = () => {
         const path = window.location.pathname;
-
         switch (true) {
             case path.includes('index.html') || path === '/':
                 if (!this.kanban.login) this.kanban.login = new Login(this.kanban);
@@ -58,11 +77,15 @@ export class KanbanListener {
                 this.contacts = new ContactsListener(this.kanban);
                 break;
             default:
-                console.warn('No specific page listener activated for this path:', path);
+                this._logWarn('No specific page listener activated for this path: ' + path);
                 break;
         }
     };
 
+    /**
+     * Deactivates all listeners for all pages.
+     * @returns {void}
+     */
     deactivateListeners = () => {
         this.login?.deactivateAllListenersLogin();
         this.register?.deactivateAllListenersRegister();
@@ -72,4 +95,19 @@ export class KanbanListener {
         this.contacts?.deactivateAllListenersContacts();
         this.menu?.deactivateListenersMenu();
     };
+
+    //NOTE - Error/Warning Helpers
+    /**
+     * Logs a warning message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logWarn(msg) { console.warn(msg); }
+
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
