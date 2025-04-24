@@ -244,7 +244,7 @@ export class Board {
      */
     updateTaskCategories(status, categoryId, noTaskMessage) {
         let taskForSection = this.kanban.tasks.filter((task) => task.status === status);
-        let categoryElement = document.getElementById(categoryId);
+        let categoryElement = this._getCategoryElement(categoryId);
         if (!categoryElement) return;
         categoryElement.innerHTML = "";
         if (taskForSection.length > 0) {
@@ -267,9 +267,9 @@ export class Board {
     updateSubtaskProgressBar(subtasks, taskId) {
         const checkedSubtaskCount = subtasks.filter((subtask) => subtask.status === "checked").length;
         const percentComplete = Math.round((checkedSubtaskCount / subtasks.length) * 100);
-        const progressBar = document.getElementById(`subtasksProgressbarProgress${taskId}`);
+        const progressBar = this._getProgressBar(taskId);
         progressBar.style.width = `${percentComplete}%`;
-        const progressBarText = document.getElementById(`subtasksProgressbarText${taskId}`);
+        const progressBarText = this._getProgressBarText(taskId);
         progressBarText.innerHTML = `${checkedSubtaskCount}/${subtasks.length} Subtasks`;
     }
 
@@ -280,7 +280,7 @@ export class Board {
      * @param {number} subtaskIndex
      */
     updateSubtaskStatus = async (taskId, subtaskIndex) => {
-        let task = this.kanban.tasks.find((task) => task.id === taskId);
+        let task = this._findTaskById(taskId);
         if (task) {
             let subtask = task.subtasks[subtaskIndex];
             if (subtask) {
@@ -362,7 +362,7 @@ export class Board {
             area.classList.add("highlighted");
         });
 
-        const taskToMove = this.kanban.tasks.find(task => task.id === this.currentDraggedElement);
+        const taskToMove = this._findTaskById(this.currentDraggedElement);
         if (taskToMove && newStatus && taskToMove.moveTo(newStatus)) {
             await this.kanban.db.patch(`api/tasks/${taskToMove.id}/`, { 'status': taskToMove.status });
             this.kanban.setTasks(this.kanban.tasks);
@@ -377,7 +377,7 @@ export class Board {
      */
     enableTaskEdit(taskId) {
         let modalContainer = document.getElementById("modalContainer");
-        let task = this.kanban.tasks.find((task) => task.id === taskId);
+        let task = this._findTaskById(taskId);
         !task.assignedTo ? this.kanban.addTask.setAssignedContacts([]) : this.kanban.addTask.setAssignedContacts(task.assignedTo);
         modalContainer.innerHTML = task.html.generateTaskEditHTML();
         this.currentTaskStatus = task.status;
@@ -428,7 +428,7 @@ export class Board {
      * @returns {object|null}
      */
     createEditedTask(taskId) {
-        const originalTask = this.kanban.tasks.find(task => task.id === taskId);
+        const originalTask = this._findTaskById(taskId);
         const subtaskLiElements = document.querySelectorAll('#subtaskList > li.subtaskEditList');
         const newSubtasks = this._processEditedSubtasks(subtaskLiElements, originalTask.subtasks);
         const formData = this._getEditedTaskFormData();
@@ -475,5 +475,50 @@ export class Board {
         this.applyCurrentSearchFilter();
     }
 
-    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
+    //NOTE - Error Handling
+
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
+
+    //NOTE - Data Helpers
+
+    /**
+     * Finds a task by ID.
+     * @param {number} taskId
+     * @returns {Task|null}
+     */
+    _findTaskById(taskId) {
+        return this.kanban.tasks.find(task => task.id === taskId) || null;
+    }
+
+    /**
+     * Finds a category element by ID.
+     * @param {string} categoryId
+     * @returns {HTMLElement|null}
+     */
+    _getCategoryElement(categoryId) {
+        return document.getElementById(categoryId);
+    }
+
+    /**
+     * Finds a progress bar by task ID.
+     * @param {number} taskId
+     * @returns {HTMLElement|null}
+     */
+    _getProgressBar(taskId) {
+        return document.getElementById(`subtasksProgressbarProgress${taskId}`);
+    }
+
+    /**
+     * Finds a progress bar text by task ID.
+     * @param {number} taskId
+     * @returns {HTMLElement|null}
+     */
+    _getProgressBarText(taskId) {
+        return document.getElementById(`subtasksProgressbarText${taskId}`);
+    }
 };
