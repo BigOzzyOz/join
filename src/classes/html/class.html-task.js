@@ -2,11 +2,11 @@
  * Represents the HTML structure for a task, including board cards, modals, and edit forms.
  */
 export class TaskHtml {
-    //NOTE Properties
-
+    //NOTE - Properties
     /** @type {Task} The task object associated with this HTML representation. */
     task;
 
+    //NOTE - Constructor & Initialization
     /**
      * Creates an instance of TaskHtml.
      * @param {Task} task - The task object.
@@ -15,20 +15,18 @@ export class TaskHtml {
         this.task = task;
     }
 
-    //NOTE Board Card HTML Generation
-
+    //NOTE - Board Card HTML Generation
     /**
      * Generates the complete HTML for a task card on the board.
      * @returns {string} The HTML string for the task card.
      */
     generateTodoHTML() {
-        let categoryHTML = this.generateCategoryHTML();
-        let titleHTML = this.generateTitleHTML();
-        let descriptionHTML = this.generateDescriptionHTML();
-        let subtasksHTML = this.generateSubtasksHTML();
-        let assignedToHTML = this.generateAssignedToHTML();
-        let prioHTML = this.generatePrioHTML();
-
+        const categoryHTML = this._generateCategoryHTML();
+        const titleHTML = this._generateTitleHTML();
+        const descriptionHTML = this._generateDescriptionHTML();
+        const subtasksHTML = this._generateSubtasksHTML();
+        const assignedToHTML = this._generateAssignedToHTML();
+        const prioHTML = this._generatePrioHTML();
         return /*html*/ `
               <div draggable="true" id="${this.task.id}" class="todoContainer" data-id="${this.task.id}">
                   <div class="toDoContent">
@@ -49,171 +47,131 @@ export class TaskHtml {
 
     /**
      * Generates the HTML for the task category badge on the board card.
-     * @returns {string} The HTML string for the category badge.
+     * @private
+     * @returns {string}
      */
-    generateCategoryHTML() {
-        let categoryHTML = '';
-        if (this.task.category == 'User Story') {
-            categoryHTML = `<div class="userStoryBadge">User Story</div>`;
-        } else {
-            categoryHTML = `<div class="technicalTaskBadge">Technical Task</div>`;
-        }
-        return categoryHTML;
+    _generateCategoryHTML() {
+        if (this.task.category === 'User Story') return '<div class="userStoryBadge">User Story</div>';
+        return '<div class="technicalTaskBadge">Technical Task</div>';
     }
 
     /**
      * Generates the HTML for the task title on the board card, truncating if necessary.
-     * Sanitizes the title to prevent XSS.
-     * @returns {string} The HTML string for the title.
+     * @private
+     * @returns {string}
      */
-    generateTitleHTML() {
-        let safeTitle = this.task.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        let titleHTML = '';
-        if (safeTitle.length < 20) {
-            titleHTML = `<div class="toDoHeader">${safeTitle}</div>`;
-        } else {
-            titleHTML = `<div class="toDoHeader">${safeTitle.substring(0, 20) + '...'}</div>`;
-        }
-        return titleHTML;
+    _generateTitleHTML() {
+        const safeTitle = this._sanitize(this.task.title);
+        if (safeTitle.length < 20) return `<div class="toDoHeader">${safeTitle}</div>`;
+        return `<div class="toDoHeader">${safeTitle.substring(0, 20)}...</div>`;
     }
 
     /**
      * Generates the HTML for the task description on the board card, truncating if necessary.
-     * Sanitizes the description to prevent XSS.
-     * @returns {string} The HTML string for the description.
+     * @private
+     * @returns {string}
      */
-    generateDescriptionHTML() {
-        let safeDescription = this.task.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        let descriptionHTML = '';
-        if (safeDescription.length < 60) {
-            descriptionHTML = `<div class="toDoDescription">${safeDescription}</div>`;
-        } else {
-            descriptionHTML = `<div class="toDoDescription">${safeDescription.substring(0, 40) + '...'}</div>`;
-        }
-        return descriptionHTML;
+    _generateDescriptionHTML() {
+        const safeDescription = this._sanitize(this.task.description);
+        if (safeDescription.length < 60) return `<div class="toDoDescription">${safeDescription}</div>`;
+        return `<div class="toDoDescription">${safeDescription.substring(0, 40)}...</div>`;
     }
 
     /**
      * Generates the HTML for the subtasks progress bar on the board card.
-     * @returns {string} The HTML string for the subtasks section, or an empty string if no subtasks exist.
+     * @private
+     * @returns {string}
      */
-    generateSubtasksHTML() {
-        let subtasksHTML = "";
-        if (this.task.subtasks && this.task.subtasks.length > 0) {
-            subtasksHTML = /*html*/ `
+    _generateSubtasksHTML() {
+        if (!this.task.subtasks || this.task.subtasks.length === 0) return '';
+        return /*html*/ `
               <div class="toDoSubtasksContainer">
                   <div class="subtasksProgressbar">
                       <div id="subtasksProgressbarProgress${this.task.id}" class="subtasksProgressbarProgress" style="width: 0%;" role="progressbar"></div>
                   </div>
                   <div id="subtasksProgressbarText${this.task.id}">0/${this.task.subtasks.length} Subtasks</div>
               </div>`;
-        }
-        return subtasksHTML;
     }
 
     /**
      * Generates the HTML for the assigned contacts badges on the board card.
      * Shows a maximum of 4 badges and an indicator for more if needed.
-     * @returns {string} The HTML string for the assigned contacts badges.
+     * @private
+     * @returns {string}
      */
-    generateAssignedToHTML() {
-        let assignedToHTML = '';
-        if (!this.task.assignedTo) {
-            return '';
-        }
+    _generateAssignedToHTML() {
+        if (!this.task.assignedTo) return '';
+        let html = '';
         for (let i = 0; i < Math.min(this.task.assignedTo.length, 4); i++) {
-            assignedToHTML += `<div class="assignedToBadge">${this.task.assignedTo[i].profilePic}</div>`;
+            html += `<div class="assignedToBadge">${this.task.assignedTo[i].profilePic}</div>`;
         }
         if (this.task.assignedTo.length > 4) {
-            let assignedNum = this.task.assignedTo.length - 4;
-            assignedToHTML += `<div class="assignedToMoreBadge">+${assignedNum}</div>`;
+            html += `<div class="assignedToMoreBadge">+${this.task.assignedTo.length - 4}</div>`;
         }
-        return assignedToHTML;
+        return html;
     }
 
     /**
      * Generates the HTML for the priority icon on the board card.
-     * @returns {string} The HTML string for the priority icon.
+     * @private
+     * @returns {string}
      */
-    generatePrioHTML() {
-        let prioHTML = '';
-        if (this.task.prio == 'urgent') {
-            prioHTML = `<img src="../assets/icons/priourgent.png">`;
-        } else if (this.task.prio == 'medium') {
-            prioHTML = `<img src="../assets/icons/priomedium.png">`;
-        } else {
-            prioHTML = `<img src="../assets/icons/priolow.png">`;
-        }
-        return prioHTML;
+    _generatePrioHTML() {
+        if (this.task.prio === 'urgent') return '<img src="../assets/icons/priourgent.png">';
+        if (this.task.prio === 'medium') return '<img src="../assets/icons/priomedium.png">';
+        return '<img src="../assets/icons/priolow.png">';
     }
 
-    //NOTE Modal/Overlay HTML Generation
-
+    //NOTE - Modal/Overlay HTML Generation
     /**
      * Generates the HTML for the task category badge in the modal view.
-     * @returns {string} The HTML string for the modal category badge.
+     * @private
+     * @returns {string}
      */
-    generateModalCategoryHTML() {
-        let modalCategoryHTML = '';
-        if (this.task.category == 'User Story') {
-            modalCategoryHTML = `<div class="modalUserStoryBadge">User Story</div>`;
-        } else {
-            modalCategoryHTML = `<div class="modalTechnicalTaskBadge">Technical Task</div>`;
-        }
-        return modalCategoryHTML;
+    _generateModalCategoryHTML() {
+        if (this.task.category === 'User Story') return '<div class="modalUserStoryBadge">User Story</div>';
+        return '<div class="modalTechnicalTaskBadge">Technical Task</div>';
     }
 
     /**
      * Generates the HTML for the list of assigned contacts in the modal view.
-     * @returns {string} The HTML string for the assigned contacts list, or an empty string if none are assigned.
+     * @private
+     * @returns {string}
      */
-    generateModalAssignedToHTML() {
+    _generateModalAssignedToHTML() {
         if (!this.task.assignedTo) return '';
-        let modalAssignedToHTML = '';
+        let html = '';
         for (let i = 0; i < this.task.assignedTo.length; i++) {
-            modalAssignedToHTML += /*html*/`
-                  <div class="modalAssignedToSingle">
-                      ${this.task.assignedTo[i].profilePic}
-                      ${this.task.assignedTo[i].name}
-                  </div>
-              `;
+            html += /*html*/`<div class="modalAssignedToSingle">${this.task.assignedTo[i].profilePic}${this.task.assignedTo[i].name}</div>`;
         }
-        return modalAssignedToHTML;
+        return html;
     }
 
     /**
      * Generates the HTML for the list of subtasks in the modal view, including checkboxes.
-     * @returns {string} The HTML string for the subtasks list.
+     * @private
+     * @returns {string}
      */
-    generateModalSubtasksHTML() {
-        let modalSubtasksHTML = "";
-        if (this.task.subtasks && this.task.subtasks.length > 0) {
-            for (let i = 0; i < this.task.subtasks.length; i++) {
-                let subtask = this.task.subtasks[i];
-                let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
-                modalSubtasksHTML += /*html*/ `
-                      <label class="modalSubtasksSingle" data-subtaskindex="${i}">
-                          <img id="subtaskCheckbox${i}" src="${checked}" alt="Checkbox">
-                          <div>${subtask.text}</div>
-                      </label>
-                  `;
-            }
-        } else {
-            modalSubtasksHTML = 'No subtasks available!';
+    _generateModalSubtasksHTML() {
+        if (!this.task.subtasks || this.task.subtasks.length === 0) return 'No subtasks available!';
+        let html = '';
+        for (let i = 0; i < this.task.subtasks.length; i++) {
+            let subtask = this.task.subtasks[i];
+            let checked = subtask.status === 'checked' ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
+            html += /*html*/ `<label class="modalSubtasksSingle" data-subtaskindex="${i}"><img id="subtaskCheckbox${i}" src="${checked}" alt="Checkbox"><div>${subtask.text}</div></label>`;
         }
-        return modalSubtasksHTML;
+        return html;
     }
 
     /**
      * Generates the complete HTML for the task details modal (overlay).
-     * @returns {string} The HTML string for the task modal.
+     * @returns {string}
      */
     generateOpenOverlayHTML() {
-        let modalCategoryHTML = this.generateModalCategoryHTML();
-        let priority = this.task.prio.charAt(0).toUpperCase() + this.task.prio.slice(1);
-        let modalAssignedToHTML = this.generateModalAssignedToHTML();
-        let modalSubtasksHTML = this.generateModalSubtasksHTML();
-
+        const modalCategoryHTML = this._generateModalCategoryHTML();
+        const priority = this.task.prio.charAt(0).toUpperCase() + this.task.prio.slice(1);
+        const modalAssignedToHTML = this._generateModalAssignedToHTML();
+        const modalSubtasksHTML = this._generateModalSubtasksHTML();
         return /*html*/ `
               <div class="modalContainer" id="modalContainer" data-id="${this.task.id}">
                   <div class="modalToDoContent">
@@ -260,12 +218,10 @@ export class TaskHtml {
           `;
     }
 
-    //NOTE Edit Task Modal HTML Generation
-
+    //NOTE - Edit Task Modal HTML Generation
     /**
      * Generates the HTML for the task edit modal form.
-     * Includes fields for title, description, due date, priority, assigned contacts, and subtasks.
-     * @returns {string} The HTML string for the task edit form.
+     * @returns {string}
      */
     generateTaskEditHTML() {
         let subtaskHTML = '';
@@ -274,7 +230,6 @@ export class TaskHtml {
                 subtaskHTML += subtask.html.generateSaveSubtaskHTML(index);
             });
         }
-
         return /*html*/ `
               <div class="modalToDoContent">
                   <div class="editTaskCloseContainer">
@@ -353,5 +308,23 @@ export class TaskHtml {
           `;
     }
 
-    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
+    //NOTE - Helpers
+    /**
+     * Sanitizes a string for HTML output.
+     * @private
+     * @param {string} str
+     * @returns {string}
+     */
+    _sanitize(str) {
+        if (!str) return '';
+        return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    //NOTE - Error Handling
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
