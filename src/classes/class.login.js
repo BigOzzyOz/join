@@ -7,11 +7,11 @@ import { Contact } from "./class.contact.js";
 export class Login {
     //NOTE - Properties
 
-    /** @type {import('./class.kanban.js').Kanban} Reference to the main Kanban application instance. */
+    /** @type {import('./class.kanban.js').Kanban} Kanban app instance. */
     kanban;
-    /** @type {HTMLInputElement|null} The password input field element. */
+    /** @type {HTMLInputElement|null} Password input field. */
     passwordInput = document.getElementById('passwordInput');
-    /** @type {boolean} Tracks the current visibility state of the password. */
+    /** @type {boolean} Password visible. */
     isPasswordVisible = false;
 
     //NOTE - Constructor & Initialization
