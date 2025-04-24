@@ -2,11 +2,11 @@
  * Handles HTML generation specifically related to a Subtask instance.
  */
 export class SubtaskHtml {
-    //NOTE Properties
-
+    //NOTE - Properties
     /** @type {import('../class.subtask.js').Subtask} The Subtask instance this class generates HTML for. */
     subtask;
 
+    //NOTE - Constructor & Initialization
     /**
      * Creates an instance of SubtaskHtml.
      * @param {import('../class.subtask.js').Subtask} subtask - The Subtask instance to associate with this HTML generator.
@@ -15,17 +15,14 @@ export class SubtaskHtml {
         this.subtask = subtask;
     }
 
-    //NOTE Subtask HTML Generation
-
+    //NOTE - Subtask HTML Generation
     /**
-     * Generates the HTML for a subtask list item in edit mode (e.g., in Add Task).
-     * Includes the subtask text and edit/delete icons.
-     * Sanitizes the subtask text.
-     * @param {number} index - The index of the subtask in its list, used for element IDs and data attributes.
+     * Generates the HTML for a subtask list item in edit mode.
+     * @param {number} index - The index of the subtask in its list.
      * @returns {string} The HTML string for the editable subtask list item.
      */
     generateSaveSubtaskHTML(index) {
-        const safeText = this.subtask.text.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        const safeText = this._sanitize(this.subtask.text);
         return /*html*/`
             <li class="subtaskEditList" id="subtask-${index}" data-index="${index}">
               <div class="subtaskItem">
@@ -37,26 +34,41 @@ export class SubtaskHtml {
                     <img class="icon deleteSubtaskBtns" data-action="delete" src="../assets/icons/delete.svg">
                 </div>
               </div>
-
             </li>
         `;
     }
 
     /**
      * Updates the visual status (checkbox image) of a subtask in the UI.
-     * Assumes a corresponding checkbox element exists with ID `subtaskCheckbox${index}`.
      * @param {'checked'|'unchecked'} status - The new status to reflect in the UI.
-     * @param {number} index - The index of the subtask, used to find the correct checkbox element.
+     * @param {number} index - The index of the subtask.
+     * @returns {void}
      */
     updateSubtaskStatus(status, index) {
-        this.subtask.status = status; // Note: This also updates the internal subtask state
+        this.subtask.status = status;
         const subtaskCheckbox = document.getElementById(`subtaskCheckbox${index}`);
-        if (subtaskCheckbox) {
-            subtaskCheckbox.src = this.subtask.status === "checked"
-                ? "../assets/icons/checkboxchecked.svg"
-                : "../assets/icons/checkbox.svg";
-        }
+        if (subtaskCheckbox) subtaskCheckbox.src = status === "checked"
+            ? "../assets/icons/checkboxchecked.svg"
+            : "../assets/icons/checkbox.svg";
     }
 
-    //FIXME: Doppelte oder nicht benötigte Methoden ggf. hier ans Ende verschieben
+    //NOTE - Helpers
+    /**
+     * Sanitizes a string for HTML output.
+     * @private
+     * @param {string} str
+     * @returns {string}
+     */
+    _sanitize(str) {
+        if (!str) return '';
+        return str.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+    }
+
+    //NOTE - Error Handling
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
