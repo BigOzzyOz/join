@@ -2,9 +2,11 @@
  * Handles HTML generation specifically for the Board view.
  */
 export class BoardHtml {
+    //NOTE - Properties
     /** @type {import('../class.kanban.js').Kanban} Reference to the main Kanban application instance. */
     kanban;
 
+    //NOTE - Constructor & Initialization
     /**
      * Creates an instance of BoardHtml.
      * @param {import('../class.kanban.js').Kanban} kanban - The main Kanban application instance.
@@ -13,6 +15,7 @@ export class BoardHtml {
         this.kanban = kanban;
     }
 
+    //NOTE - Delete Task Modal
     /**
      * Generates the HTML content for the delete task confirmation dialog.
      * @param {number} id - The ID of the task to be deleted.
@@ -36,19 +39,40 @@ export class BoardHtml {
         `;
     }
 
-    //NOTE Add Task Modal Template
-
+    //NOTE - Add Task Modal Template
     /**
      * Fetches the Add Task HTML template from a file and wraps it in a container div.
      * @returns {Promise<string>} A promise that resolves with the HTML string for the Add Task modal.
      */
     async fetchAddTaskTemplate() {
-        let response = await fetch("../assets/templates/html/addtasktemplate.html");
-        let html = await response.text();
+        let html = await this._fetchAddTaskHtml();
         return `
                   <div class="addTaskModalContainer">
                     ${html}
                   </div>
                 `;
     }
+
+    /**
+     * Helper to fetch the Add Task HTML template from file.
+     * @private
+     * @returns {Promise<string>} The HTML string for the Add Task modal.
+     */
+    async _fetchAddTaskHtml() {
+        try {
+            let response = await fetch("../assets/templates/html/addtasktemplate.html");
+            return await response.text();
+        } catch (e) {
+            this._logError('Failed to fetch Add Task template: ' + e);
+            return '';
+        }
+    }
+
+    //NOTE - Error Handling
+    /**
+     * Logs an error message.
+     * @param {string} msg
+     * @returns {void}
+     */
+    _logError(msg) { console.error(msg); }
 }
