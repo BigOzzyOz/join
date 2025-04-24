@@ -3,12 +3,10 @@
  */
 export class ContactsPageHtml {
   //NOTE - Properties
-
   /** @type {import('../class.kanban.js').Kanban} Reference to the main Kanban application instance. */
   kanban;
 
   //NOTE - Constructor & Initialization
-
   /**
    * Creates an instance of ContactsPageHtml.
    * @param {import('../class.kanban.js').Kanban} kanban - The main Kanban application instance.
@@ -18,7 +16,6 @@ export class ContactsPageHtml {
   }
 
   //NOTE - HTML Rendering Methods
-
   /**
    * Generates the HTML for the empty state of the contact details section.
    * @returns {string} The HTML string for the empty contact details view.
@@ -31,7 +28,7 @@ export class ContactsPageHtml {
               <p class="bordered fs20">Better with a Team</p>
             </div>
           </div>
-          `;
+        `;
   }
 
   /**
@@ -44,25 +41,41 @@ export class ContactsPageHtml {
             <p>Add new contact</p>
             <img src="../assets/icons/person_add.svg" alt="Add new contact">
           </div>
-          `;
+        `;
   }
 
   /**
    * Generates the HTML structure for a letter group in the contacts list.
-   * Includes the letter heading and an empty list container for contacts starting with that letter.
-   * Sanitizes the letter to prevent XSS.
    * @param {string} letter - The letter for this group (e.g., 'A', 'B').
    * @returns {string} The HTML string for the letter group container.
    */
   htmlRenderContactLetter(letter) {
-    const safeLetter = letter.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
+    const safeLetter = this._sanitize(letter);
     return /*html*/`
           <div class="contactLetter">
             <p class="fs20">${safeLetter}</p>
-            <ul id="contactLetter${safeLetter}" class="contactList">
-            </ul>
+            <ul id="contactLetter${safeLetter}" class="contactList"></ul>
           </div>
         `;
   }
+
+  //NOTE - Helpers
+  /**
+   * Sanitizes a string for HTML output.
+   * @private
+   * @param {string} str
+   * @returns {string}
+   */
+  _sanitize(str) {
+    if (!str) return '';
+    return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  //NOTE - Error Handling
+  /**
+   * Logs an error message.
+   * @param {string} msg
+   * @returns {void}
+   */
+  _logError(msg) { console.error(msg); }
 }
