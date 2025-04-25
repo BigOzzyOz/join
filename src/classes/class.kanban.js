@@ -325,6 +325,7 @@ export class Kanban {
             overlay.innerHTML = await this.board.html.fetchAddTaskTemplate();
             overlay.style.display = 'block';
             this.listener?.addTask?.activateAddTaskListeners();
+            this.listener?.board?.activateOverlayListeners();
         } else {
             console.error('Cannot generate Add Task instance: Missing task.html or board.html reference.');
             this.addTask = null;

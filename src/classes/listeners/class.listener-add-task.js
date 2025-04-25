@@ -60,11 +60,11 @@ export class AddTaskListener {
         if (action === "add") {
             clearBtn?.addEventListener('click', this.addTaskInstance.clearAddTaskForm);
             addTaskForm?.addEventListener('submit', this.handleSubmitBtnClick);
-            if (this.boardInstance) addTaskForm?.addEventListener('submit', this.boardInstance.closeModal);
+            if (this.boardInstance) closeBtn?.addEventListener('click', this.boardInstance.closeModal);
         } else if (action === "remove") {
             clearBtn?.removeEventListener('click', this.addTaskInstance.clearAddTaskForm);
             addTaskForm?.removeEventListener('submit', this.handleSubmitBtnClick);
-            if (this.boardInstance) addTaskForm?.removeEventListener('submit', this.boardInstance.closeModal);
+            if (this.boardInstance) closeBtn?.removeEventListener('click', this.boardInstance.closeModal);
         }
     }
 
