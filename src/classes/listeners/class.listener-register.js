@@ -34,9 +34,18 @@ export class RegisterListener {
         this.signupForm.addEventListener('change', this.handleFormInteraction);
         this.signupForm.addEventListener('focus', this.handleFormInteraction, true);
         this.signupForm.addEventListener('blur', this.handleFormInteraction, true);
+        const inputs = ['userName', 'userEmail', 'password', 'confirmPassword', 'privacy-policy'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', this._updateRegisterButtonState);
+                el.addEventListener('change', this._updateRegisterButtonState);
+            }
+        });
         document.getElementById('back-btn')?.addEventListener('click', this.kanban.forwardToIndex);
         document.getElementById('privacy-policy-link')?.addEventListener('click', this.kanban.forwardPrivacy);
         document.getElementById('legal-notice-link')?.addEventListener('click', this.kanban.forwardLegal);
+        this._updateRegisterButtonState();
     }
 
     /**
@@ -50,6 +59,14 @@ export class RegisterListener {
         this.signupForm.removeEventListener('change', this.handleFormInteraction);
         this.signupForm.removeEventListener('focus', this.handleFormInteraction, true);
         this.signupForm.removeEventListener('blur', this.handleFormInteraction, true);
+        const inputs = ['userName', 'userEmail', 'password', 'confirmPassword', 'privacy-policy'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.removeEventListener('input', this._updateRegisterButtonState.bind(this));
+                el.removeEventListener('change', this._updateRegisterButtonState.bind(this));
+            }
+        });
         document.getElementById('back-btn')?.removeEventListener('click', this.kanban.forwardToIndex);
         document.getElementById('privacy-policy-link')?.removeEventListener('click', this.kanban.forwardPrivacy);
         document.getElementById('legal-notice-link')?.removeEventListener('click', this.kanban.forwardLegal);
@@ -107,6 +124,24 @@ export class RegisterListener {
         if (privacyCheckbox) privacyCheckbox.checked = !privacyCheckbox.checked;
         this.registerInstance.checkBoxClicked();
     }
+
+    /**
+     * Checks if all required fields are filled and valid, and enables/disables the register button accordingly.
+     */
+    _updateRegisterButtonState = () => {
+        if (!this.registerInstance) return;
+        const { nameInput, emailInput, passwordInput, confirmPasswordInput, privacyCheckbox } = this.registerInstance._getFormInputs();
+        const submitButton = document.getElementById('signup-btn-register');
+        if (!nameInput || !emailInput || !passwordInput || !confirmPasswordInput || !privacyCheckbox || !submitButton) return;
+        console.log("Register button state updated.");
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const isPrivacyChecked = privacyCheckbox.checked;
+        const allFilled = name && email && password && confirmPassword && isPrivacyChecked;
+        submitButton.disabled = !(allFilled);
+    };
 
     //NOTE - Error Handling
     /**

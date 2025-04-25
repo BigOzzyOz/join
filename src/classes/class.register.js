@@ -146,7 +146,6 @@ export class Register {
         const submitButton = document.getElementById('signup-btn-register');
         if (!privacyCheckbox || !checkboxImg || !submitButton) return;
         const checkedState = privacyCheckbox.checked;
-        submitButton.disabled = !checkedState;
         checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
     };
 
