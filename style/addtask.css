@@ -18,22 +18,31 @@
   margin: 0;
 }
 
+main>section:first-child {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .addTaskModalClose {
   display: none;
 }
 
 .addTaskSection {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 0px 16px 0px 16px;
   font-size: 16px;
   font-weight: 400;
   line-height: 19.2px;
+  flex: 1;
+  overflow-y: hidden;
 }
 
 .inputContainer {
   display: flex;
-  gap: 48px;
+  gap: 32px;
   flex-direction: column;
 }
 
@@ -66,6 +75,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  justify-content: space-between;
+  overflow-y: auto;
 }
 
 input,
@@ -190,6 +202,7 @@ input:focus {
   justify-content: space-between;
   align-items: center;
   background-color: #f6f7f8;
+  z-index: 5;
 }
 
 .btnContainer {
@@ -275,10 +288,10 @@ input:focus {
   border-radius: 20px;
   gap: 16px;
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.15);
-  position: fixed;
+  position: absolute;
   bottom: -100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 50%);
   transition: bottom 0.5s ease-out;
   z-index: 6;
 }
@@ -289,7 +302,7 @@ input:focus {
 }
 
 .taskAddedBtn.show {
-  bottom: 50%;
+  bottom: 65%;
 }
 
 .formValidationText {
@@ -313,6 +326,7 @@ input:focus {
   transition: all 125ms ease-in-out;
   position: relative;
   width: 100%;
+  z-index: 5;
 }
 
 .imgContainer {
@@ -348,7 +362,7 @@ input:focus {
 
 .contactsToAssign {
   position: absolute;
-  top: 40px;
+  top: 0;
   left: 0;
   background-color: white;
   z-index: 3;
@@ -360,6 +374,8 @@ input:focus {
   align-items: center;
   gap: 4px;
   border-radius: 10px;
+  border: 0px solid #d1d1d1;
+  margin-top: 32px;
 }
 
 .contactsToAssign label {
@@ -425,22 +441,10 @@ input:focus {
   background: url('../assets/icons/checkboxcheckedWhite.svg') no-repeat center;
 }
 
-.assignContainer {
-  position: absolute;
-  top: 32px;
-  left: 0;
-  border: 1px solid #d1d1d1;
-  border-radius: 10px;
-  background-color: white;
-  height: 38px;
-}
-
-.open {
-  height: 240px !important;
-}
-
 .open>.contactsToAssign {
-  height: 79.8%;
+  border: 1px solid #d1d1d1;
+  height: 200px;
+  padding: 8px;
 }
 
 .contactsAssigned {
@@ -448,10 +452,10 @@ input:focus {
   gap: 8px;
   width: 100%;
   flex-wrap: nowrap;
-  max-height: 50px;
+  height: 50px;
   overflow: hidden;
   padding: 8px 16px;
-  margin-top: 48px;
+  z-index: 2;
 }
 
 .contactsAssigned>svg {
@@ -568,18 +572,34 @@ ul {
 }
 
 .select-wrapper {
-  position: absolute;
-  top: 32px;
-  left: 0;
+  position: relative;
   z-index: 5;
   display: inline-block;
-  height: 38px;
-  overflow: hidden;
   transition: all 125ms ease-in-out;
   border-radius: 10px;
   background-color: white;
   border: 1px solid #d1d1d1;
 }
+
+.select-wrapper>.category-options {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  z-index: 3;
+  overflow: hidden auto;
+  max-height: 0%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 10px;
+  border: 0px solid #d1d1d1;
+  margin-top: 32px;
+  transition: all 125ms ease-in-out;
+  overflow: hidden;
+}
+
 
 .select-wrapper input[type="text"] {
   position: relative;
@@ -593,8 +613,10 @@ ul {
   opacity: 1;
 }
 
-.select-wrapperOpen {
-  height: auto !important;
+.select-wrapperOpen>.category-options {
+  max-height: 200px;
+  border: 1px solid #d1d1d1;
+  padding: 8px;
 }
 
 .select-wrapper p {
@@ -655,6 +677,10 @@ ul {
     font-size: 60px;
     line-height: 73.2px;
   }
+
+  .addTaskForm {
+    padding: 0 0 48px 0px;
+  }
 }
 
 @media (max-width: 1199px) {
@@ -676,6 +702,10 @@ ul {
   .inputContainer {
     flex-direction: row;
     gap: 24px;
+  }
+
+  .addTaskForm {
+    padding: 0 0 96px 0px;
   }
 
   .inputContainerBottom,
@@ -710,6 +740,11 @@ ul {
     height: 48px;
   }
 
+  .contactsToAssign,
+  .category-options {
+    margin-top: 40px !important;
+  }
+
   input,
   textarea,
   .prioBtnContainer,
@@ -722,11 +757,9 @@ ul {
   .bottomContainer {
     display: flex;
     width: 100%;
+    z-index: 2;
   }
 
-  .contactsToAssign {
-    top: 48px;
-  }
 }
 
 @media (min-width: 1440px) {
@@ -740,8 +773,7 @@ ul {
   }
 
   .addTaskForm {
-    justify-content: flex-start;
-    padding-left: 96px;
+    padding: 0 0 96px 96px;
   }
 
   .inputContainer {
@@ -754,6 +786,10 @@ ul {
   }
 
   .taskAddedBtn {
-    left: 558px;
+    left: 600px;
+  }
+
+  .taskAddedBtn.show {
+    bottom: 75%;
   }
 }

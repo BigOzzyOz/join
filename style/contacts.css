@@ -47,7 +47,7 @@
   align-items: center;
   justify-content: space-evenly;
   border-radius: 30px;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 16px 24px rgba(0, 0, 0, 0.1);
   transition: all 125ms ease-in-out;
 }
 
@@ -61,10 +61,6 @@
 
 .tty100 {
   transform: translateY(100vh);
-}
-
-.tt0 {
-  transform: unset;
 }
 
 .profilePic {
@@ -344,8 +340,10 @@ h4 {
 }
 
 .warning {
+  height: 24px;
   color: red;
 }
+
 
 .down {
   justify-content: center;
@@ -463,16 +461,16 @@ form>div>button:first-child:hover {
 }
 
 .deleteResponse {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100dvh;
-  width: 100dvw;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-shadow: #2a3647 0px 0px 24px 8px;
+  border-radius: 8px;
   z-index: 99;
-  background-color: rgba(42, 54, 71, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translate(-50%, -50%) scale(0);
   transition: transform 125ms ease-in-out;
 }
 

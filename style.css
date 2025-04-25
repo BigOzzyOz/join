@@ -56,6 +56,10 @@ body {
   transform: scale(1);
 }
 
+.ttcts1 {
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
 .contentSection {
   grid-area: content;
   overflow: auto;

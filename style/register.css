@@ -132,10 +132,18 @@ main {
     border: 1px solid #29ABE2;
 }
 
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 30px;
+}
+
 .error {
     font-size: 12px;
     color: red;
-    margin-top: 8px;
     display: none;
 }
 
@@ -269,7 +277,8 @@ form button:disabled {
 
 @media (min-width: 576px) {
     .head {
-        padding-left: 24px;
+        padding-left: 36px;
+        padding-top: 36px;
     }
 
     .signup-form {
@@ -280,9 +289,6 @@ form button:disabled {
 
 /*Medium devices (tablets, 768px and up)*/
 @media (min-width: 768px) {
-    .head {
-        padding-left: 32px;
-    }
 
     .signup-form {
         padding-left: 24px;
@@ -290,29 +296,24 @@ form button:disabled {
     }
 }
 
-/*Large devices (desktops, 992px and up)*/
-@media (min-width: 992px) {
-    .head {
-        padding-left: 40px;
-    }
-
-}
-
 
 @media (min-width: 1400px) {
+    .head {
+        padding-left: 80px;
+    }
+
+
     .logo {
         position: relative;
         width: 80px;
         height: 100px;
-        top: 24px;
-        left: 24px;
     }
 }
 
 
 @media (min-height: 720px) {
     .head {
-        padding-top: 32px;
+        padding-top: 40px;
     }
 
     .signup-form {
@@ -324,7 +325,7 @@ form button:disabled {
 
 @media (min-height: 800px) {
     .head {
-        padding-top: 40px;
+        padding-top: 56px;
     }
 
     .inputfield {
