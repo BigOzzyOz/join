@@ -12,7 +12,7 @@ import { Task } from './class.task.js';
  */
 export class Database {
     /** @type {string} API URL. */
-    BASE_URL = 'http://127.0.0.1:8000/';
+    BASE_URL = 'https://backend.jan-holtschke.de/be-join/';
     /** @type {string} Token. */
     token = sessionStorage.getItem('token') || '';
     /** @type {import('./class.kanban.js').Kanban|null} Kanban app. */
