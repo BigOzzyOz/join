@@ -12,7 +12,7 @@ import { Task } from './class.task.js';
  */
 export class Database {
     /** @type {string} API URL. */
-    BASE_URL = 'http://127.0.0.1:8000/';
+    BASE_URL = 'https://backend.jan-holtschke.de/be-join/';
     /** @type {string} Token. */
     token = sessionStorage.getItem('token') || '';
     /** @type {import('./class.kanban.js').Kanban|null} Kanban app. */
@@ -152,11 +152,12 @@ export class Database {
      * Logs the current user out by clearing session/local storage and redirecting.
      */
     logout = () => {
+        const path = window.location.pathname;
         sessionStorage.clear();
         localStorage.removeItem('currentUser');
         this.token = '';
         if (this.kanban) this.kanban.currentUser = null;
-        window.location.href = '/index.html';
+        window.location.href = path.includes('/html/') ? '../index.html' : 'index.html';;
     };
 
     /** Register user. */

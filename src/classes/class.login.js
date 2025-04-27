@@ -327,10 +327,10 @@ export class Login {
         if (!this.passwordInput) return;
         if (isVisible) {
             this.passwordInput.type = "text";
-            this.passwordInput.style.backgroundImage = "url('../assets/icons/visibility.png')";
+            this.passwordInput.style.backgroundImage = "url('assets/icons/visibility.png')";
         } else {
             this.passwordInput.type = "password";
-            this.passwordInput.style.backgroundImage = "url('../assets/icons/password_off.png')";
+            this.passwordInput.style.backgroundImage = "url('assets/icons/password_off.png')";
         }
     }
 
@@ -342,7 +342,7 @@ export class Login {
 
         this.isPasswordVisible = false;
         this.passwordInput.type = "password";
-        this.passwordInput.style.backgroundImage = "url('../assets/icons/password_input.png')";
+        this.passwordInput.style.backgroundImage = "url('assets/icons/password_input.png')";
     };
 
     /**
@@ -353,7 +353,7 @@ export class Login {
         const checkboxImg = document.getElementById('checkbox');
         if (rememberMeCheckbox && checkboxImg) {
             const checkedState = rememberMeCheckbox.checked;
-            checkboxImg.src = checkedState ? '../assets/icons/checkboxchecked.svg' : '../assets/icons/checkbox.svg';
+            checkboxImg.src = checkedState ? 'assets/icons/checkboxchecked.svg' : 'assets/icons/checkbox.svg';
         }
     };
 
