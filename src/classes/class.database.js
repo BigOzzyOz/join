@@ -157,7 +157,7 @@ export class Database {
         localStorage.removeItem('currentUser');
         this.token = '';
         if (this.kanban) this.kanban.currentUser = null;
-        window.location.href = path.includes('/html/') ? '../index.html' : 'index.html';;
+        window.location.href = path.includes('/html/') ? '../index.html' : 'index.html';
     };
 
     /** Register user. */
