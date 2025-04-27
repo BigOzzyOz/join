@@ -152,11 +152,12 @@ export class Database {
      * Logs the current user out by clearing session/local storage and redirecting.
      */
     logout = () => {
+        const path = window.location.pathname;
         sessionStorage.clear();
         localStorage.removeItem('currentUser');
         this.token = '';
         if (this.kanban) this.kanban.currentUser = null;
-        window.location.href = '/index.html';
+        window.location.href = path.includes('/html/') ? '../index.html' : 'index.html';;
     };
 
     /** Register user. */

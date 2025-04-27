@@ -1,0 +1,6 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} !^/join-rework/
+RewriteRule ^(.*)$ /join-rework/$1 [L]
+
+DirectoryIndex index.html
