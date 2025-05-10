@@ -1,6 +1,6 @@
 # Join
 
-A Kanban-style task management web application.
+A Kanban-style task management web application. (Backend: [https://github.com/BigOzzyOz/be_join](https://github.com/BigOzzyOz/be_join))
 
 ## Features
 - User registration and login
