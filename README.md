@@ -37,6 +37,9 @@ Open `index.html` in your browser, or use a local server (e.g. with the VS Code 
 - Styles in `style/`
 - Static assets in `assets/`
 
+## Backend
+The backend for this project can be found at [https://github.com/BigOzzyOz/be_join](https://github.com/BigOzzyOz/be_join).
+
 ## License
 This project is for educational purposes.
 
